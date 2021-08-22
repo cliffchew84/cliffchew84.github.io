@@ -1,19 +1,39 @@
 body {
     margin: 40px;
+    background-color: gray;
+    font-family: sans-serif;
 }
 
 .wrapper {
     display: grid;
-    grid-template-columns: 100px 100px 100px;
-    grid-gap: 10px;
-    background-color: #fff;
-    color: #444;
-}
+    background-color: gray;
+    grid-template-columns: 1fr, 1fr, 1fr;
+    grid-auto-rows: 100px;
+    }
 
 .box {
     background-color: #444;
     color: #fff;
     border-radius: 5px;
     padding: 20px;
+}
+
+#box1 {
+    grid-column-start: 1;
+    grid-column-end: 4;
+    grid-row-start: 1;
+    grid-row-end: 2;
     font-size: 150%;
+    }
+    
+#box2 {    
+    grid-column-start: 1;
+    grid-row-start: 2;
+    grid-row-end: 4;    
+}
+        
+#box4 {
+    grid-column-start: 2;
+    grid-row-start: 2;
+    grid-row-end: 4;    
 }
