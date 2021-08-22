@@ -1,26 +1,19 @@
 body {
-    margin: 10px;
     background-color: #FFFFFF;
     font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
     font-size: 24px;
     border-radius: 5px;
+    color: #fff;
 }
 
 .header {
     display: grid;
-    margin: 0;
-    background-color: white;
-    color: darkgrey;
+    margin-bottom: 10px;
+    background-color: #666666;
     padding: 10px;
     grid-auto-rows: 80px;
-    grid-column-start: 1;
-    grid-column-end: 4;
-    grid-row-start: 1;
-    grid-row-end: 2;
     font-size: 150%;
     border-radius: 5px;
-    border-color: black;
-    border-width: 1px;
 }
 
 .wrapper {
@@ -35,8 +28,7 @@ body {
     }
 
 .box {
-    background-color: grey;
-    color: #fff;
+    background-color: #666666;
     border-radius: 5px;
     padding: 20px;
 }
@@ -48,13 +40,25 @@ body {
 }
   
 a:visited {
-color: pink;
-background-color: transparent;
-text-decoration: none;
+    color: pink;
+    background-color: transparent;
+    text-decoration: none;
 }
 
 a:hover {
-color: #e1b07e;
-background-color: transparent;
-text-decoration: underline;
+    color: #e1b07e;
+    background-color: transparent;
+    text-decoration: underline;
+}
+
+@media (max-width: 650px){
+    .wrapper {
+        grid-template-columns: auto;
+        /* grid-template-rows: auto 1fr auto; */
+  }
+  #about {    
+    grid-column-start: 1;
+    grid-row-start: 1;
+    grid-row-end: 2;
+    }
 }
