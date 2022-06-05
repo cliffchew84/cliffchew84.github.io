@@ -1,7 +1,7 @@
 {
   "name": "landingpage",
-  "homepage": "https://cliffchew84.github.io/react-landing-page",
-  "private": true,
+  "homepage": "https://cliffchew84.github.io/react-landing-page/",
+  "private": false,
   "dependencies": {
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
