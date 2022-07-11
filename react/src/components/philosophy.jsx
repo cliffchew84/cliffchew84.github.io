@@ -1,6 +1,6 @@
-export const Services = (props) => {
+export const Philosophy = (props) => {
   return (
-    <div id='services' className='text-center'>
+    <div id='philosophy' className='text-center'>
       <div className='container'>
         <div className='section-title'>
           <h2>Teaching Philosophy</h2>
@@ -14,7 +14,7 @@ export const Services = (props) => {
                 <div key={`${d.name}-${i}`} className='col-md-4'>
                   {' '}
                   <i className={d.icon}></i>
-                  <div className='service-desc'>
+                  <div className='philo-desc'>
                     <h3>{d.name}</h3>
                     <p>{d.text}</p>
                   </div>
