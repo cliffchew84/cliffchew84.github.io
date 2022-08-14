@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import emailjs from 'emailjs-com'
 
 const initialState = {
   name: '',
@@ -13,25 +12,7 @@ export const Contact = (props) => {
     const { name, value } = e.target
     setState((prevState) => ({ ...prevState, [name]: value }))
   }
-  const clearState = () => setState({ ...initialState })
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    console.log(name, email, message)
-    emailjs
-      .sendForm(
-        'YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', e.target, 'YOUR_USER_ID'
-      )
-      .then(
-        (result) => {
-          console.log(result.text)
-          clearState()
-        },
-        (error) => {
-          console.log(error.text)
-        }
-      )
-  }
   return (
     <div>
       <div id='contact'>
@@ -39,22 +20,22 @@ export const Contact = (props) => {
           <div className='col-md-8'>
             <div className='row'>
               <div className='section-title'>
-                <h2>Get In Touch</h2>
+                <h2>Sign Up Now!</h2>
                 <p>
-                  Please fill out the form below to send us an email and we will
-                  get back to you as soon as possible.
+                  We will contact you once the course is ready.
                 </p>
               </div>
-              <form name='sentMessage' validate onSubmit={handleSubmit}>
+              
+              <form name="gform" id="gform" enctype="text/plain" action="https://docs.google.com/forms/d/e/1FAIpQLSfNuS4F9fMhlgx94TA0dfN0JJDRIpQwgR77E8pRrWV_HL6Csw/formResponse?" target="hidden_iframe" onsubmit="submitted=true;">
                 <div className='row'>
                   <div className='col-md-6'>
                     <div className='form-group'>
                       <input
-                        type='text'
-                        id='name'
-                        name='name'
+                        type="text" 
+                        name="entry.516482001" 
+                        id="entry.516482001"
                         className='form-control'
-                        placeholder='Name'
+                        placeholder='Last Name'
                         required
                         onChange={handleChange}
                       />
@@ -64,9 +45,23 @@ export const Contact = (props) => {
                   <div className='col-md-6'>
                     <div className='form-group'>
                       <input
-                        type='email'
-                        id='email'
-                        name='email'
+                        type="text" 
+                        name="entry.935697527" 
+                        id="entry.935697527"
+                        className='form-control'
+                        placeholder='First Name'
+                        required
+                        onChange={handleChange}
+                      />
+                      <p className='help-block text-danger'></p>
+                    </div>
+                  </div>
+                  <div className='col-md-6'>
+                    <div className='form-group'>
+                      <input
+                        type="text" 
+                        name="entry.236876845" 
+                        id="entry.236876845"
                         className='form-control'
                         placeholder='Email'
                         required
@@ -76,22 +71,20 @@ export const Contact = (props) => {
                     </div>
                   </div>
                 </div>
-                <div className='form-group'>
+                <div className='form-group'> 
                   <textarea
-                    name='message'
-                    id='message'
+                    type="text" 
+                    name="entry.517359739" 
+                    id="entry.517359739"
                     className='form-control'
-                    rows='4'
-                    placeholder='Message'
+                    placeholder='Any message or questions?'
                     required
                     onChange={handleChange}
                   ></textarea>
                   <p className='help-block text-danger'></p>
                 </div>
                 <div id='success'></div>
-                <button type='submit' className='btn btn-custom btn-lg'>
-                  Send Message
-                </button>
+                <input type="submit" className='btn btn-custom btn-lg' value="Submit"/>
               </form>
             </div>
           </div>
