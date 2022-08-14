@@ -1,12 +1,12 @@
 @media screen and (max-width: 400px) {
-  #features {
+  #whycare {
     padding: 20px;
     width: 111%;
   }
   #about,
   #philosophy,
   #team,
-  #contact,
+  #signup,
   #footer {
     width: 111%;
   }

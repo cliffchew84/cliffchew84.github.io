@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { Navigation } from "./navigation";
 import { Header } from "./header";
-import { Features } from "./features";
+import { WhyCare } from "./whycare";
 import { About } from "./about";
 import { Philosophy } from "./philosophy";
 // import { Gallery } from "./gallery";
 // import { Testimonials } from "./testimonials";
 import { Team } from "./Team";
-import { Contact } from "./contact";
+import { SignUp } from "./signup";
 
 import JsonData from "../data/data.json";
 import SmoothScroll from "smooth-scroll";
@@ -29,13 +29,13 @@ const Main = () => {
       <div>
         <Navigation /> 
         <Header data={landingPageData.Header} />
-        <Features data={landingPageData.Features} />
+        <WhyCare data={landingPageData.WhyCare} />
         <About data={landingPageData.About} />
         <Philosophy data={landingPageData.Philosophy} />
         {/* <Gallery data={landingPageData.Gallery}/> */}
         {/* <Testimonials data={landingPageData.Testimonials} /> */}
         <Team data={landingPageData.Team} />
-        <Contact data={landingPageData.Contact} />
+        <SignUp data={landingPageData.SignUp} />
       </div>
     </div>
   );
