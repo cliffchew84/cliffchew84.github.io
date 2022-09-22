@@ -4,9 +4,7 @@ export const Philosophy = (props) => {
       <div className='container'>
         <div className='section-title'>
           <h2>Teaching Philosophy</h2>
-          <p>
-            This is our Teaching Philosophy
-          </p>
+          {/* <p> This is our Teaching Philosophy </p> */}
         </div>
         <div className='row'>
           {props.data
