@@ -1,8 +1,10 @@
-export const Features = (props) => {
+export const WhyCare = (props) => {
   return (
-    <div id='features' className='text-center'>
+    <div id='whycare' className='text-center'>
       <div className='container'>
         <div className='col-md-10 col-md-offset-1 section-title'>
+          <p> </p>
+          <p> </p>
           <h2>Why Should I Care?</h2>
         </div>
         <div className='row'>

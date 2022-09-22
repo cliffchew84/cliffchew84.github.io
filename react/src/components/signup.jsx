@@ -5,7 +5,7 @@ const initialState = {
   email: '',
   message: '',
 }
-export const Contact = (props) => {
+export const SignUp = (props) => {
   const [{ name, email, message }, setState] = useState(initialState)
 
   const handleChange = (e) => {
@@ -15,7 +15,7 @@ export const Contact = (props) => {
 
   return (
     <div>
-      <div id='contact'>
+      <div id='signup'>
         <div className='container'>
           <div className='col-md-8'>
             <div className='row'>
