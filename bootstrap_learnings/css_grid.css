@@ -1,0 +1,19 @@
+.main {
+    display: grid ;
+    grid-gap: 10px ;
+    grid-template-rows: 400px 400px ;
+    grid-template-columns: 400px 400px ;
+    background-color: #e4e4e4e4;
+    align-items: center;
+    justify-content: center;
+    outline: 3px dashed #f90;
+}
+
+.item {
+    display: grid;
+    align-items: center;
+    justify-content: center;
+    outline: 3px dashed #f90;
+    font-size: 30px;
+    color: #333;
+}
