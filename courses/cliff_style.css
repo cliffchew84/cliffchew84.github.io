@@ -1,29 +1,22 @@
 body {
+    background-color: #d4dfe9;
     max-height: 35rem; /* so that items wrap */
-    height: 100%;
-    min-height: 100%;
+    /* min-height: 100%;
+    height: 100%; */
 }
 
 .navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    color:#FFFFFF;
   }
-
-.holder {
-    display: grid ;
-    grid-gap: 1px ;
-    background-color: #e4e4e4e4;
-    align-items: center;
-    justify-content: center;
-    outline: 3px dashed #f90;
-}
 
 .main {
     display: flex ;
     flex-direction: column;
-    background-color: #e4e4e4e4;
-    outline: 3px dashed #f90;
+    background-color: #d4dfe9;
+    /* outline: 3px dashed #f90; */
 }
 
 .main_item {
@@ -33,17 +26,19 @@ body {
     padding-right: 6rem;
     min-height: 45rem;
     justify-content: center;
-    outline: 3px dashed #f90;
-    font-size: 30px;
+    /* outline: 3px dashed #f90; */
+    /* font-size: 30px; */
     color: #333;   
 }
 
 .item {
     display: flex;
     align-items: center;
-    min-height: 45rem;
+    /* min-height: 30rem; */
+    padding-top: 120px;
+    padding-bottom: 10px;
     justify-content: center;
-    outline: 2.5px dashed #f90;
+    /* outline: 2.5px dashed #f90; */
     font-size: 30px;
     color: #333;   
 }
@@ -53,7 +48,7 @@ body {
     align-items: center;
     padding: 2rem;
     justify-content: center;
-    outline: 3px dashed #f90;
+    /* outline: 3px dashed #f90; */
     font-size: 30px;
     color: #333;   
 }
@@ -63,7 +58,7 @@ body {
     align-items: center;
     padding: 2rem;
     justify-content: center;
-    outline: 3px dashed #f90;
+    /* outline: 3px dashed #f90; */
     font-size: 20px;
     color: #333;   
 }
@@ -83,10 +78,7 @@ body {
   }
 }
 
-body {
-    min-height: 75rem;
-    padding-top: 4.5rem;
-}
+
 html {
   font-family: "Open Sans", sans-serif;
   text-rendering: optimizeLegibility !important;
@@ -98,12 +90,6 @@ html {
 }
 h1 {
     margin-bottom: 2rem;
-}
-h2,
-h3,
-h4 {
-    padding-bottom: 1.2rem;
-    font-family: "Raleway", sans-serif;
 }
 h2 {
   text-transform: uppercase;
@@ -118,6 +104,8 @@ h3 {
   color: #333;
 }
 h4 {
+  padding-bottom: 1.2rem;
+  font-family: "Raleway", sans-serif;
   font-size: 18px;
   color: #333;
   font-weight: 600;
@@ -131,10 +119,53 @@ p {
   font-size: 15px;
 }
 
+#whycare {
+  background-color: #9bb3c9;
+  padding-bottom: 250px;
+}
+
+#whycare h2 {
+  padding-bottom: 50px;
+}
+
+#philosophy {
+  background-color: #9bb3c9;
+  padding-top: 50px;
+  padding-bottom: 150px;
+  margin-top: 60px;
+}
+
+#philosophy h3 {
+  padding-bottom: 40px;
+}
+
+#philosophy h4 {
+  padding-bottom: 25px;
+}
+
+#philosophy p {
+  padding-bottom: 40px;
+}
+
 /* Navigation */
 #course {
-    padding: 100px 0;
-  }
+  padding-bottom: 40px;
+  margin-bottom: 40px;
+}
+
+#about {
+  padding-bottom: 30px;
+  margin-bottom: 10px;
+}
+
+#about p {
+  padding-right: 140px;
+  padding-left: 140px;
+}
+
+#course h2 {
+  padding-bottom: 50px;
+}
 
 #course .about-text li {
     margin-bottom: 6px;
@@ -146,10 +177,6 @@ p {
 #course p {
     line-height: 24px;
     margin: 30px 0;    
-}
-
-#team {
-    padding: 100px 0;
 }
 
 #team h4 {
@@ -172,9 +199,8 @@ p {
 
 /* Contact Section */
 #signup {
-  padding: 100px 0 60px;
-  background: linear-gradient(to right, #6372ff 0%, #5ca9fb 100%);
-  color: rgba(255, 255, 255, 0.75);
+  background-color: #9bb3c9;
+  padding: 50px 0 60px;
 }
 #signup .section-title {
   margin-bottom: 40px;
@@ -183,7 +209,6 @@ p {
   font-size: 16px;
 }
 #signup h2 {
-  color: #fff;
   margin-top: 10px;
   margin-bottom: 15px;
   padding-bottom: 15px;
@@ -198,7 +223,6 @@ p {
   left: 30px;
 }
 #signup h3 {
-  color: #fff;
   margin-top: 80px;
   margin-bottom: 25px;
   padding-bottom: 20px;
@@ -214,7 +238,7 @@ p {
 #signup .btn-custom {
   margin: 30px 0;
   background: transparent;
-  border: 2px solid #fff;
+  border: 2px solid black;
 }
 #signup .btn-custom:hover {
   color: #1f386e;
@@ -266,7 +290,6 @@ label {
     margin: 20px 0;
 }
 #signup .contact-item span {
-  color: rgba(255, 255, 255, 1);
   margin-bottom: 10px;
   display: block;
 }
@@ -295,5 +318,4 @@ label {
 }
 #signup .social i.fa:hover {
   color: #608dfd;
-  background: #fff;
 }
