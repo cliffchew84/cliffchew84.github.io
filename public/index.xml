@@ -4,6 +4,6 @@
     <title>Site Title</title>
     <link>https://example.com/</link>
     <description>Recent content on Site Title</description>
-    <generator>Hugo -- gohugo.io</generator><atom:link href="https://example.com/index.xml" rel="self" type="application/rss+xml" />
+    <generator>Hugo -- gohugo.io</generator><atom:link href="index.xml" rel="self" type="application/rss+xml" />
   </channel>
 </rss>
