@@ -1,0 +1,9 @@
+[submodule "blog/themes/pulp"]
+	path = blog/themes/pulp
+	url = https://github.com/koirand/pulp.git
+[submodule "blog/themes/themes/pulp"]
+	path = blog/themes/themes/pulp
+	url = https://github.com/koirand/pulp.git
+[submodule "cliff_blog/themes/beautifulhugo"]
+	path = cliff_blog/themes/beautifulhugo
+	url = https://github.com/halogenica/beautifulhugo.git
