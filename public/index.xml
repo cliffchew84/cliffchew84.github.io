@@ -1,9 +1,58 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Site Title</title>
-    <link>https://example.com/</link>
-    <description>Recent content on Site Title</description>
-    <generator>Hugo -- gohugo.io</generator><atom:link href="index.xml" rel="self" type="application/rss+xml" />
+    <title>Cliff Blog</title>
+    <link>https://cliffchew84.github.io/public/</link>
+    <description>Recent content on Cliff Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <lastBuildDate>Mon, 11 Mar 2019 00:00:00 +0000</lastBuildDate><atom:link href="https://cliffchew84.github.io/public/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Markdown Syntax Guide</title>
+      <link>https://cliffchew84.github.io/public/markdown-syntax/</link>
+      <pubDate>Mon, 11 Mar 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://cliffchew84.github.io/public/markdown-syntax/</guid>
+      <description>&lt;p&gt;This article offers a sample of basic Markdown syntax that can be used in Hugo content files, also it shows whether basic HTML elements are decorated with CSS in a Hugo theme.&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Rich Content</title>
+      <link>https://cliffchew84.github.io/public/rich-content/</link>
+      <pubDate>Sun, 10 Mar 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://cliffchew84.github.io/public/rich-content/</guid>
+      <description>&lt;p&gt;Hugo ships with several &lt;a href=&#34;https://gohugo.io/content-management/shortcodes/#use-hugos-built-in-shortcodes&#34;&gt;Built-in Shortcodes&lt;/a&gt; for rich content, along with a &lt;a href=&#34;https://gohugo.io/about/hugo-and-gdpr/&#34;&gt;Privacy Config&lt;/a&gt; and a set of Simple Shortcodes that enable static and no-JS versions of various social media embeds.&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Placeholder Text</title>
+      <link>https://cliffchew84.github.io/public/placeholder-text/</link>
+      <pubDate>Sat, 09 Mar 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://cliffchew84.github.io/public/placeholder-text/</guid>
+      <description>&lt;p&gt;Lorem est tota propiore conpellat pectoribus de pectora summo.&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Math Typesetting</title>
+      <link>https://cliffchew84.github.io/public/math-typesetting/</link>
+      <pubDate>Fri, 08 Mar 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://cliffchew84.github.io/public/math-typesetting/</guid>
+      <description>In this theme we will be using MathJax 2.7
+ To enable MathJax globally set the parameter math to true in a project&amp;rsquo;s configuration To enable MathJax on a per page basis include the parameter math: true in content files  Note: Use the online reference of MathJax TeX and LaTeX Support
+Examples Inline math: $\varphi = \dfrac{1+\sqrt5}{2}= 1.6180339887…$
+Block math: $$ \varphi = 1+\frac{1} {1+\frac{1} {1+\frac{1} {1+\cdots} } } $$</description>
+    </item>
+    
+    <item>
+      <title>Emoji Support</title>
+      <link>https://cliffchew84.github.io/public/emoji-support/</link>
+      <pubDate>Tue, 05 Mar 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://cliffchew84.github.io/public/emoji-support/</guid>
+      <description>&lt;p&gt;Emoji can be enabled in a Hugo project in a number of ways.&lt;/p&gt;</description>
+    </item>
+    
   </channel>
 </rss>
