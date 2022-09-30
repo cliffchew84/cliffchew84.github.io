@@ -8,25 +8,6 @@
       <url>https://cliffchew84.github.io/public/papermod-cover.png</url>
       <link>https://cliffchew84.github.io/public/papermod-cover.png</link>
     </image>
-    <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Mon, 11 Mar 2019 00:00:00 +0000</lastBuildDate><atom:link href="https://cliffchew84.github.io/public/categories/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>syntax</title>
-      <link>https://cliffchew84.github.io/public/categories/syntax/</link>
-      <pubDate>Mon, 11 Mar 2019 00:00:00 +0000</pubDate>
-      
-      <guid>https://cliffchew84.github.io/public/categories/syntax/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>themes</title>
-      <link>https://cliffchew84.github.io/public/categories/themes/</link>
-      <pubDate>Mon, 11 Mar 2019 00:00:00 +0000</pubDate>
-      
-      <guid>https://cliffchew84.github.io/public/categories/themes/</guid>
-      <description></description>
-    </item>
-    
+    <generator>Hugo -- gohugo.io</generator><atom:link href="https://cliffchew84.github.io/public/categories/index.xml" rel="self" type="application/rss+xml" />
   </channel>
 </rss>
