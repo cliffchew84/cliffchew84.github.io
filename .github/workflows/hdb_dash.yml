@@ -1,6 +1,8 @@
 name: start_hdb_dashboard
 
 on:
+  push:
+  workflow_dispatch:
   schedule:
     - cron: "30 2 * * *"
 jobs:
@@ -17,10 +19,15 @@ jobs:
           python-version: '3.9'
           cache: 'pip'
       - name: Install dependencies 
-        run: pip installs -r requirements.txt
-      - name: Create HDB Dashboards
+        run: pip install -r requirements.txt
+      - name: Set up Google Sheets credentials
         env:
-          g_cred: ${{ secrets.G_CRED }}
+          GOOGLE_SHEETS_CREDENTIALS_BASE64: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS_BASE64 }}
+        run: |
+          echo "$GOOGLE_SHEETS_CREDENTIALS_BASE64" | base64 --decode > credentials.json
+      - name: Create HDB Dashboards
+        env: 
+          gsheet_api_email: ${{ GSHEETS_API_EMAIL }}
         run: python create_hdb_dash.py
       - name: Check for changes
         id: git-check
