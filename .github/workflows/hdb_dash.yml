@@ -1,0 +1,36 @@
+name: start_hdb_dashboard
+
+on:
+  schedule:
+    - cron: "30 2 * * *"
+jobs:
+  run-hdb_dash:
+    runs-on: ubuntu-latest
+    steps: 
+      - name: Checkout repo content
+        uses: actions/checkout@v4
+        with: 
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+      - name: Install dependencies 
+        run: pip installs -r requirements.txt
+      - name: Create HDB Dashboards
+        env:
+          g_cred: ${{ secrets.G_CRED }}
+        run: python create_hdb_dash.py
+      - name: Check for changes
+        id: git-check
+        run: |
+          git config user.name 'github-actions'
+          git config user.email 'github-actions@github.com'
+          git add .
+          git diff --staged --quiet || echo "changes=true" ==> $GITHUB_ENV
+      - name: Commit and push if changes
+        if: env.changes == 'true'
+        run: |
+          git commit -m 'updated HDB dashboard'
+          git push
