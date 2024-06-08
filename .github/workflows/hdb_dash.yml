@@ -19,7 +19,7 @@ jobs:
           python-version: '3.9'
           cache: 'pip'
       - name: Install dependencies 
-        run: pip installs -r requirements.txt
+        run: pip install -r requirements.txt
       - name: Create HDB Dashboards
         env:
           g_cred: ${{ secrets.G_CRED }}
