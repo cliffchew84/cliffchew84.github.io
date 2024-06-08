@@ -3,11 +3,12 @@
 
 # ### HDB Dashboard Creation Workflow
 
-# In[2]:
+# In[96]:
 
 
 import os
 import json
+import tempfile
 import requests
 import pygsheets
 import pandas as pd
@@ -56,13 +57,19 @@ for mth in api_periods_to_call:
 
 # ### Extract original data from Google Sheets
 
-# In[6]:
+# In[97]:
 
 
-google_auth = os.environ['gsheet_cred']
-api_email = os.environ["gsheet_api_email"]
-gc = pygsheets.authorize(service_file=google_auth)
+json_encode = os.environ['g_cred'].replace("\\\\", "\\").encode('utf-8')
 
+def _google_creds_as_file():
+    temp = tempfile.NamedTemporaryFile()
+    temp.write(json_encode)
+    temp.flush()
+    return temp
+
+creds_file = _google_creds_as_file()
+gc = pygsheets.authorize(service_account_file=creds_file.name)
 
 def open_or_create_spreadsheet(ss_name: str, print_status=True
                                ) -> pygsheets.Spreadsheet:
@@ -118,7 +125,7 @@ def open_or_create_worksheet(sheet: pygsheets.Spreadsheet,
     return ws
 
 
-# In[7]:
+# In[98]:
 
 
 sheet = open_or_create_spreadsheet("HDB")
@@ -126,7 +133,7 @@ sheet = open_or_create_spreadsheet("HDB")
 
 # #### Extract data from Google Sheets 
 
-# In[87]:
+# In[99]:
 
 
 df_list = list()
@@ -137,28 +144,26 @@ for wk in ['2013-2018', '2019-2023', '2024']:
     df_list.append(df_tmp)
 
 
-# In[88]:
+# In[100]:
 
 
 df = pd.concat(df_list)
 df.shape
 
 
-# In[91]:
+# In[102]:
 
-
-# Create year for filtering later on
-df['year'] = [i.split('-')[0] for i in df['month']]
-df = df[df['year'] != '2012']
-df.sort_values("month", inplace=True)
 
 # Rm last 2 months data from df
 df = df[~df.month.isin(api_periods_to_call)]
+print(df.shape)
 
 # Add updated data into df
-latest_df['year'] = [i.split('-')[0] for i in latest_df['month']]
 df = pd.concat([df, latest_df])
-df.sort_values('month', inplace=True)
+
+# Create year for filtering later on
+df['year'] = [i.split('-')[0] for i in df['month']]
+df = df.sort_values('month').reset_index(drop=True)
 df.shape
 
 
