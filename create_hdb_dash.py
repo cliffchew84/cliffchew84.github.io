@@ -57,7 +57,7 @@ for mth in api_periods_to_call:
 
 # ### Extract original data from Google Sheets
 
-# In[97]:
+# In[ ]:
 
 
 json_encode = os.environ['g_cred'].replace("\\\\", "\\").encode('utf-8')
@@ -70,6 +70,18 @@ def _google_creds_as_file():
 
 creds_file = _google_creds_as_file()
 gc = pygsheets.authorize(service_account_file=creds_file.name)
+
+
+# In[ ]:
+
+
+# google_auth = os.environ['gsheet_cred']
+# api_email = os.environ["gsheet_api_email"]
+# gc = pygsheets.authorize(service_file=google_auth)
+
+
+# In[97]:
+
 
 def open_or_create_spreadsheet(ss_name: str, print_status=True
                                ) -> pygsheets.Spreadsheet:
