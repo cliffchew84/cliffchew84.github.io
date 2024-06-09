@@ -164,7 +164,7 @@ fig.update_layout(
     showlegend=False,
 )
 
-fig.write_html("profile/assets/charts/qtr_boxplot.html")
+fig.write_html("qtr_boxplot.html")
 # fig.show()
 
 
@@ -186,7 +186,7 @@ fig.update_layout(
     showlegend=False,
 )
 
-fig.write_html("profile/assets/charts/mth_boxplot.html")
+fig.write_html("mth_boxplot.html")
 # fig.show()
 
 
@@ -245,7 +245,7 @@ fig.update_yaxes(title_text="Total Sales", secondary_y=True)
 fig.add_hline(y=1, line_width=1.5, line_dash="dash", line_color="black")
 fig.add_hline(y=1.5, line_width=1.5, line_dash="dash", line_color="red")
 
-fig.write_html("profile/assets/charts/qtr_barline_chart.html")
+fig.write_html("qtr_barline_chart.html")
 # fig.show()
 
 
@@ -301,7 +301,7 @@ fig.update_yaxes(title_text="Total Sales", secondary_y=True)
 fig.add_hline(y=1, line_width=1.5, line_dash="dash", line_color="black")
 fig.add_hline(y=1.5, line_width=1.5, line_dash="dash", line_color="red")
 
-fig.write_html("profile/assets/charts/mth_barline_chart.html")
+fig.write_html("mth_barline_chart.html")
 # fig.show()
 
 
@@ -338,7 +338,7 @@ fig.update_layout(
         x=1
 ))
 
-fig.write_html("profile/assets/charts/qtr_stack_bar_values.html")
+fig.write_html("qtr_stack_bar_values.html")
 # fig.show()
 
 
@@ -367,7 +367,7 @@ fig.update_layout(
     legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
 )
 
-fig.write_html("profile/assets/charts/mth_stack_bar_values.html")
+fig.write_html("mth_stack_bar_values.html")
 # fig.show()
 
 
@@ -402,7 +402,7 @@ fig.update_layout(
     legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
 )
 
-fig.write_html("profile/assets/charts/qtr_stack_bar_percent.html")
+fig.write_html("qtr_stack_bar_percent.html")
 # fig.show()
 
 
