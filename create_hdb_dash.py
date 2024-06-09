@@ -60,22 +60,24 @@ for mth in api_periods_to_call:
 # In[ ]:
 
 
-try:
-    json_encode = os.environ['g_cred'].replace("\\\\", "\\").encode('utf-8')
+json_encode = os.environ['g_cred'].replace("\\\\", "\\").encode('utf-8')
 
-    def _google_creds_as_file():
-        temp = tempfile.NamedTemporaryFile()
-        temp.write(json_encode)
-        temp.flush()
-        return temp
+def _google_creds_as_file():
+    temp = tempfile.NamedTemporaryFile()
+    temp.write(json_encode)
+    temp.flush()
+    return temp
 
-    creds_file = _google_creds_as_file()
-    gc = pygsheets.authorize(service_account_file=creds_file.name)
+creds_file = _google_creds_as_file()
+gc = pygsheets.authorize(service_account_file=creds_file.name)
 
-except:
-    google_auth = os.environ['gsheet_cred']
-    api_email = os.environ["gsheet_api_email"]
-    gc = pygsheets.authorize(service_file=google_auth)
+
+# In[ ]:
+
+
+# google_auth = os.environ['gsheet_cred']
+# api_email = os.environ["gsheet_api_email"]
+# gc = pygsheets.authorize(service_file=google_auth)
 
 
 # In[97]:
