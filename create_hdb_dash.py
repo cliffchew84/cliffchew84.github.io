@@ -364,4 +364,4 @@ fig.update_layout(
                 y=1.02, xanchor="right", x=1)
 )
 
-fig.write_html("profile/assets/charts/mth_stack_bar_percent.html")
+fig.write_html("mth_stack_bar_percent.html")
