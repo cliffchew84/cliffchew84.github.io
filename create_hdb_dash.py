@@ -13,7 +13,6 @@ import pandas as pd
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import plotly.graph_objects as go
-from tqdm import tqdm_notebook as tqdm
 
 
 # In[2]:
@@ -24,7 +23,7 @@ os.getcwd()
 
 # #### Setting up dates for data extraction 
 
-# In[ ]:
+# In[3]:
 
 
 mths_2012_14 = list()
@@ -58,14 +57,14 @@ mth_filter = mths_2017_onwards.index('2024-06')
 mths_2017_onwards = mths_2017_onwards[:mth_filter+1]
 
 
-# In[ ]:
+# In[4]:
 
 
 df_cols = ['month', 'town', 'floor_area_sqm', 'flat_type', 'lease_commence_date', 'resale_price' ]
 param_fields = ",".join(df_cols)
 
 
-# In[ ]:
+# In[5]:
 
 
 mth_2012_2014 = "?resource_id=d_2d5ff9ea31397b66239f245f57751537"
@@ -73,7 +72,7 @@ base_url = "https://data.gov.sg/api/action/datastore_search"
 url = base_url + mth_2012_2014
 
 latest_df = pd.DataFrame()
-for mth in tqdm(mths_2012_14):
+for mth in mths_2012_14:
     params = {
         "fields": param_fields,
         "filters": json.dumps({'month': mth}),
@@ -84,14 +83,14 @@ for mth in tqdm(mths_2012_14):
     latest_df = pd.concat([latest_df, mth_df], axis=0)
 
 
-# In[ ]:
+# In[6]:
 
 
 mth_2015_2016 = "?resource_id=d_ea9ed51da2787afaf8e51f827c304208"
 base_url = "https://data.gov.sg/api/action/datastore_search"
 url = base_url + mth_2015_2016
 
-for mth in tqdm(mths_2015_16):
+for mth in mths_2015_16:
     params = {
         "fields": param_fields,
         "filters": json.dumps({'month': mth}),
@@ -102,14 +101,14 @@ for mth in tqdm(mths_2015_16):
     latest_df = pd.concat([latest_df, mth_df], axis=0)
 
 
-# In[ ]:
+# In[7]:
 
 
 mth_2017 = "?resource_id=d_8b84c4ee58e3cfc0ece0d773c8ca6abc"
 base_url = "https://data.gov.sg/api/action/datastore_search"
 url = base_url + mth_2017
 
-for mth in tqdm(mths_2017_onwards):
+for mth in mths_2017_onwards:
     params = {
         "fields": param_fields,
         "filters": json.dumps({'month': mth}),
@@ -122,7 +121,7 @@ for mth in tqdm(mths_2017_onwards):
 
 # ### Data Processing for creating charts 
 
-# In[ ]:
+# In[8]:
 
 
 df = latest_df.copy()
@@ -149,7 +148,7 @@ chart_height = 600
 # ### Home price distributions
 # #### [Back to My Graphs](#My-Graphs)
 
-# In[ ]:
+# In[9]:
 
 
 period = 'yr_q'
@@ -169,7 +168,7 @@ fig.write_html("profile/assets/charts/qtr_boxplot.html")
 # fig.show()
 
 
-# In[ ]:
+# In[10]:
 
 
 period = 'month'
@@ -194,7 +193,7 @@ fig.write_html("profile/assets/charts/mth_boxplot.html")
 # ### Advanced Million Dollar Homes
 # #### [Back to My Graphs](#My-Graphs)
 
-# In[ ]:
+# In[11]:
 
 
 period = 'yr_q'
@@ -211,7 +210,7 @@ cal_mil_ts = cal_[cal_[period] != 'All'].reset_index(drop=True)
 cal_mil_ts.columns = [period, '0', 'million $ Trans', 'Total Trans', '% million Trans']
 
 
-# In[ ]:
+# In[12]:
 
 
 from plotly.subplots import make_subplots
@@ -250,7 +249,7 @@ fig.write_html("profile/assets/charts/qtr_barline_chart.html")
 # fig.show()
 
 
-# In[ ]:
+# In[13]:
 
 
 period = 'month'
@@ -267,7 +266,7 @@ cal_mil_ts = cal_[cal_[period] != 'All'].reset_index(drop=True)
 cal_mil_ts.columns = [period, '0', 'million $ Trans', 'Total Trans', '% million Trans']
 
 
-# In[ ]:
+# In[14]:
 
 
 from plotly.subplots import make_subplots
@@ -309,7 +308,7 @@ fig.write_html("profile/assets/charts/mth_barline_chart.html")
 # ### Stacked Bar Values
 # #### [Back to My Graphs](#My-Graphs)
 
-# In[ ]:
+# In[15]:
 
 
 period = 'yr_q'
@@ -343,7 +342,7 @@ fig.write_html("profile/assets/charts/qtr_stack_bar_values.html")
 # fig.show()
 
 
-# In[ ]:
+# In[16]:
 
 
 period = 'month'
@@ -375,7 +374,7 @@ fig.write_html("profile/assets/charts/mth_stack_bar_values.html")
 # ### Stacked Bar Percentage
 # #### [Back to My Graphs](#My-Graphs)
 
-# In[ ]:
+# In[17]:
 
 
 period = 'yr_q'
@@ -407,7 +406,7 @@ fig.write_html("profile/assets/charts/qtr_stack_bar_percent.html")
 # fig.show()
 
 
-# In[ ]:
+# In[18]:
 
 
 period = 'month'
