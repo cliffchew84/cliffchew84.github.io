@@ -28,6 +28,7 @@ jobs:
       - name: Create HDB Dashboards
         env: 
           gsheet_api_email: ${{ secrets.GSHEETS_API_EMAIL }}
+          g_cred: ${{ secrets.G_CRED }}
         run: python create_hdb_dash.py
       - name: Check for changes
         id: git-check
