@@ -3,215 +3,129 @@
 
 # ### HDB Dashboard Creation Workflow
 
-# In[96]:
+# In[1]:
 
 
 import os
 import json
-import tempfile
 import requests
-import pygsheets
 import pandas as pd
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import plotly.graph_objects as go
+from tqdm import tqdm_notebook as tqdm
 
 
-# ### Set up period to make API calls for - This month + last month
-
-# In[3]:
+# In[2]:
 
 
-current_date = datetime.today()
-current_yr_mth = current_date.strftime('%Y-%m')
-previous_yr_mth = (current_date - relativedelta(months=1)).strftime('%Y-%m')
-api_periods_to_call = [current_yr_mth, previous_yr_mth]
+os.getcwd()
 
 
-# #### Make API calls to Data.gov.sg to update data
+# #### Setting up dates for data extraction 
 
-# In[4]:
+# In[ ]:
+
+
+mths_2012_14 = list()
+year = range(2013, 2015, 1)
+months = range(1, 13, 1)
+
+for yr in year:
+    for month in months:
+        month = str(month).zfill(2) 
+        mths_2012_14.append(f"{yr}-{month}")
+        
+mths_2015_16 = list()
+year = range(2015, 2017, 1)
+months = range(1, 13, 1)
+
+for yr in year:
+    for month in months:
+        month = str(month).zfill(2) 
+        mths_2015_16.append(f"{yr}-{month}")
+        
+mths_2017_onwards = list()
+year = range(2017, 2030, 1)
+months = range(1, 13, 1)
+
+for yr in year:
+    for month in months:
+        month = str(month).zfill(2) 
+        mths_2017_onwards.append(f"{yr}-{month}")
+
+mth_filter = mths_2017_onwards.index('2024-06')
+mths_2017_onwards = mths_2017_onwards[:mth_filter+1]
+
+
+# In[ ]:
 
 
 df_cols = ['month', 'town', 'floor_area_sqm', 'flat_type', 'lease_commence_date', 'resale_price' ]
 param_fields = ",".join(df_cols)
 
 
-# In[5]:
+# In[ ]:
 
 
+mth_2012_2014 = "?resource_id=d_2d5ff9ea31397b66239f245f57751537"
 base_url = "https://data.gov.sg/api/action/datastore_search"
-url = base_url + "?resource_id=d_8b84c4ee58e3cfc0ece0d773c8ca6abc"
+url = base_url + mth_2012_2014
 
 latest_df = pd.DataFrame()
-for mth in api_periods_to_call:
+for mth in tqdm(mths_2012_14):
     params = {
         "fields": param_fields,
         "filters": json.dumps({'month': mth}),
         "limit": 10000
     }
     response = requests.get(url, params=params)
-    mth_df = pd.DataFrame(response.json().get("result").get("records"))
+    mth_df = pd.DataFrame(response.json().get("result").get("records"))  
     latest_df = pd.concat([latest_df, mth_df], axis=0)
 
 
-# ### Extract original data from Google Sheets
+# In[ ]:
+
+
+mth_2015_2016 = "?resource_id=d_ea9ed51da2787afaf8e51f827c304208"
+base_url = "https://data.gov.sg/api/action/datastore_search"
+url = base_url + mth_2015_2016
+
+for mth in tqdm(mths_2015_16):
+    params = {
+        "fields": param_fields,
+        "filters": json.dumps({'month': mth}),
+        "limit": 10000
+    }
+    response = requests.get(url, params=params)
+    mth_df = pd.DataFrame(response.json().get("result").get("records"))  
+    latest_df = pd.concat([latest_df, mth_df], axis=0)
+
 
 # In[ ]:
 
 
-json_encode = os.environ['g_cred'].replace("\\\\", "\\").encode('utf-8')
+mth_2017 = "?resource_id=d_8b84c4ee58e3cfc0ece0d773c8ca6abc"
+base_url = "https://data.gov.sg/api/action/datastore_search"
+url = base_url + mth_2017
 
-def _google_creds_as_file():
-    temp = tempfile.NamedTemporaryFile()
-    temp.write(json_encode)
-    temp.flush()
-    return temp
-
-creds_file = _google_creds_as_file()
-gc = pygsheets.authorize(service_account_file=creds_file.name)
-
-
-# In[ ]:
-
-
-# google_auth = os.environ['gsheet_cred']
-# api_email = os.environ["gsheet_api_email"]
-# gc = pygsheets.authorize(service_file=google_auth)
-
-
-# In[97]:
-
-
-def open_or_create_spreadsheet(ss_name: str, print_status=True
-                               ) -> pygsheets.Spreadsheet:
-    """
-    Opens Spreadsheet by name.
-    If Spreadsheet doesn't exist, create it.
-    """
-    try:
-        if print_status:
-            print("Accessing {}".format(ss_name))
-        sheet = gc.open(ss_name)
-
-    except Exception:
-        if print_status:
-            print("{} doesn't exist.\nCreating it now".format(ss_name))
-
-        # Create new spreadsheet
-        gc.sheet.create(ss_name)
-        sheet = gc.open(ss_name)
-
-        # Share my API email and personal email
-        sheet.share(api_email, role='writer', type='user')
-        sheet.share('cliffchew84@gmail.com', role='writer', type='user')
-
-        # Share to all for reading
-        sheet.share('', role='reader', type='anyone')
-
-    print(f"Spreadsheet link: {sheet.url}")
-    return sheet
-
-
-def open_or_create_worksheet(sheet: pygsheets.Spreadsheet,
-                             ws_name: str,
-                             print_status=True
-                             ) -> pygsheets.Worksheet:
-    """
-    Tries to open a Google Worksheet by name.
-    If the worksheet doesn't exist, create it.
-    """
-    try:
-        sheet.add_worksheet(ws_name, rows=10000, cols=26)
-        if print_status:
-            print("{} doesn't exist.\nCreating it now.\n".format(ws_name))
-
-    except Exception:
-        if print_status:
-            print("Accessing {} Worksheet".format(ws_name))
-
-    ws = sheet.worksheet_by_title(ws_name)
-    if print_status:
-        print(f"Spreadsheet link: {sheet.url}")
-
-    return ws
-
-
-# In[98]:
-
-
-sheet = open_or_create_spreadsheet("HDB")
-
-
-# #### Extract data from Google Sheets 
-
-# In[99]:
-
-
-df_list = list()
-
-for wk in ['2013-2018', '2019-2023', '2024']:
-    ws = open_or_create_worksheet(sheet, wk)
-    df_tmp = ws.get_as_df()
-    df_list.append(df_tmp)
-
-
-# In[100]:
-
-
-df = pd.concat(df_list)
-df.shape
-
-
-# In[102]:
-
-
-# Rm last 2 months data from df
-df = df[~df.month.isin(api_periods_to_call)]
-print(df.shape)
-
-# Add updated data into df
-df = pd.concat([df, latest_df])
-
-# Create year for filtering later on
-df['year'] = [i.split('-')[0] for i in df['month']]
-df = df.sort_values('month').reset_index(drop=True)
-df.shape
-
-
-# ### Clear Latest Google Sheets table
-
-# In[92]:
-
-
-ws = open_or_create_worksheet(sheet, '2024')
-rows = ws.rows
-cols = ws.cols
-
-end_cell = pygsheets.utils.format_addr((rows, cols))
-end_cell
-
-# Clear all information in the worksheet by specifying the entire range
-ws.clear(start='A1', end=end_cell)
-
-
-# ### Load updated data into Google Sheets 
-
-# In[93]:
-
-
-df_tmp = df[df['year'] == '2024']
-del df_tmp['year']
-
-ws = open_or_create_worksheet(sheet, '2024')
-ws.set_dataframe(df_tmp, (1,1))
+for mth in tqdm(mths_2017_onwards):
+    params = {
+        "fields": param_fields,
+        "filters": json.dumps({'month': mth}),
+        "limit": 10000
+    }
+    response = requests.get(url, params=params)
+    mth_df = pd.DataFrame(response.json().get("result").get("records"))   
+    latest_df = pd.concat([latest_df, mth_df], axis=0)
 
 
 # ### Data Processing for creating charts 
 
-# In[21]:
+# In[ ]:
 
 
+df = latest_df.copy()
 df['yr_q'] = [str(i) for i in pd.to_datetime(df['month']).dt.to_period('Q')]
 df['count'] = 1
 df.rename(columns={'resale_price':'price'}, inplace=True)
@@ -235,7 +149,7 @@ chart_height = 600
 # ### Home price distributions
 # #### [Back to My Graphs](#My-Graphs)
 
-# In[32]:
+# In[ ]:
 
 
 period = 'yr_q'
@@ -255,7 +169,7 @@ fig.write_html("profile/assets/charts/qtr_boxplot.html")
 # fig.show()
 
 
-# In[33]:
+# In[ ]:
 
 
 period = 'month'
@@ -280,7 +194,7 @@ fig.write_html("profile/assets/charts/mth_boxplot.html")
 # ### Advanced Million Dollar Homes
 # #### [Back to My Graphs](#My-Graphs)
 
-# In[42]:
+# In[ ]:
 
 
 period = 'yr_q'
@@ -297,7 +211,7 @@ cal_mil_ts = cal_[cal_[period] != 'All'].reset_index(drop=True)
 cal_mil_ts.columns = [period, '0', 'million $ Trans', 'Total Trans', '% million Trans']
 
 
-# In[35]:
+# In[ ]:
 
 
 from plotly.subplots import make_subplots
@@ -336,7 +250,7 @@ fig.write_html("profile/assets/charts/qtr_barline_chart.html")
 # fig.show()
 
 
-# In[36]:
+# In[ ]:
 
 
 period = 'month'
@@ -353,7 +267,7 @@ cal_mil_ts = cal_[cal_[period] != 'All'].reset_index(drop=True)
 cal_mil_ts.columns = [period, '0', 'million $ Trans', 'Total Trans', '% million Trans']
 
 
-# In[37]:
+# In[ ]:
 
 
 from plotly.subplots import make_subplots
@@ -395,7 +309,7 @@ fig.write_html("profile/assets/charts/mth_barline_chart.html")
 # ### Stacked Bar Values
 # #### [Back to My Graphs](#My-Graphs)
 
-# In[38]:
+# In[ ]:
 
 
 period = 'yr_q'
@@ -429,7 +343,7 @@ fig.write_html("profile/assets/charts/qtr_stack_bar_values.html")
 # fig.show()
 
 
-# In[39]:
+# In[ ]:
 
 
 period = 'month'
@@ -461,7 +375,7 @@ fig.write_html("profile/assets/charts/mth_stack_bar_values.html")
 # ### Stacked Bar Percentage
 # #### [Back to My Graphs](#My-Graphs)
 
-# In[40]:
+# In[ ]:
 
 
 period = 'yr_q'
@@ -493,7 +407,7 @@ fig.write_html("profile/assets/charts/qtr_stack_bar_percent.html")
 # fig.show()
 
 
-# In[41]:
+# In[ ]:
 
 
 period = 'month'
