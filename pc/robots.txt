@@ -1,3 +1,0 @@
-User-agent: *
-Disallow:
-Sitemap: https://cliffchew84.github.io/public/sitemap.xml
