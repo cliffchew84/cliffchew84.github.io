@@ -1,7 +1,7 @@
 name: start_hdb_dashboard
 
 on:
-  push:
+  # push:
   workflow_dispatch:
   schedule:
     - cron: "30 2 * * *"
