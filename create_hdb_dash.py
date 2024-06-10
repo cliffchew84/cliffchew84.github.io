@@ -158,8 +158,7 @@ cal_mil_ts.columns = [period, '0', 'million $ Trans',
 
 fig = make_subplots(specs=[[{"secondary_y": True}]])
 
-title = f"""By Quarters - Percentage and Total Million Dollar Homes Sold
-            <br>{note}"""
+title = f"By Quarters - Percentage & Total Million Dollar Homes Sold<br>{note}"
 fig.add_trace(go.Scatter(
     x=cal_mil_ts[period],
     y=cal_mil_ts['% million Trans'],
@@ -210,8 +209,7 @@ cal_mil_ts.columns = [period, '0', 'million $ Trans',
 
 fig = make_subplots(specs=[[{"secondary_y": True}]])
 
-title = f"""By Months - Percentage and Total Million Dollar Homes Sold
-            <br>{note}"""
+title = f"By Months - Percentage & Total Million Dollar Homes Sold <br>{note}"
 
 fig.add_trace(go.Scatter(
     x=cal_mil_ts[period],
@@ -227,16 +225,6 @@ fig.add_trace(go.Bar(
     name="Total Sales"),
     secondary_y=True)
 
-fig.add_annotation(
-    showarrow=False,
-    text=note,
-    font=dict(size=10),
-    xref='x domain',
-    x=0.5,
-    yref='y domain',
-    y=-0.5
-)
-
 fig.update_layout(
     title=title,
     hovermode="x unified",
@@ -246,13 +234,12 @@ fig.update_layout(
                 y=1.02, xanchor="right", x=1)
 )
 
-fig.update_yaxes(
-    title_text="% Million Dollar Homes to Overall Sales", secondary_y=False)
+fig.update_yaxes(title_text="% Million Dollar Homes / Total Sales",
+                 secondary_y=False)
 fig.update_yaxes(title_text="Total Sales", secondary_y=True)
 
 fig.add_hline(y=1, line_width=1.5, line_dash="dash", line_color="black")
 fig.add_hline(y=1.5, line_width=1.5, line_dash="dash", line_color="red")
-
 fig.write_html("profile/assets/charts/mth_barline_chart.html")
 
 # ### Stacked Bar Values
@@ -276,8 +263,8 @@ fig.update_layout(
     xaxis={'title': 'Quarters'},
     yaxis={'title': 'Count'},
     hovermode="x unified",
-    title=f"""By Quarters - Total Public Home Sales by Price Category from
-              2013<br>{note}""",
+    title=f"""By Quarters - Total Public Home Sales by Price Category from 2013
+    <br>{note}""",
     width=chart_width, height=chart_height,
     legend=dict(
         orientation="h",
@@ -310,7 +297,7 @@ fig.update_layout(
     yaxis={'title': 'Count'},
     hovermode="x unified",
     title=f"""By Months - Total Public Home Sales by Price Category from 2020
-            <br>{note}""",
+    <br>{note}""",
     width=chart_width, height=chart_height,
     legend=dict(orientation="h", yanchor="bottom",
                 y=1.02, xanchor="right", x=1)
@@ -341,8 +328,8 @@ for i in final_plot.price_grp.drop_duplicates().tolist():
 fig.add_hline(y=50, line_width=1.5, line_dash="dash", line_color="purple")
 fig.update_layout(
     barmode='stack',
-    title=f"""By Quarters - % of Public Home Sales by Price Category
-                from 2013<br>{note}""",
+    title=f"""By Quarters - % of Public Home Sales by Price Category from 2013
+    <br>{note}""",
     xaxis={'title': 'Quarters'},
     yaxis={'title': '%'},
     hovermode="x unified",
