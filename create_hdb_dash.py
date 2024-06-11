@@ -377,5 +377,5 @@ fig.write_html("profile/assets/charts/mth_stack_bar_percent.html")
 
 # Update time of code run
 f = open("run_data.txt", "w")
-f.write(today)
+f.write(datetime.today())
 f.close()
