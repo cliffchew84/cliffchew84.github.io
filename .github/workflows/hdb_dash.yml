@@ -28,9 +28,5 @@ jobs:
           git config user.name 'github-actions'
           git config user.email 'github-actions@github.com'
           git add .
-          git diff --staged --quiet || echo "changes=true" ==> $GITHUB_ENV
-      - name: Commit and push if changes
-        if: env.changes == 'true'
-        run: |
           git commit -m 'updated HDB dashboard'
           git push
