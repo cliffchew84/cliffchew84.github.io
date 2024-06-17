@@ -87,7 +87,7 @@ for mth in mths_2017_onwards:
     latest_df = pd.concat([latest_df, mth_df], axis=0)
 
 
-# ### Data Processing for creating charts
+# Data Processing for creating charts
 df = latest_df.copy()
 df['yr_q'] = [str(i) for i in pd.to_datetime(df['month']).dt.to_period('Q')]
 df['count'] = 1
@@ -112,8 +112,7 @@ for p in df[period].drop_duplicates():
     fig.add_trace(go.Box(y=df[df[period] == p].price, name=str(p)))
 
 fig.update_layout(
-    title=f"""By Quarters - Public Home Price Distributions
-             From 2013<br>{note}""",
+    title=f"Quarters - Public Home Price Distributions<br>{note}",
     yaxis={"title": "Home Prices"},
     xaxis={"title": "Quarters"},
     width=chart_width, height=chart_height,
@@ -130,7 +129,7 @@ for p in mth_df[period].drop_duplicates():
     fig.add_trace(go.Box(y=mth_df[mth_df[period] == p].price, name=str(p)))
 
 fig.update_layout(
-    title=f'By Months - Public Home Price Distributions From 2020<br>{note}',
+    title=f'Months - Public Home Price Distributions<br>{note}',
     yaxis={"title": "Home Prices"},
     xaxis={"title": "Months"},
     width=chart_width, height=chart_height,
@@ -139,7 +138,7 @@ fig.update_layout(
 
 fig.write_html("profile/assets/charts/mth_boxplot.html")
 
-# ### Advanced Million Dollar Homes
+# Advanced Million Dollar Homes
 period = 'yr_q'
 df['mil'] = [1 if i >= 1000000 else 0 for i in df['price']]
 for_plot = df.groupby([period, 'mil'])[
@@ -158,7 +157,7 @@ cal_mil_ts.columns = [period, '0', 'million $ Trans',
 
 fig = make_subplots(specs=[[{"secondary_y": True}]])
 
-title = f"By Quarters - Percentage & Total Million Dollar Homes Sold<br>{note}"
+title = f"Quarters - % of Million Dollar Homes & Total Homes Sold<br>{note}"
 fig.add_trace(go.Scatter(
     x=cal_mil_ts[period],
     y=cal_mil_ts['% million Trans'],
@@ -182,8 +181,8 @@ fig.update_layout(
                 y=1.02, xanchor="right", x=1)
 )
 
-fig.update_yaxes(
-    title_text="% Million Dollar Homes to Overall Sales", secondary_y=False)
+fig.update_yaxes(title_text="Million Dollar Homes / Total Home Sales (%)",
+                 secondary_y=False)
 fig.update_yaxes(title_text="Total Sales", secondary_y=True)
 
 fig.add_hline(y=1, line_width=1.5, line_dash="dash", line_color="black")
@@ -209,8 +208,7 @@ cal_mil_ts.columns = [period, '0', 'million $ Trans',
 
 fig = make_subplots(specs=[[{"secondary_y": True}]])
 
-title = f"By Months - Percentage & Total Million Dollar Homes Sold <br>{note}"
-
+title = f"Months - % of Million Dollar Homes & Total Homes Sold<br>{note}"
 fig.add_trace(go.Scatter(
     x=cal_mil_ts[period],
     y=cal_mil_ts['% million Trans'],
@@ -234,7 +232,7 @@ fig.update_layout(
                 y=1.02, xanchor="right", x=1)
 )
 
-fig.update_yaxes(title_text="% Million Dollar Homes / Total Sales",
+fig.update_yaxes(title_text="Million Dollar Homes / Total Home Sales (%)",
                  secondary_y=False)
 fig.update_yaxes(title_text="Total Sales", secondary_y=True)
 
@@ -263,8 +261,7 @@ fig.update_layout(
     xaxis={'title': 'Quarters'},
     yaxis={'title': 'Count'},
     hovermode="x unified",
-    title=f"""By Quarters - Total Public Home Sales by Price Category from 2013
-    <br>{note}""",
+    title=f"Quarters - Total Public Home Sales by Price Category<br>{note}",
     width=chart_width, height=chart_height,
     legend=dict(
         orientation="h",
@@ -296,8 +293,7 @@ fig.update_layout(
     xaxis={'title': 'Months'},
     yaxis={'title': 'Count'},
     hovermode="x unified",
-    title=f"""By Months - Total Public Home Sales by Price Category from 2020
-    <br>{note}""",
+    title=f"Months - Total Public Home Sales by Price Category<br>{note}",
     width=chart_width, height=chart_height,
     legend=dict(orientation="h", yanchor="bottom",
                 y=1.02, xanchor="right", x=1)
@@ -305,7 +301,7 @@ fig.update_layout(
 
 fig.write_html("profile/assets/charts/mth_stack_bar_values.html")
 
-# ### Stacked Bar Percentage
+# Stacked Bar Percentage
 period = 'yr_q'
 price_grp_base = df.groupby(period)['count'].sum().reset_index()
 price_grp_plots = df.groupby([period, 'price_grp'])[
@@ -328,8 +324,7 @@ for i in final_plot.price_grp.drop_duplicates().tolist():
 fig.add_hline(y=50, line_width=1.5, line_dash="dash", line_color="purple")
 fig.update_layout(
     barmode='stack',
-    title=f"""By Quarters - % of Public Home Sales by Price Category from 2013
-    <br>{note}""",
+    title=f"Quarters - % of Public Home Sales by Price Category<br>{note}",
     xaxis={'title': 'Quarters'},
     yaxis={'title': '%'},
     hovermode="x unified",
@@ -363,8 +358,7 @@ for i in final_plot.price_grp.drop_duplicates().tolist():
 fig.add_hline(y=50, line_width=1.5, line_dash="dash", line_color="purple")
 fig.update_layout(
     barmode='stack',
-    title=f"""By Months - % of Public Home Sales by Price Category from
-            2013<br>{note}""",
+    title=f"Months - % of Public Home Sales by Price Category<br>{note}",
     xaxis={'title': 'Months'},
     yaxis={'title': '%'},
     hovermode="x unified",
