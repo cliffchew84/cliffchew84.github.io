@@ -109,7 +109,13 @@ note = f'Updated on {today}'
 period = 'yr_q'
 fig = go.Figure()
 for p in df[period].drop_duplicates():
-    fig.add_trace(go.Box(y=df[df[period] == p].price, name=str(p)))
+    fig.add_trace(go.Box(
+        y=df[df[period] == p].price,
+        name=str(p),
+        boxpoints='outliers',
+        marker_color='rgb(8,81,156)',
+        line_color='rgb(8,81,156)'
+    ))
 
 fig.update_layout(
     title=f"Quarters - Public Home Price Distributions<br>{note}",
@@ -126,7 +132,13 @@ fig = go.Figure()
 
 mth_df = df[df.yr_q >= '2020Q1']
 for p in mth_df[period].drop_duplicates():
-    fig.add_trace(go.Box(y=mth_df[mth_df[period] == p].price, name=str(p)))
+    fig.add_trace(go.Box(
+        y=df[df[period] == p].price,
+        name=str(p),
+        boxpoints='outliers',
+        marker_color='rgb(8,81,156)',
+        line_color='rgb(8,81,156)'
+    ))
 
 fig.update_layout(
     title=f'Months - Public Home Price Distributions<br>{note}',
@@ -143,8 +155,8 @@ period = 'yr_q'
 df['mil'] = [1 if i >= 1000000 else 0 for i in df['price']]
 for_plot = df.groupby([period, 'mil'])[
     'town'].count().reset_index().sort_values(period)
-cal_ = for_plot.pivot_table(index=period, values='town', columns='mil',
-                            margins=True,
+cal_ = for_plot.pivot_table(index=period, values='town',
+                            columns='mil', margins=True,
                             aggfunc="sum").reset_index().fillna(0)
 
 for i in [0, 1, 'All']:
@@ -194,8 +206,8 @@ period = 'month'
 df['mil'] = [1 if i >= 1000000 else 0 for i in df['price']]
 for_plot = df[df.yr_q >= '2020Q1'].groupby(
     [period, 'mil'])['town'].count().reset_index().sort_values(period)
-cal_ = for_plot.pivot_table(index=period, values='town', columns='mil',
-                            margins=True,
+cal_ = for_plot.pivot_table(index=period, values='town',
+                            columns='mil', margins=True,
                             aggfunc="sum").reset_index().fillna(0)
 
 for i in [0, 1, 'All']:
@@ -242,19 +254,16 @@ fig.write_html("profile/assets/charts/mth_barline_chart.html")
 
 # ### Stacked Bar Values
 period = 'yr_q'
-price_grp_plots = df.groupby([period, 'price_grp'])[
-    'count'].sum().reset_index()
+pg_plots = df.groupby([period, 'price_grp'])['count'].sum().reset_index()
 
 fig = go.Figure()
 data = list()
-for i in price_grp_plots.price_grp.drop_duplicates().tolist():
+for i in pg_plots.price_grp.drop_duplicates().tolist():
     fig.add_trace(
-        go.Bar(
-            name=i,
-            x=price_grp_plots[price_grp_plots.price_grp == i][period].tolist(),
-            y=price_grp_plots[price_grp_plots.price_grp == i]['count'].tolist()
-        )
-    )
+        go.Bar(name=i,
+               x=pg_plots[pg_plots.price_grp == i][period].tolist(),
+               y=pg_plots[pg_plots.price_grp == i]['count'].tolist()
+               ))
 
 fig.update_layout(
     barmode='stack',
@@ -263,30 +272,24 @@ fig.update_layout(
     hovermode="x unified",
     title=f"Quarters - Total Public Home Sales by Price Category<br>{note}",
     width=chart_width, height=chart_height,
-    legend=dict(
-        orientation="h",
-        yanchor="bottom",
-        y=1.02,
-        xanchor="right",
-        x=1
-    ))
+    legend=dict(orientation="h", yanchor="bottom", y=1.02,
+                xanchor="right", x=1
+                ))
 
 fig.write_html("profile/assets/charts/qtr_stack_bar_values.html")
 
 period = 'month'
-price_grp_plots = df[df.yr_q >= '2020Q1'].groupby(
+pg_plots = df[df.yr_q >= '2020Q1'].groupby(
     [period, 'price_grp'])['count'].sum().reset_index()
 
 fig = go.Figure()
 data = list()
-for i in price_grp_plots.price_grp.drop_duplicates().tolist():
+for i in pg_plots.price_grp.drop_duplicates().tolist():
     fig.add_trace(
-        go.Bar(
-            name=i,
-            x=price_grp_plots[price_grp_plots.price_grp == i][period].tolist(),
-            y=price_grp_plots[price_grp_plots.price_grp == i]['count'].tolist()
-        )
-    )
+        go.Bar(name=i,
+               x=pg_plots[pg_plots.price_grp == i][period].tolist(),
+               y=pg_plots[pg_plots.price_grp == i]['count'].tolist()
+               ))
 
 fig.update_layout(
     barmode='stack',
@@ -303,24 +306,22 @@ fig.write_html("profile/assets/charts/mth_stack_bar_values.html")
 
 # Stacked Bar Percentage
 period = 'yr_q'
-price_grp_base = df.groupby(period)['count'].sum().reset_index()
-price_grp_plots = df.groupby([period, 'price_grp'])[
-    'count'].sum().reset_index()
-final_plot = price_grp_plots.merge(price_grp_base, on=period)
-final_plot.columns = [period, 'price_grp', 'count', 'total']
-final_plot['percent_count'] = [round(
-    i * 100, 1) for i in final_plot['count'] / final_plot['total']]
+pg_base = df.groupby(period)['count'].sum().reset_index()
+pg_plots = df.groupby([period, 'price_grp'])['count'].sum().reset_index()
+for_plot = pg_plots.merge(pg_base, on=period)
+for_plot.columns = [period, 'price_grp', 'count', 'total']
+for_plot['percent_count'] = [round(
+    i * 100, 1) for i in for_plot['count'] / for_plot['total']]
 
 fig = go.Figure()
 data = list()
-for i in final_plot.price_grp.drop_duplicates().tolist():
+for i in for_plot.price_grp.drop_duplicates().tolist():
     fig.add_trace(
-        go.Bar(
-            name=i,
-            x=final_plot[final_plot.price_grp == i][period].tolist(),
-            y=final_plot[final_plot.price_grp == i]['percent_count'].tolist(
-            )
-        ))
+        go.Bar(name=i,
+               x=for_plot[for_plot.price_grp == i][period].tolist(),
+               y=for_plot[for_plot.price_grp == i]['percent_count'].tolist()
+               ))
+
 fig.add_hline(y=50, line_width=1.5, line_dash="dash", line_color="purple")
 fig.update_layout(
     barmode='stack',
@@ -337,23 +338,21 @@ fig.write_html("profile/assets/charts/qtr_stack_bar_percent.html")
 
 period = 'month'
 mth_df = df[df.yr_q >= '2020Q1']
-price_grp_base = mth_df.groupby(period)['count'].sum().reset_index()
-price_grp_plots = mth_df.groupby([period, 'price_grp'])[
-    'count'].sum().reset_index()
-final_plot = price_grp_plots.merge(price_grp_base, on=period)
-final_plot.columns = [period, 'price_grp', 'count', 'total']
-final_plot['percent_count'] = [round(
-    i * 100, 1) for i in final_plot['count'] / final_plot['total']]
+pg_base = mth_df.groupby(period)['count'].sum().reset_index()
+pg_plots = mth_df.groupby([period, 'price_grp'])['count'].sum().reset_index()
+for_plot = pg_plots.merge(pg_base, on=period)
+for_plot.columns = [period, 'price_grp', 'count', 'total']
+for_plot['percent_count'] = [round(
+    i * 100, 1) for i in for_plot['count'] / for_plot['total']]
 
 fig = go.Figure()
 data = list()
-for i in final_plot.price_grp.drop_duplicates().tolist():
+for i in for_plot.price_grp.drop_duplicates().tolist():
     fig.add_trace(
-        go.Bar(
-            name=i,
-            x=final_plot[final_plot.price_grp == i][period].tolist(),
-            y=final_plot[final_plot.price_grp == i]['percent_count'].tolist(),
-        ))
+        go.Bar(name=i,
+               x=for_plot[for_plot.price_grp == i][period].tolist(),
+               y=for_plot[for_plot.price_grp == i]['percent_count'].tolist(),
+               ))
 
 fig.add_hline(y=50, line_width=1.5, line_dash="dash", line_color="purple")
 fig.update_layout(
