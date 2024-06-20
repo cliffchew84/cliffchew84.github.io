@@ -135,7 +135,7 @@ fig.update_layout(
     showlegend=False,
 )
 
-with open('profile/assets/charts/qtr_boxplot.html', 'a') as f:
+with open('profile/assets/charts/qtr_boxplot.html', 'w') as f:
     f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
 f.close()
 
@@ -160,7 +160,7 @@ fig.update_layout(
     showlegend=False,
 )
 
-with open('profile/assets/charts/mth_boxplot.html', 'a') as f:
+with open('profile/assets/charts/mth_boxplot.html', 'w') as f:
     f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
 f.close()
 
@@ -214,7 +214,7 @@ fig.update_yaxes(title_text="Total Sales", secondary_y=True)
 fig.add_hline(y=1, line_width=1.5, line_dash="dash", line_color="black")
 fig.add_hline(y=1.5, line_width=1.5, line_dash="dash", line_color="red")
 
-with open('profile/assets/charts/qtr_barline_chart.html', 'a') as f:
+with open('profile/assets/charts/qtr_barline_chart.html', 'w') as f:
     f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
 f.close()
 
@@ -266,7 +266,7 @@ fig.update_yaxes(title_text="Total Sales", secondary_y=True)
 
 fig.add_hline(y=1, line_width=1.5, line_dash="dash", line_color="black")
 fig.add_hline(y=1.5, line_width=1.5, line_dash="dash", line_color="red")
-with open('profile/assets/charts/mth_barline_chart.html', 'a') as f:
+with open('profile/assets/charts/mth_barline_chart.html', 'w') as f:
     f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
 f.close()
 
@@ -295,7 +295,7 @@ fig.update_layout(
                 xanchor="right", x=1
                 ))
 
-with open('profile/assets/charts/qtr_stack_bar_values.html', 'a') as f:
+with open('profile/assets/charts/qtr_stack_bar_values.html', 'w') as f:
     f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
 f.close()
 
@@ -324,7 +324,7 @@ fig.update_layout(
                 y=1.02, xanchor="right", x=1)
 )
 
-with open('profile/assets/charts/mth_stack_bar_values.html', 'a') as f:
+with open('profile/assets/charts/mth_stack_bar_values.html', 'w') as f:
     f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
 f.close()
 
@@ -359,7 +359,7 @@ fig.update_layout(
                 y=1.02, xanchor="right", x=1)
 )
 
-with open('profile/assets/charts/qtr_stack_bar_percent.html', 'a') as f:
+with open('profile/assets/charts/qtr_stack_bar_percent.html', 'w') as f:
     f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
 f.close()
 
@@ -394,7 +394,7 @@ fig.update_layout(
                 y=1.02, xanchor="right", x=1)
 )
 
-with open('profile/assets/charts/mth_stack_bar_percent.html', 'a') as f:
+with open('profile/assets/charts/mth_stack_bar_percent.html', 'w') as f:
     f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
 f.close()
 
