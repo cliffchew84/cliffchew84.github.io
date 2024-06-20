@@ -135,7 +135,9 @@ fig.update_layout(
     showlegend=False,
 )
 
-fig.write_html("profile/assets/charts/qtr_boxplot.html")
+with open('profile/assets/charts/qtr_boxplot.html', 'a') as f:
+    f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
+f.close()
 
 period = 'month'
 fig = go.Figure()
@@ -158,7 +160,9 @@ fig.update_layout(
     showlegend=False,
 )
 
-fig.write_html("profile/assets/charts/mth_boxplot.html")
+with open('profile/assets/charts/mth_boxplot.html', 'a') as f:
+    f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
+f.close()
 
 # Advanced Million Dollar Homes
 period = 'yr_q'
@@ -210,7 +214,9 @@ fig.update_yaxes(title_text="Total Sales", secondary_y=True)
 fig.add_hline(y=1, line_width=1.5, line_dash="dash", line_color="black")
 fig.add_hline(y=1.5, line_width=1.5, line_dash="dash", line_color="red")
 
-fig.write_html("profile/assets/charts/qtr_barline_chart.html")
+with open('profile/assets/charts/qtr_barline_chart.html', 'a') as f:
+    f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
+f.close()
 
 period = 'month'
 df['mil'] = [1 if i >= 1000000 else 0 for i in df['price']]
@@ -260,7 +266,9 @@ fig.update_yaxes(title_text="Total Sales", secondary_y=True)
 
 fig.add_hline(y=1, line_width=1.5, line_dash="dash", line_color="black")
 fig.add_hline(y=1.5, line_width=1.5, line_dash="dash", line_color="red")
-fig.write_html("profile/assets/charts/mth_barline_chart.html")
+with open('profile/assets/charts/mth_barline_chart.html', 'a') as f:
+    f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
+f.close()
 
 # ### Stacked Bar Values
 period = 'yr_q'
@@ -287,7 +295,9 @@ fig.update_layout(
                 xanchor="right", x=1
                 ))
 
-fig.write_html("profile/assets/charts/qtr_stack_bar_values.html")
+with open('profile/assets/charts/qtr_stack_bar_values.html', 'a') as f:
+    f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
+f.close()
 
 period = 'month'
 pg_plots = df[df.yr_q >= '2020Q1'].groupby([period, 'price_grp'])[
@@ -314,7 +324,9 @@ fig.update_layout(
                 y=1.02, xanchor="right", x=1)
 )
 
-fig.write_html("profile/assets/charts/mth_stack_bar_values.html")
+with open('profile/assets/charts/mth_stack_bar_values.html', 'a') as f:
+    f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
+f.close()
 
 # Stacked Bar Percentage
 period = 'yr_q'
@@ -347,7 +359,9 @@ fig.update_layout(
                 y=1.02, xanchor="right", x=1)
 )
 
-fig.write_html("profile/assets/charts/qtr_stack_bar_percent.html")
+with open('profile/assets/charts/qtr_stack_bar_percent.html', 'a') as f:
+    f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
+f.close()
 
 period = 'month'
 mth_df = df[df.yr_q >= '2020Q1']
@@ -380,7 +394,9 @@ fig.update_layout(
                 y=1.02, xanchor="right", x=1)
 )
 
-fig.write_html("profile/assets/charts/mth_stack_bar_percent.html")
+with open('profile/assets/charts/mth_stack_bar_percent.html', 'a') as f:
+    f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
+f.close()
 
 # Update time of code run
 f = open("run_data.txt", "w")
