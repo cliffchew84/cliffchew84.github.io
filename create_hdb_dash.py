@@ -96,13 +96,23 @@ df.price = df.price.astype(float)
 
 # Create price categories
 bins = [0, 300000, 500000, 800000, 1000000, 2000000]
-labels = ["<=300k", "300-500k", "500-800k", "800k-1m", ">=1m"]
+labels = ["0-300k", "300-500k", "500-800k", "800k-1m", ">=1m"]
 df["price_grp"] = pd.cut(df["price"], bins=bins, labels=labels, right=False)
+price_grps = df['price_grp'].unique().tolist()
+price_grps.sort()
+
+price_grps_dict = dict()
+price_grps_dict[price_grps[0]] = '#8BC1F7'
+price_grps_dict[price_grps[1]] = '#06C'
+price_grps_dict[price_grps[2]] = '#4CB140'
+price_grps_dict[price_grps[3]] = '#F0AB00'
+price_grps_dict[price_grps[4]] = '#C9190B'
 
 chart_width = 1000
 chart_height = 600
 today = str(datetime.today().date())
 note = f'Updated on {today}'
+
 
 # My Graphs
 # Home price distributions
@@ -113,8 +123,8 @@ for p in df[period].drop_duplicates():
         y=df[df[period] == p].price,
         name=str(p),
         boxpoints='outliers',
-        marker_color='rgb(8,81,156)',
-        line_color='rgb(8,81,156)'
+        marker_color='#06C',
+        line_color='#06C'
     ))
 
 fig.update_layout(
@@ -136,8 +146,8 @@ for p in mth_df[period].drop_duplicates():
         y=df[df[period] == p].price,
         name=str(p),
         boxpoints='outliers',
-        marker_color='rgb(8,81,156)',
-        line_color='rgb(8,81,156)'
+        marker_color='#06C',
+        line_color='#06C'
     ))
 
 fig.update_layout(
@@ -262,7 +272,8 @@ for i in pg_plots.price_grp.drop_duplicates().tolist():
     fig.add_trace(
         go.Bar(name=i,
                x=pg_plots[pg_plots.price_grp == i][period].tolist(),
-               y=pg_plots[pg_plots.price_grp == i]['count'].tolist()
+               y=pg_plots[pg_plots.price_grp == i]['count'].tolist(),
+               marker_color=price_grps_dict[i]
                ))
 
 fig.update_layout(
@@ -279,16 +290,17 @@ fig.update_layout(
 fig.write_html("profile/assets/charts/qtr_stack_bar_values.html")
 
 period = 'month'
-pg_plots = df[df.yr_q >= '2020Q1'].groupby(
-    [period, 'price_grp'])['count'].sum().reset_index()
+pg_plots = df[df.yr_q >= '2020Q1'].groupby([period, 'price_grp'])[
+    'count'].sum().reset_index()
 
 fig = go.Figure()
 data = list()
-for i in pg_plots.price_grp.drop_duplicates().tolist():
+for i in price_grps:
     fig.add_trace(
         go.Bar(name=i,
                x=pg_plots[pg_plots.price_grp == i][period].tolist(),
-               y=pg_plots[pg_plots.price_grp == i]['count'].tolist()
+               y=pg_plots[pg_plots.price_grp == i]['count'].tolist(),
+               marker_color=price_grps_dict[i]
                ))
 
 fig.update_layout(
@@ -315,11 +327,12 @@ for_plot['percent_count'] = [round(
 
 fig = go.Figure()
 data = list()
-for i in for_plot.price_grp.drop_duplicates().tolist():
+for i in price_grps:
     fig.add_trace(
         go.Bar(name=i,
                x=for_plot[for_plot.price_grp == i][period].tolist(),
-               y=for_plot[for_plot.price_grp == i]['percent_count'].tolist()
+               y=for_plot[for_plot.price_grp == i]['percent_count'].tolist(),
+               marker_color=price_grps_dict[i]
                ))
 
 fig.add_hline(y=50, line_width=1.5, line_dash="dash", line_color="purple")
@@ -347,11 +360,12 @@ for_plot['percent_count'] = [round(
 
 fig = go.Figure()
 data = list()
-for i in for_plot.price_grp.drop_duplicates().tolist():
+for i in price_grps:
     fig.add_trace(
         go.Bar(name=i,
                x=for_plot[for_plot.price_grp == i][period].tolist(),
                y=for_plot[for_plot.price_grp == i]['percent_count'].tolist(),
+               marker_color=price_grps_dict[i]
                ))
 
 fig.add_hline(y=50, line_width=1.5, line_dash="dash", line_color="purple")
