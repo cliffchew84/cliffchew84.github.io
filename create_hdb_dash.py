@@ -117,47 +117,121 @@ note = f'Updated on {today}'
 # My Graphs
 # Home price distributions
 period = 'yr_q'
+med_prices = [{i.get(period): i.get('price')} for i in df.groupby(period)[
+    'price'].median().reset_index().to_dict(orient='records')]
+high_med_prices = [i for i in med_prices if list(i.values())[0] >= 500000]
+high_med_prices = [list(i.keys())[0] for i in high_med_prices]
+
 fig = go.Figure()
 for p in df[period].drop_duplicates():
-    fig.add_trace(go.Box(
-        y=df[df[period] == p].price,
-        name=str(p),
-        boxpoints='outliers',
-        marker_color='#06C',
-        line_color='#06C'
-    ))
+    if p not in high_med_prices:
+        fig.add_trace(go.Box(
+            y=df[df[period] == p].price,
+            name=str(p),
+            boxpoints='outliers',
+            marker_color='#06C',
+            line_color='#06C',
+            showlegend=False
+        ))
+    else:
+        fig.add_trace(go.Box(
+            y=df[df[period] == p].price,
+            name=str(p),
+            boxpoints='outliers',
+            marker_color='#C9190B',
+            line_color='#C9190B',
+            showlegend=False
+        ))
+
 
 fig.update_layout(
     title=f"Quarters - Public Home Price Distributions<br>{note}",
     yaxis={"title": "Home Prices"},
     xaxis={"title": "Quarters"},
     width=chart_width, height=chart_height,
-    showlegend=False,
+    legend=dict(orientation="h", yanchor="bottom",
+                y=1.02, xanchor="right", x=1)
+)
+
+fig.add_hrect(
+    y0="1000000", y1=str(round(df.price.max(), 100)),
+    fillcolor="LightSalmon", opacity=0.35, layer="below", line_width=0,
+)
+
+fig.add_shape(
+    showlegend=True, type="circle",
+    name='Median Prices < 0.5M',
+    fillcolor='#06C',
+    y0=1000000, y1=1000000, x0=0, x1=0,
+)
+
+fig.add_shape(
+    showlegend=True, type="circle",
+    name='Median Prices >= 0.5M',
+    fillcolor='#C9190B',
+    y0=1000000, y1=1000000, x0=0, x1=0,
 )
 
 with open('profile/assets/charts/qtr_boxplot.html', 'w') as f:
     f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
 f.close()
 
+
 period = 'month'
 fig = go.Figure()
 
+med_prices = [{i.get(period): i.get('price')} for i in df.groupby(period)[
+    'price'].median().reset_index().to_dict(orient='records')]
+high_med_prices = [i for i in med_prices if list(i.values())[0] >= 500000]
+high_med_prices = [list(i.keys())[0] for i in high_med_prices]
+
 mth_df = df[df.yr_q >= '2020Q1']
 for p in mth_df[period].drop_duplicates():
-    fig.add_trace(go.Box(
-        y=df[df[period] == p].price,
-        name=str(p),
-        boxpoints='outliers',
-        marker_color='#06C',
-        line_color='#06C'
-    ))
+    if p not in high_med_prices:
+        fig.add_trace(go.Box(
+            y=df[df[period] == p].price,
+            name=str(p),
+            boxpoints='outliers',
+            marker_color='#06C',
+            line_color='#06C',
+            showlegend=False
+        ))
+    else:
+        fig.add_trace(go.Box(
+            y=df[df[period] == p].price,
+            name=str(p),
+            boxpoints='outliers',
+            marker_color='#C9190B',
+            line_color='#C9190B',
+            showlegend=False
+        ))
 
 fig.update_layout(
     title=f'Months - Public Home Price Distributions<br>{note}',
     yaxis={"title": "Home Prices"},
     xaxis={"title": "Months"},
     width=chart_width, height=chart_height,
-    showlegend=False,
+    legend=dict(orientation="h", yanchor="bottom",
+                y=1.02, xanchor="right", x=1)
+)
+
+fig.add_hrect(
+    y0="1000000", y1=str(round(df.price.max(), 100)),
+    fillcolor="LightSalmon", opacity=0.35, layer="below", line_width=0,
+)
+
+fig.add_shape(
+    showlegend=True, type="circle",
+    name='Median Prices < 0.5M',
+    fillcolor='#06C',
+    y0=1000000, y1=1000000, x0=0, x1=0,
+)
+
+fig.add_shape(
+    showlegend=True, type="circle",
+    name='Median Prices >= 0.5M',
+    fillcolor='#C9190B',
+    y0=1000000, y1=1000000, x0=0, x1=0,
 )
 
 with open('profile/assets/charts/mth_boxplot.html', 'w') as f:
