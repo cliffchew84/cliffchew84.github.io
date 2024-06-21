@@ -158,20 +158,6 @@ fig.add_hrect(
     fillcolor="LightSalmon", opacity=0.35, layer="below", line_width=0,
 )
 
-fig.add_shape(
-    showlegend=True, type="circle",
-    name='Median Prices < 0.5M',
-    fillcolor='#06C',
-    y0=1000000, y1=1000000, x0=0, x1=0,
-)
-
-fig.add_shape(
-    showlegend=True, type="circle",
-    name='Median Prices >= 0.5M',
-    fillcolor='#C9190B',
-    y0=1000000, y1=1000000, x0=0, x1=0,
-)
-
 with open('profile/assets/charts/qtr_boxplot.html', 'w') as f:
     f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
 f.close()
@@ -218,20 +204,6 @@ fig.update_layout(
 fig.add_hrect(
     y0="1000000", y1=str(round(df.price.max(), 100)),
     fillcolor="LightSalmon", opacity=0.35, layer="below", line_width=0,
-)
-
-fig.add_shape(
-    showlegend=True, type="circle",
-    name='Median Prices < 0.5M',
-    fillcolor='#06C',
-    y0=1000000, y1=1000000, x0=0, x1=0,
-)
-
-fig.add_shape(
-    showlegend=True, type="circle",
-    name='Median Prices >= 0.5M',
-    fillcolor='#C9190B',
-    y0=1000000, y1=1000000, x0=0, x1=0,
 )
 
 with open('profile/assets/charts/mth_boxplot.html', 'w') as f:
