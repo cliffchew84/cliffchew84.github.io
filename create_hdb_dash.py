@@ -9,42 +9,27 @@ from datetime import datetime
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-# #### Setting up dates for data extraction
-mths_2012_14 = list()
-year = range(2013, 2015, 1)
-months = range(1, 13, 1)
+# Set up dates for data extraction
+mths_2012_14 = [str(i)[:7] for i in pd.date_range(
+    "2012-01-01", "2014-12-01", freq='MS').tolist()]
 
-for yr in year:
-    for month in months:
-        month = str(month).zfill(2)
-        mths_2012_14.append(f"{yr}-{month}")
+mths_2015_16 = [str(i)[:7] for i in pd.date_range(
+    "2015-01-01", "2016-12-01", freq='MS').tolist()]
 
-mths_2015_16 = list()
-year = range(2015, 2017, 1)
+current_mth = datetime.now().date().strftime("%Y-%m")
+mths_2017_onwards = [str(i)[:7] for i in pd.date_range(
+    "2017-01-01", current_mth+"-01", freq='MS').tolist()]
 
-for yr in year:
-    for month in months:
-        month = str(month).zfill(2)
-        mths_2015_16.append(f"{yr}-{month}")
+# df_cols = ['month', 'town', 'floor_area_sqm',
+#            'flat_type', 'lease_commence_date', 'resale_price']
 
-mths_2017_onwards = list()
-year = range(2017, 2030, 1)
-
-for yr in year:
-    for month in months:
-        month = str(month).zfill(2)
-        mths_2017_onwards.append(f"{yr}-{month}")
-
-mth_filter = mths_2017_onwards.index('2024-06')
-mths_2017_onwards = mths_2017_onwards[:mth_filter+1]
-
-df_cols = ['month', 'town', 'floor_area_sqm',
-           'flat_type', 'lease_commence_date', 'resale_price']
+# Focus on most minimium cols for speed
+df_cols = ['month', 'town', 'resale_price']
 param_fields = ",".join(df_cols)
-
-mth_2012_2014 = "?resource_id=d_2d5ff9ea31397b66239f245f57751537"
 base_url = "https://data.gov.sg/api/action/datastore_search"
-url = base_url + mth_2012_2014
+
+url_2012_2014 = "?resource_id=d_2d5ff9ea31397b66239f245f57751537"
+url = base_url + url_2012_2014
 
 # Making the API calls
 latest_df = pd.DataFrame()
@@ -58,9 +43,8 @@ for mth in mths_2012_14:
     mth_df = pd.DataFrame(response.json().get("result").get("records"))
     latest_df = pd.concat([latest_df, mth_df], axis=0)
 
-mth_2015_2016 = "?resource_id=d_ea9ed51da2787afaf8e51f827c304208"
-base_url = "https://data.gov.sg/api/action/datastore_search"
-url = base_url + mth_2015_2016
+url_2015_2016 = "?resource_id=d_ea9ed51da2787afaf8e51f827c304208"
+url = base_url + url_2015_2016
 
 for mth in mths_2015_16:
     params = {
@@ -72,9 +56,8 @@ for mth in mths_2015_16:
     mth_df = pd.DataFrame(response.json().get("result").get("records"))
     latest_df = pd.concat([latest_df, mth_df], axis=0)
 
-mth_2017 = "?resource_id=d_8b84c4ee58e3cfc0ece0d773c8ca6abc"
-base_url = "https://data.gov.sg/api/action/datastore_search"
-url = base_url + mth_2017
+url_2017 = "?resource_id=d_8b84c4ee58e3cfc0ece0d773c8ca6abc"
+url = base_url + url_2017
 
 for mth in mths_2017_onwards:
     params = {
@@ -110,23 +93,25 @@ price_grps_dict[price_grps[4]] = '#C9190B'
 
 chart_width = 1000
 chart_height = 600
+legend = dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+q_period = 'yr_q'
+m_period = 'month'
 today = str(datetime.today().date())
 note = f'Updated on {today}'
 
 
 # My Graphs
 # Home price distributions
-period = 'yr_q'
-med_prices = [{i.get(period): i.get('price')} for i in df.groupby(period)[
+med_prices = [{i.get(q_period): i.get('price')} for i in df.groupby(q_period)[
     'price'].median().reset_index().to_dict(orient='records')]
 high_med_prices = [i for i in med_prices if list(i.values())[0] >= 500000]
 high_med_prices = [list(i.keys())[0] for i in high_med_prices]
 
 fig = go.Figure()
-for p in df[period].drop_duplicates():
+for p in df[q_period].drop_duplicates():
     if p not in high_med_prices:
         fig.add_trace(go.Box(
-            y=df[df[period] == p].price,
+            y=df[df[q_period] == p].price,
             name=str(p),
             boxpoints='outliers',
             marker_color='#06C',
@@ -135,7 +120,7 @@ for p in df[period].drop_duplicates():
         ))
     else:
         fig.add_trace(go.Box(
-            y=df[df[period] == p].price,
+            y=df[df[q_period] == p].price,
             name=str(p),
             boxpoints='outliers',
             marker_color='#C9190B',
@@ -149,8 +134,7 @@ fig.update_layout(
     yaxis={"title": "Home Prices"},
     xaxis={"title": "Quarters"},
     width=chart_width, height=chart_height,
-    legend=dict(orientation="h", yanchor="bottom",
-                y=1.02, xanchor="right", x=1)
+    legend=legend
 )
 
 fig.add_hrect(
@@ -162,20 +146,17 @@ with open('profile/assets/charts/qtr_boxplot.html', 'w') as f:
     f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
 f.close()
 
-
-period = 'month'
 fig = go.Figure()
-
-med_prices = [{i.get(period): i.get('price')} for i in df.groupby(period)[
+med_prices = [{i.get(m_period): i.get('price')} for i in df.groupby(m_period)[
     'price'].median().reset_index().to_dict(orient='records')]
 high_med_prices = [i for i in med_prices if list(i.values())[0] >= 500000]
 high_med_prices = [list(i.keys())[0] for i in high_med_prices]
 
 mth_df = df[df.yr_q >= '2020Q1']
-for p in mth_df[period].drop_duplicates():
+for p in mth_df[m_period].drop_duplicates():
     if p not in high_med_prices:
         fig.add_trace(go.Box(
-            y=df[df[period] == p].price,
+            y=df[df[m_period] == p].price,
             name=str(p),
             boxpoints='outliers',
             marker_color='#06C',
@@ -184,7 +165,7 @@ for p in mth_df[period].drop_duplicates():
         ))
     else:
         fig.add_trace(go.Box(
-            y=df[df[period] == p].price,
+            y=df[df[m_period] == p].price,
             name=str(p),
             boxpoints='outliers',
             marker_color='#C9190B',
@@ -197,8 +178,7 @@ fig.update_layout(
     yaxis={"title": "Home Prices"},
     xaxis={"title": "Months"},
     width=chart_width, height=chart_height,
-    legend=dict(orientation="h", yanchor="bottom",
-                y=1.02, xanchor="right", x=1)
+    legend=legend
 )
 
 fig.add_hrect(
@@ -211,11 +191,10 @@ with open('profile/assets/charts/mth_boxplot.html', 'w') as f:
 f.close()
 
 # Advanced Million Dollar Homes
-period = 'yr_q'
 df['mil'] = [1 if i >= 1000000 else 0 for i in df['price']]
-for_plot = df.groupby([period, 'mil'])[
-    'town'].count().reset_index().sort_values(period)
-cal_ = for_plot.pivot_table(index=period, values='town',
+for_plot = df.groupby([q_period, 'mil'])[
+    'town'].count().reset_index().sort_values(q_period)
+cal_ = for_plot.pivot_table(index=q_period, values='town',
                             columns='mil', margins=True,
                             aggfunc="sum").reset_index().fillna(0)
 
@@ -223,22 +202,22 @@ for i in [0, 1, 'All']:
     cal_[i] = cal_[i].astype(int)
 
 cal_['proportion'] = [round(i, 2) for i in cal_[1] / cal_['All'] * 100]
-cal_mil_ts = cal_[cal_[period] != 'All'].reset_index(drop=True)
-cal_mil_ts.columns = [period, '0', 'million $ Trans',
+cal_mil_ts = cal_[cal_[q_period] != 'All'].reset_index(drop=True)
+cal_mil_ts.columns = [q_period, '0', 'million $ Trans',
                       'Total Trans', '% million Trans']
 
 fig = make_subplots(specs=[[{"secondary_y": True}]])
 
 title = f"Quarters - % of Million Dollar Homes & Total Homes Sold<br>{note}"
 fig.add_trace(go.Scatter(
-    x=cal_mil_ts[period],
+    x=cal_mil_ts[q_period],
     y=cal_mil_ts['% million Trans'],
     mode='lines+markers',
     name="%"),
     secondary_y=False)
 
 fig.add_trace(go.Bar(
-    x=cal_mil_ts[period],
+    x=cal_mil_ts[q_period],
     y=cal_mil_ts['0'],
     opacity=.4,
     name="Total Sales"),
@@ -249,8 +228,7 @@ fig.update_layout(
     hovermode="x unified",
     xaxis={"title": "Quarters"},
     width=chart_width, height=chart_height,
-    legend=dict(orientation="h", yanchor="bottom",
-                y=1.02, xanchor="right", x=1)
+    legend=legend
 )
 
 fig.update_yaxes(title_text="Million Dollar Homes / Total Home Sales (%)",
@@ -264,11 +242,10 @@ with open('profile/assets/charts/qtr_barline_chart.html', 'w') as f:
     f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
 f.close()
 
-period = 'month'
 df['mil'] = [1 if i >= 1000000 else 0 for i in df['price']]
 for_plot = df[df.yr_q >= '2020Q1'].groupby(
-    [period, 'mil'])['town'].count().reset_index().sort_values(period)
-cal_ = for_plot.pivot_table(index=period, values='town',
+    [m_period, 'mil'])['town'].count().reset_index().sort_values(m_period)
+cal_ = for_plot.pivot_table(index=m_period, values='town',
                             columns='mil', margins=True,
                             aggfunc="sum").reset_index().fillna(0)
 
@@ -276,22 +253,22 @@ for i in [0, 1, 'All']:
     cal_[i] = cal_[i].astype(int)
 
 cal_['proportion'] = [round(i, 2) for i in cal_[1] / cal_['All'] * 100]
-cal_mil_ts = cal_[cal_[period] != 'All'].reset_index(drop=True)
-cal_mil_ts.columns = [period, '0', 'million $ Trans',
+cal_mil_ts = cal_[cal_[m_period] != 'All'].reset_index(drop=True)
+cal_mil_ts.columns = [m_period, '0', 'million $ Trans',
                       'Total Trans', '% million Trans']
 
 fig = make_subplots(specs=[[{"secondary_y": True}]])
 
 title = f"Months - % of Million Dollar Homes & Total Homes Sold<br>{note}"
 fig.add_trace(go.Scatter(
-    x=cal_mil_ts[period],
+    x=cal_mil_ts[m_period],
     y=cal_mil_ts['% million Trans'],
     mode='lines+markers',
     name="%"),
     secondary_y=False)
 
 fig.add_trace(go.Bar(
-    x=cal_mil_ts[period],
+    x=cal_mil_ts[m_period],
     y=cal_mil_ts['0'],
     opacity=.4,
     name="Total Sales"),
@@ -302,8 +279,7 @@ fig.update_layout(
     hovermode="x unified",
     xaxis={"title": "Months"},
     width=chart_width, height=chart_height,
-    legend=dict(orientation="h", yanchor="bottom",
-                y=1.02, xanchor="right", x=1)
+    legend=legend
 )
 
 fig.update_yaxes(title_text="Million Dollar Homes / Total Home Sales (%)",
@@ -317,15 +293,13 @@ with open('profile/assets/charts/mth_barline_chart.html', 'w') as f:
 f.close()
 
 # ### Stacked Bar Values
-period = 'yr_q'
-pg_plots = df.groupby([period, 'price_grp'])['count'].sum().reset_index()
+pg_plots = df.groupby([q_period, 'price_grp'])['count'].sum().reset_index()
 
 fig = go.Figure()
-data = list()
 for i in pg_plots.price_grp.drop_duplicates().tolist():
     fig.add_trace(
         go.Bar(name=i,
-               x=pg_plots[pg_plots.price_grp == i][period].tolist(),
+               x=pg_plots[pg_plots.price_grp == i][q_period].tolist(),
                y=pg_plots[pg_plots.price_grp == i]['count'].tolist(),
                marker_color=price_grps_dict[i]
                ))
@@ -337,24 +311,21 @@ fig.update_layout(
     hovermode="x unified",
     title=f"Quarters - Total Public Home Sales by Price Category<br>{note}",
     width=chart_width, height=chart_height,
-    legend=dict(orientation="h", yanchor="bottom", y=1.02,
-                xanchor="right", x=1
-                ))
+    legend=legend
+)
 
 with open('profile/assets/charts/qtr_stack_bar_values.html', 'w') as f:
     f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
 f.close()
 
-period = 'month'
-pg_plots = df[df.yr_q >= '2020Q1'].groupby([period, 'price_grp'])[
+pg_plots = df[df.yr_q >= '2020Q1'].groupby([m_period, 'price_grp'])[
     'count'].sum().reset_index()
 
 fig = go.Figure()
-data = list()
 for i in price_grps:
     fig.add_trace(
         go.Bar(name=i,
-               x=pg_plots[pg_plots.price_grp == i][period].tolist(),
+               x=pg_plots[pg_plots.price_grp == i][m_period].tolist(),
                y=pg_plots[pg_plots.price_grp == i]['count'].tolist(),
                marker_color=price_grps_dict[i]
                ))
@@ -366,8 +337,7 @@ fig.update_layout(
     hovermode="x unified",
     title=f"Months - Total Public Home Sales by Price Category<br>{note}",
     width=chart_width, height=chart_height,
-    legend=dict(orientation="h", yanchor="bottom",
-                y=1.02, xanchor="right", x=1)
+    legend=legend
 )
 
 with open('profile/assets/charts/mth_stack_bar_values.html', 'w') as f:
@@ -375,20 +345,18 @@ with open('profile/assets/charts/mth_stack_bar_values.html', 'w') as f:
 f.close()
 
 # Stacked Bar Percentage
-period = 'yr_q'
-pg_base = df.groupby(period)['count'].sum().reset_index()
-pg_plots = df.groupby([period, 'price_grp'])['count'].sum().reset_index()
-for_plot = pg_plots.merge(pg_base, on=period)
-for_plot.columns = [period, 'price_grp', 'count', 'total']
+pg_base = df.groupby(q_period)['count'].sum().reset_index()
+pg_plots = df.groupby([q_period, 'price_grp'])['count'].sum().reset_index()
+for_plot = pg_plots.merge(pg_base, on=q_period)
+for_plot.columns = [q_period, 'price_grp', 'count', 'total']
 for_plot['percent_count'] = [round(
     i * 100, 1) for i in for_plot['count'] / for_plot['total']]
 
 fig = go.Figure()
-data = list()
 for i in price_grps:
     fig.add_trace(
         go.Bar(name=i,
-               x=for_plot[for_plot.price_grp == i][period].tolist(),
+               x=for_plot[for_plot.price_grp == i][q_period].tolist(),
                y=for_plot[for_plot.price_grp == i]['percent_count'].tolist(),
                marker_color=price_grps_dict[i]
                ))
@@ -401,29 +369,26 @@ fig.update_layout(
     yaxis={'title': '%'},
     hovermode="x unified",
     width=chart_width, height=chart_height,
-    legend=dict(orientation="h", yanchor="bottom",
-                y=1.02, xanchor="right", x=1)
+    legend=legend
 )
 
 with open('profile/assets/charts/qtr_stack_bar_percent.html', 'w') as f:
     f.write(fig.to_html(full_html=False, include_plotlyjs='cdn'))
 f.close()
 
-period = 'month'
 mth_df = df[df.yr_q >= '2020Q1']
-pg_base = mth_df.groupby(period)['count'].sum().reset_index()
-pg_plots = mth_df.groupby([period, 'price_grp'])['count'].sum().reset_index()
-for_plot = pg_plots.merge(pg_base, on=period)
-for_plot.columns = [period, 'price_grp', 'count', 'total']
+pg_base = mth_df.groupby(m_period)['count'].sum().reset_index()
+pg_plots = mth_df.groupby([m_period, 'price_grp'])['count'].sum().reset_index()
+for_plot = pg_plots.merge(pg_base, on=m_period)
+for_plot.columns = [m_period, 'price_grp', 'count', 'total']
 for_plot['percent_count'] = [round(
     i * 100, 1) for i in for_plot['count'] / for_plot['total']]
 
 fig = go.Figure()
-data = list()
 for i in price_grps:
     fig.add_trace(
         go.Bar(name=i,
-               x=for_plot[for_plot.price_grp == i][period].tolist(),
+               x=for_plot[for_plot.price_grp == i][m_period].tolist(),
                y=for_plot[for_plot.price_grp == i]['percent_count'].tolist(),
                marker_color=price_grps_dict[i]
                ))
@@ -436,8 +401,7 @@ fig.update_layout(
     yaxis={'title': '%'},
     hovermode="x unified",
     width=chart_width, height=chart_height,
-    legend=dict(orientation="h", yanchor="bottom",
-                y=1.02, xanchor="right", x=1)
+    legend=legend
 )
 
 with open('profile/assets/charts/mth_stack_bar_percent.html', 'w') as f:
