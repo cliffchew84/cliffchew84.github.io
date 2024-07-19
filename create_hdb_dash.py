@@ -12,7 +12,7 @@ from plotly.subplots import make_subplots
 # Set up dates for data extraction
 current_mth = datetime.now().date().strftime("%Y-%m")
 total_periods = [str(i)[:7] for i in pd.date_range(
-    "2012-01-01", current_mth+"-01", freq='MS').tolist()]
+    "2014-01-01", current_mth+"-01", freq='MS').tolist()]
 
 # df_cols = ['month', 'town', 'floor_area_sqm',
 #            'flat_type', 'lease_commence_date', 'resale_price']
@@ -24,7 +24,7 @@ base_url = "https://data.gov.sg/api/action/datastore_search?resource_id="
 latest_df = pd.DataFrame()
 
 for period in total_periods:
-    if "2012-" in period or "2013-" in period or "2014-" in period:
+    if "2014-" in period:
         url = base_url + "d_2d5ff9ea31397b66239f245f57751537"
     elif "2015-" in period or "2016-" in period:
         url = base_url + "d_ea9ed51da2787afaf8e51f827c304208"
