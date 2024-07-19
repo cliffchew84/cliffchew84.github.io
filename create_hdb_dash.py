@@ -2,11 +2,13 @@
 # coding: utf-8
 
 # HDB Dashboard Creation Workflow
+import os
 import json
 import requests
 import pandas as pd
-from datetime import datetime
+from pymongo import mongo_client
 import plotly.graph_objects as go
+from datetime import datetime, timedelta
 from plotly.subplots import make_subplots
 
 # Set up dates for data extraction
@@ -41,8 +43,51 @@ for period in total_periods:
     latest_df = pd.concat([latest_df, mth_df], axis=0)
 
 
+# MongoDB credentials
+MONGO_PASSWORD = os.environ["mongo_pw"]
+base_url = "mongodb+srv://cliffchew84:"
+end_url = "cliff-nlb.t0whddv.mongodb.net/?retryWrites=true&w=majority"
+mongo_url = f"{base_url}{MONGO_PASSWORD}@{end_url}"
+
+
+def connect_mdb():
+    return mongo_client.MongoClient(mongo_url, serverSelectionTimeoutMS=5000)
+
+
+db = connect_mdb()
+db.list_database_names()
+db_nlb = db['nlb']
+
+df = pd.DataFrame(list(db_nlb['hdb_hist'].find({}, {"_id": 0})))
+
+today = datetime.now().date()
+mth_first_d = today.replace(day=1)
+last_mth = mth_first_d - timedelta(days=1)
+last_mth, current_mth = last_mth.strftime("%Y-%m"), today.strftime("%Y-%m")
+
+# All months
+mths_2024_onwards = [str(i)[:7] for i in pd.date_range(
+    "2024-01-01", current_mth + "-01", freq='MS').tolist()]
+
+# Update recent two months
+update_mths = [last_mth, current_mth]
+df_cols = ['month', 'town', 'resale_price']
+param_fields = ",".join(df_cols)
+y2024 = "d_8b84c4ee58e3cfc0ece0d773c8ca6abc"
+base_url = "https://data.gov.sg/api/action/datastore_search?resource_id="
+url = base_url + y2024
+
+for mth in mths_2024_onwards:
+    params = {
+        "fields": param_fields,
+        "filters": json.dumps({'month': mth}),
+        "limit": 10000
+    }
+    response = requests.get(url, params=params)
+    mth_df = pd.DataFrame(response.json().get("result").get("records"))
+    df = pd.concat([df, mth_df], axis=0)
+
 # Data Processing for creating charts
-df = latest_df.copy()
 df['yr_q'] = [str(i) for i in pd.to_datetime(df['month']).dt.to_period('Q')]
 df['count'] = 1
 df.rename(columns={'resale_price': 'price'}, inplace=True)
