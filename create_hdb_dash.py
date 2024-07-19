@@ -23,25 +23,6 @@ total_periods = [str(i)[:7] for i in pd.date_range(
 df_cols = ['month', 'town', 'resale_price']
 param_fields = ",".join(df_cols)
 base_url = "https://data.gov.sg/api/action/datastore_search?resource_id="
-latest_df = pd.DataFrame()
-
-for period in total_periods:
-    if "2014-" in period:
-        url = base_url + "d_2d5ff9ea31397b66239f245f57751537"
-    elif "2015-" in period or "2016-" in period:
-        url = base_url + "d_ea9ed51da2787afaf8e51f827c304208"
-    else:
-        url = base_url + "d_8b84c4ee58e3cfc0ece0d773c8ca6abc"
-
-    params = {
-        "fields": param_fields,
-        "filters": json.dumps({'month': period}),
-        "limit": 10000
-    }
-    response = requests.get(url, params=params)
-    mth_df = pd.DataFrame(response.json().get("result").get("records"))
-    latest_df = pd.concat([latest_df, mth_df], axis=0)
-
 
 # MongoDB credentials
 MONGO_PASSWORD = os.environ["mongo_pw"]
