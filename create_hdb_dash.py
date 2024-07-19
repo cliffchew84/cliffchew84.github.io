@@ -10,15 +10,9 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 # Set up dates for data extraction
-mths_2012_14 = [str(i)[:7] for i in pd.date_range(
-    "2012-01-01", "2014-12-01", freq='MS').tolist()]
-
-mths_2015_16 = [str(i)[:7] for i in pd.date_range(
-    "2015-01-01", "2016-12-01", freq='MS').tolist()]
-
 current_mth = datetime.now().date().strftime("%Y-%m")
-mths_2017_onwards = [str(i)[:7] for i in pd.date_range(
-    "2017-01-01", current_mth+"-01", freq='MS').tolist()]
+total_periods = [str(i)[:7] for i in pd.date_range(
+    "2012-01-01", current_mth+"-01", freq='MS').tolist()]
 
 # df_cols = ['month', 'town', 'floor_area_sqm',
 #            'flat_type', 'lease_commence_date', 'resale_price']
@@ -26,43 +20,20 @@ mths_2017_onwards = [str(i)[:7] for i in pd.date_range(
 # Focus on most minimium cols for speed
 df_cols = ['month', 'town', 'resale_price']
 param_fields = ",".join(df_cols)
-base_url = "https://data.gov.sg/api/action/datastore_search"
-
-url_2012_2014 = "?resource_id=d_2d5ff9ea31397b66239f245f57751537"
-url = base_url + url_2012_2014
-
-# Making the API calls
+base_url = "https://data.gov.sg/api/action/datastore_search?resource_id="
 latest_df = pd.DataFrame()
-for mth in mths_2012_14:
+
+for period in total_periods:
+    if "2012-" in period or "2013-" in period or "2014-" in period:
+        url = base_url + "d_2d5ff9ea31397b66239f245f57751537"
+    elif "2015-" in period or "2016-" in period:
+        url = base_url + "d_ea9ed51da2787afaf8e51f827c304208"
+    else:
+        url = base_url + "d_8b84c4ee58e3cfc0ece0d773c8ca6abc"
+
     params = {
         "fields": param_fields,
-        "filters": json.dumps({'month': mth}),
-        "limit": 10000
-    }
-    response = requests.get(url, params=params)
-    mth_df = pd.DataFrame(response.json().get("result").get("records"))
-    latest_df = pd.concat([latest_df, mth_df], axis=0)
-
-url_2015_2016 = "?resource_id=d_ea9ed51da2787afaf8e51f827c304208"
-url = base_url + url_2015_2016
-
-for mth in mths_2015_16:
-    params = {
-        "fields": param_fields,
-        "filters": json.dumps({'month': mth}),
-        "limit": 10000
-    }
-    response = requests.get(url, params=params)
-    mth_df = pd.DataFrame(response.json().get("result").get("records"))
-    latest_df = pd.concat([latest_df, mth_df], axis=0)
-
-url_2017 = "?resource_id=d_8b84c4ee58e3cfc0ece0d773c8ca6abc"
-url = base_url + url_2017
-
-for mth in mths_2017_onwards:
-    params = {
-        "fields": param_fields,
-        "filters": json.dumps({'month': mth}),
+        "filters": json.dumps({'month': period}),
         "limit": 10000
     }
     response = requests.get(url, params=params)
