@@ -11,18 +11,6 @@ import plotly.graph_objects as go
 from datetime import datetime, timedelta
 from plotly.subplots import make_subplots
 
-# Set up dates for data extraction
-current_mth = datetime.now().date().strftime("%Y-%m")
-total_periods = [str(i)[:7] for i in pd.date_range(
-    "2014-01-01", current_mth+"-01", freq='MS').tolist()]
-
-# df_cols = ['month', 'town', 'floor_area_sqm',
-#            'flat_type', 'lease_commence_date', 'resale_price']
-
-# Focus on most minimium cols for speed
-df_cols = ['month', 'town', 'resale_price']
-param_fields = ",".join(df_cols)
-base_url = "https://data.gov.sg/api/action/datastore_search?resource_id="
 
 # MongoDB credentials
 MONGO_PASSWORD = os.environ["mongo_pw"]
@@ -30,35 +18,22 @@ base_url = "mongodb+srv://cliffchew84:"
 end_url = "cliff-nlb.t0whddv.mongodb.net/?retryWrites=true&w=majority"
 mongo_url = f"{base_url}{MONGO_PASSWORD}@{end_url}"
 
-
-def connect_mdb():
-    return mongo_client.MongoClient(mongo_url, serverSelectionTimeoutMS=5000)
-
-
-db = connect_mdb()
-db.list_database_names()
+# Connect to MongoDB to get past housing data
+db = mongo_client.MongoClient(mongo_url, serverSelectionTimeoutMS=5000)
 db_nlb = db['nlb']
-
 df = pd.DataFrame(list(db_nlb['hdb_hist'].find({}, {"_id": 0})))
 
-today = datetime.now().date()
-mth_first_d = today.replace(day=1)
-last_mth = mth_first_d - timedelta(days=1)
-last_mth, current_mth = last_mth.strftime("%Y-%m"), today.strftime("%Y-%m")
-
-# All months
-mths_2024_onwards = [str(i)[:7] for i in pd.date_range(
+# Update months in the latest year - Currently this is 2024 
+current_mth = datetime.now().strftime("%Y-%m")
+mths_2024 = [str(i)[:7] for i in pd.date_range(
     "2024-01-01", current_mth + "-01", freq='MS').tolist()]
 
-# Update recent two months
-update_mths = [last_mth, current_mth]
-df_cols = ['month', 'town', 'resale_price']
-param_fields = ",".join(df_cols)
+param_fields = ",".join(['month', 'town', 'resale_price'])
 y2024 = "d_8b84c4ee58e3cfc0ece0d773c8ca6abc"
 base_url = "https://data.gov.sg/api/action/datastore_search?resource_id="
 url = base_url + y2024
 
-for mth in mths_2024_onwards:
+for mth in mths_2024:
     params = {
         "fields": param_fields,
         "filters": json.dumps({'month': mth}),
@@ -88,11 +63,9 @@ price_grps_dict[price_grps[2]] = '#4CB140'
 price_grps_dict[price_grps[3]] = '#F0AB00'
 price_grps_dict[price_grps[4]] = '#C9190B'
 
-chart_width = 1000
-chart_height = 600
+chart_width, chart_height = 1000, 600
 legend = dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
-q_period = 'yr_q'
-m_period = 'month'
+q_period, m_period = 'yr_q', 'month'
 today = str(datetime.today().date())
 note = f'Updated on {today}'
 
@@ -124,7 +97,6 @@ for p in df[q_period].drop_duplicates():
             line_color='#C9190B',
             showlegend=False
         ))
-
 
 fig.update_layout(
     title=f"Quarters - Public Home Price Distributions<br>{note}",
