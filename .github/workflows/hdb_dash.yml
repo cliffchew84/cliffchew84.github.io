@@ -22,7 +22,7 @@ jobs:
         run: pip install -r requirements.txt
       - name: Create HDB Dashboards
         env: 
-          mongo_pw: ${{ secrets.MONGO_PASSWORD }}
+          RENDER_DEPLOY: ${{ secrets.RENDER_DEPLOY }}
         run: python create_hdb_dash.py
       - name: Check for changes
         id: git-check
