@@ -1,0 +1,524 @@
+---
+format:
+  revealjs:
+    scrollable: true
+    css: | 
+        custom.css
+    width: 1280
+    height: 720
+    margin: 0.1
+include-in-header:
+  text: |
+    <script src="https://cdn.tailwindcss.com"></script>
+---
+
+--- 
+
+```{=html}
+<div style="display: flex; flex-direction: column; 
+    justify-content: center; align-items: flex-start; 
+    height: 60vh; padding-left: 2%;">
+  <h1 style="font-size: 1.5em; margin-top: 0.2rem;">自由业者</h1>
+  <h2 style="font-size: 1em; margin-top: 0.2rem;">和</h2>
+  <h2 style="font-size: 1em; margin-top: 0.2rem;">全职工作</h2>
+  <h2 style="font-size: 1em; margin-top: 0.2rem;">的</h2>
+  <h2 style="font-size: 1em; margin-top: 0.2rem; color:pink;">💘 血泪经验 💔</h2>
+</div>
+
+<div class="text-xl" style="position: fixed; bottom: 2vh; right: 
+    2vw; color: white; z-index: 10;">By Cliff Chew, 2025
+</div>
+```
+
+---
+
+```{=html}
+<h2>为什么这个主题？</h2>
+<ul>
+<li style="font-size: 0.8em;">越来越多人选择远距工作、自雇接案、甚至全职当自由工作者</li>
+<li style="font-size: 0.8em;">「梦想中的生活」：没有老板、时间自由、收入弹性</li>
+<li style="font-size: 0.8em;">分享自己在自由接案和全职工作的喜怒哀乐</li>
+</ul>
+
+
+<div style="text-align: h2; margin-top: 1rem;">
+  <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+        alt="freelance lifestyle" width="35%" >
+  <p class="text-sm text-white mt-2">▲ 自由工作：表面是海边笔电，实则是日夜奔波</p>
+</div>
+
+<div class="text-xl" style="position: fixed; bottom: 2vh; right: 
+    2vw; color: white; z-index: 10;">By Cliff Chew, 2025
+</div>
+```
+
+---
+
+```{=html}
+<h2>我的背景</h2>
+<div style="display: flex; justify-content: space-between;">
+<ul style="flex: 1">
+    <li style="font-size: 0.8em;"> ['09-'12] NUS : Econs Undergrad / Post-grad</li>
+    <li style="font-size: 0.8em;"> ['12-'14] NUS : Research Assistant ( Sociology )</li>
+    <li style="font-size: 0.8em;"> ['14-'16] Some Boring Non-Tech Jobs </li>
+    <li style="font-size: 0.8em;"> ['16-'19] Carousell : Digital Marketing Data Analyst</li>
+    <li style="font-size: 0.8em;"> ['19-'21] Grab : Senior Fraud Analyst</li>
+    <li style="font-size: 0.8em;"> ['21-'25] Freelance : Analytics Trainer / Consultant</li>
+    <li style="font-size: 0.8em;"> ['25+] Tech In Asia : Lead Data Analyst</li>
+</ul>
+
+<div>
+<img src="Cliff Chew.png" alt="My own photo" width="50%" height="50%">
+</div>
+</div>
+
+<div class="text-xl" style="position: fixed; bottom: 2vh; right: 
+    2vw; color: white; z-index: 10;">By Cliff Chew, 2025
+</div>
+```
+---
+
+```{=html}
+<h2>我为什么想当自由工作者？</h2>
+
+<div style="display: flex; gap: 3rem; align-items: flex-start; justify-content: space-between;">
+
+<!-- Text Column -->
+<div style="flex: 1; align-items: flex-start; height: 80px;">
+空间
+<ul>
+<li style="font-size: 0.8em;"> 📚 学习 ：公司内部受限</li>
+<li style="font-size: 0.8em;"> 💰 收入 ：一份工，一份钱</li>
+<li style="font-size: 0.8em;"> 🔥 挑战 ：想挑战自己的极限</li>
+</ul>
+
+<hr class='m-4'>
+
+<div style="display: flex; align-items: flex-start; height: 80px;">
+自由
+<ul>
+<li style="font-size: 0.8em;"> 🕒 时间 : 选择几点上下班</li>
+<li style="font-size: 0.8em;"> 🎯 项目 : 想挑战不同层面</li>
+<li style="font-size: 0.8em;"> 🏝️ 地点 : 丰富人生</li>
+</ul>
+</div>
+</div>
+
+<!-- Image Column -->
+<div style="flex: 1; text-align: left;">
+<img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e"
+            alt="Freedom Beach" 
+            style="width: 100%; max-width: 600px; border-radius: 12px;" />
+<p class="text-sm text-white mt-2">▲ 自由的象征</p>
+</div>
+
+</div>
+
+<!-- Footer -->
+<div class="text-xl" style="position: fixed; bottom: 2vh; right: 
+    2vw; color: white; z-index: 10;">By Cliff Chew, 2025
+</div>
+```
+
+---
+
+
+```{=html}
+<h2>我的自由工作经历</h2>
+
+<div style="display: flex; align-items: flex-start; height: 120px;">
+试水温
+<ul>
+<li style="font-size: 0.8em;"> 保留了Grab 现有的全职工作</li>
+<li style="font-size: 0.8em;"> Part-time Bootcamp 导师</li>
+</ul>
+</div>
+
+<hr class='m-4'>
+
+<div style="display: flex; align-items: flex-start; height: 160px;">
+转自由
+<ul>
+<li style="font-size: 0.8em;">教学间顾问</li>
+<li style="font-size: 0.8em;">教学 : 企业内部基础数据的培训</li>
+<li style="font-size: 0.8em;">顾问 ：开始接到不同的案子</li>
+</ul>
+</div>
+
+<hr class='m-4'>
+
+<div style="display: flex; align-items: flex-start; height: 80px;">
+三年后
+<ul>
+<li style="font-size: 0.8em;">相辅相成</li>
+<li style="font-size: 0.8em;">扩展自己的人脉，自我行销</li>
+<li style="font-size: 0.8em;">自己想做的 side projects</li>
+</ul>
+</div>
+
+<!-- Footer -->
+<div class="text-xl" style="position: fixed; bottom: 2vh; right: 
+    2vw; color: white; z-index: 10;">By Cliff Chew, 2025
+</div>
+```
+
+---
+
+```{=html}
+<h2>自我定位</h2>
+<div style="display: flex; align-items: flex-start; height: 220px;">
+Freelancer
+<ul>
+    <li style="font-size: 0.8em;">有n 老板</li>
+    <li style="font-size: 0.8em;">比较没有保障和福利的短期工</li>
+    <li style="font-size: 0.8em;">工作内容比较多元化</li>
+    <li style="font-size: 0.8em;">比较有弹性</li>
+</ul>
+</div>
+
+<hr class='m-4'>
+
+<div style="display: flex; align-items: flex-start; height: 180px;">
+Solopreneur
+<ul>
+    <li style="font-size: 0.8em;">自己推产品</li>
+    <li style="font-size: 0.8em;">没有老板，只有用户</li>
+    <li style="font-size: 0.8em;">工程师比较容易的跑到</li>
+</ul>
+</div>
+
+<hr class='m-4'>
+
+<div style="display: flex; align-items: flex-start; height: 120px;">
+Self-employed
+<ul>
+    <li style="font-size: 0.8em;">请人处理事情</li>
+    <li style="font-size: 0.8em;">和其他公司合作</li>
+    <li style="font-size: 0.8em;">有自己的产品或服务</li>
+</ul>
+</div>
+
+<!-- Footer -->
+<div class="text-xl" style="position: fixed; bottom: 2vh; right: 
+    2vw; color: white; z-index: 10;">By Cliff Chew, 2025
+</div>
+```
+
+--- 
+
+```{=html}
+<h2>三年来的项目</h2>
+<div style="display: flex; align-items: flex-start; height: 180px;">
+收钱的
+<ul>
+    <li style="font-size: 0.8em;">Product Analytics - 东南亚的新创</li>
+    <li style="font-size: 0.8em;">Brand Analytics - 新加坡的中小型企业</li>
+    <li style="font-size: 0.8em;">Training - Coding & Analytics Instructor / 台湾Alpha Camp</li>
+</ul>
+</div>
+
+<hr class='m-4'>
+
+<div style="display: flex; align-items: flex-start; height: 120px;">
+好玩的
+<ul>
+    <li style="font-size: 0.8em;">
+        <a href="https://sg-housing.onrender.com/sg-public-home-trends" 
+           style="color: #facc15 !important; text-decoration: underline !important;"
+           target="_blank"
+           rel="noopener noreferrer">
+        新加坡国宅的分析</li>
+    <li style="font-size: 0.8em;">
+        <a href="https://sg-lib-books.web.app/dashboard" 
+           style="color: #facc15 !important; text-decoration: underline !important;"
+           target="_blank"
+           rel="noopener noreferrer">
+        新加坡国图书馆的网页</a>
+    </li>
+</ul>
+</div>
+
+<div class="flex flex-row justify-center gap-8 items-start">
+  
+  <!-- Image Column -->
+  <div class="flex-1 text-left max-w-md">
+    <img 
+      src="sg_public_housing.jpg"
+      alt="Public Housing" 
+      class="w-full rounded-xl"
+    />
+    <p class="text-sm text-white mt-2">▲ 新加坡国宅的走向</p>
+  </div>
+
+  <!-- Image Column -->
+  <div class="flex-1 text-left max-w-md">
+    <img 
+      src="sg_lib.jpg" 
+      alt="SG Library" 
+      class="w-full rounded-xl"
+    />
+    <p class="text-sm text-white mt-2">▲ 太想念书的结果</p>
+  </div>
+
+</div>
+
+
+<!-- Footer -->
+<div class="text-xl" style="position: fixed; bottom: 2vh; right: 
+    2vw; color: white; z-index: 10;">By Cliff Chew, 2025
+</div>
+```
+
+---
+
+```{=html}
+<h2>惨烈经验</h2>
+<div style="display: flex; align-items: flex-start; height: 120px;">
+没收到钱
+<ul>
+    <li style="font-size: 0.8em;">八个月的后段项目</li>
+    <li style="font-size: 0.8em;">不同的洽谈proposal</li>
+</ul>
+</div>
+
+<hr class='m-4'>
+
+<div style="display: flex; align-items: flex-start; height: 180px;">
+来者不拒
+<ul>
+    <li style="font-size: 0.8em;">一个老板到 n 个老板</li>
+    <li style="font-size: 0.8em;">一周七天，一天十二小时</li>
+    <li style="font-size: 0.8em;">没有闲暇的项目</li>
+</ul>
+</div>
+
+<hr class='m-4'>
+
+<div style="display: flex; align-items: flex-start; height: 160px;">
+技不如人
+<ul>
+    <li style="font-size: 0.8em;">网上爬虫</li>
+    <li style="font-size: 0.8em;">架起云端资料库</li>
+    <li style="font-size: 0.8em;">架起production predictive models</li>
+    <li style="font-size: 0.8em;">深入的AB Testing </li>
+</ul>
+</div>
+
+<!-- Footer -->
+<div class="text-xl" style="position: fixed; bottom: 2vh; right: 
+    2vw; color: white; z-index: 10;">By Cliff Chew, 2025
+</div>
+```
+
+---
+
+```{=html}
+<h2>为什么又转全职?</h2>
+
+<div style="display: flex; justify-content: space-between; flex-wrap: wrap; height: 80vh;">
+
+<div style="width: 45%; padding: 10px;">
+变化
+<div style="display: flex; flex-direction: column; align-items: flex-start;">
+<ul>
+<li style="font-size: 0.8em;">稳定收入</li>
+<li style="font-size: 0.8em;">公司福利</li>
+<li style="font-size: 0.8em;">带小团队</li>
+<li style="font-size: 0.8em;">同僚商讨</li>
+<li style="font-size: 0.8em;">主管想法</li>
+</ul>
+</div>
+
+</div>
+
+
+<div style="width: 45%; padding: 10px;">
+不变
+<div style="display: flex; flex-direction: column; align-items: flex-start;">
+<ul>
+<li style="font-size: 0.8em;">自由空间</li>
+<li style="font-size: 0.8em;">学习空间</li>
+</ul>
+</div>
+
+</div>
+</div>
+
+<!-- Footer -->
+<div class="text-xl" style="position: fixed; bottom: 2vh; right: 
+    2vw; color: white; z-index: 10;">By Cliff Chew, 2025
+</div>
+```
+
+---
+
+```{=html}
+<h2>我适合当自由工作者么？</h2>
+
+<div style="display: flex; justify-content: space-between; flex-wrap: wrap; height: 80vh;">
+
+<div style="width: 45%; padding: 10px;">
+市场
+<div style="display: flex; flex-direction: column; align-items: flex-start;">
+<ul>
+<li style="font-size: 0.8em;">设定主要顾客群</li>
+<li style="font-size: 0.8em;">自我市场定位</li>
+</ul>
+</div>
+
+<hr class='m-4'>
+
+<div style="display: flex; flex-direction: column; align-items: flex-start;
+margin-top: 30px;">
+能力
+<ul>
+<li style="font-size: 0.8em;">能执行一套完整产品的技术？</li>
+<li style="font-size: 0.8em;">愿意行销？有把握找到顾客吗？</li>
+<li style="font-size: 0.8em;">愿意接触不同领域？</li>
+</ul>
+</div>
+</div>
+
+
+<div style="width: 45%; padding: 10px;">
+条件
+<div style="display: flex; flex-direction: column; align-items: flex-start;">
+<ul>
+<li style="font-size: 0.8em;">抵抗收入不稳定</li>
+<li style="font-size: 0.8em;">自我规律</li>
+</ul>
+</div>
+
+<hr class='m-4'>
+
+<div style="display: flex; flex-direction: column; align-items: flex-start;
+margin-top: 30px;">
+目标
+<ul>
+<li style="font-size: 0.8em;">对现有工作老板不满？</li>
+<li style="font-size: 0.8em;">人生必达成执的目标？</li>
+</ul>
+</div>
+</div>
+</div>
+
+<!-- Footer -->
+<div class="text-xl" style="position: fixed; bottom: 2vh; right: 
+    2vw; color: white; z-index: 10;">By Cliff Chew, 2025
+</div>
+```
+
+--- 
+
+```{=html}
+<h2>一定要转自由工作者吗？</h2>
+<div style="display: flex; gap: 3rem; align-items: flex-start; justify-content: space-between;">
+
+  <!-- Text Section -->
+  <div>
+    <ul>
+      <li style="font-size: 0.8em;">换的工作</li>
+      <li style="font-size: 0.8em;">和主管商讨</li>
+      <li style="font-size: 0.8em;">兼差，斜杠</li>
+      <li style="font-size: 0.8em;">自我提升</li>
+    </ul>
+  </div>
+
+  <!-- Image Section -->
+  <div style="text-align: center;">
+    <img src="https://images.unsplash.com/photo-1518098268026-4e89f1a2cd8e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+         alt="freelance lifestyle" style="width: 800px; border-radius: 12px;">
+    <p class="text-sm text-white mt-2">▲ 自由工作：真的需要吗？</p>
+  </div>
+
+</div>
+
+<!-- Footer -->
+<div class="text-xl" style="position: fixed; bottom: 2vh; right: 2vw; color: white; z-index: 10;">
+  By Cliff Chew, 2025
+</div>
+```
+
+---
+
+```{=html}
+<h2>综合自由职业者的优缺点</h2>
+
+<div style="display: flex; align-items: flex-start; height: 280px;">
+优点
+<ul>
+    <li style="font-size: 0.8em;">选择项目的灵活性</li>
+    <li style="font-size: 0.8em;">控制工作时间和地点</li>
+    <li style="font-size: 0.8em;">多样化的机会</li>
+    <li style="font-size: 0.8em;">可以做自己感兴趣的项目</li>
+    <li style="font-size: 0.8em;">高收入潜力</li>
+</ul>
+</div>
+
+<hr class='m-4'>
+
+<div style="display: flex; align-items: flex-start; height: 120px;">
+缺点
+<ul>
+    <li style="font-size: 0.8em;">收入不稳定</li>
+    <li style="font-size: 0.8em;">没有公司福利（保险，有薪假）</li>
+    <li style="font-size: 0.8em;">处理所有行政工作（税务，合约）</li>
+    <li style="font-size: 0.8em;">孤独感</li>
+    <li style="font-size: 0.8em;">寻找新客户的压力</li>
+</ul>
+</div>
+
+<!-- Footer -->
+<div class="text-xl" style="position: fixed; bottom: 2vh; right: 
+    2vw; color: white; z-index: 10;">By Cliff Chew, 2025
+</div>
+```
+
+--- 
+
+```{=html}
+<h2>最后几句让大家参考</h2>
+<div style="display: flex; flex-direction: column; 
+justify-content: left; align-items: left; height: 40vh; text-align: center;">
+<ul>
+    <li style="font-size: 0.8em;">知道自己要什么</li>
+    <ul>
+        <li style="font-size: 0.8em;">金钱，自由，荣誉？</li>
+    </ul> 
+    <li style="font-size: 0.8em;">知道自己能做什么</li>
+    <ul>
+        <li style="font-size: 0.8em;">分析，编程，设计</li>
+    </ul> 
+    <li style="font-size: 0.8em;">知道自己愿意付出什么</li>
+    <ul>
+        <li style="font-size: 0.8em;">行销，收入不稳定，不断学习</li>
+    </ul> 
+    <li style="font-size: 0.8em;">知道自己想要进攻的市场要什么</li>
+    <ul>
+        <li style="font-size: 0.8em;">市场需求，大环境的变动</li>
+    </ul> 
+</ul>
+</div>
+
+<div class="text-xl" style="position: fixed; bottom: 2vh; right: 2vw; color: white; z-index: 10;">
+  By Cliff Chew, 2025
+</div>
+```
+
+
+---
+
+```{=html}
+<div style="display: flex; flex-direction: column; 
+justify-content: center; align-items: center; height: 80vh; text-align: center;">
+  <h1>感谢大家的聆听！</h1>
+  <h2>
+    <img src="linkedin_qrcode.jpg" alt="Linkedin QR Code" width="75%" height="75%">
+        我的LinkedIn
+  </h2>
+</div>
+
+<div class="text-xl" style="position: fixed; bottom: 2vh; right: 2vw; color: white; z-index: 10;">
+  By Cliff Chew, 2025
+</div>
+```
