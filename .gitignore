@@ -1,4 +1,6 @@
 reveal_slides/node_modules/**/*.md
+reveal_slides/**/*.md
+reveal_slides/**/*.markdown
 
 # macOS
 .DS_Store
@@ -15,7 +17,7 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-dist/
+# dist/
 downloads/
 eggs/
 .eggs/
