@@ -1,3 +1,5 @@
+reveal_slides/node_modules/**/*.md
+
 # macOS
 .DS_Store
 
