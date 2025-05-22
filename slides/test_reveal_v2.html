@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>reveal.js</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="dist/reset.css">
+  <link rel="stylesheet" href="dist/reveal.css">
+  <link rel="stylesheet" href="dist/theme/sky.css">
+  <link rel="stylesheet" href="styling_css/formal.css">
+  <link rel="stylesheet" href="plugin/highlight/monokai.css">
+
+  <style>
+    body {
+      font-family: 'Ubuntu', sans-serif;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="reveal">
+    <div class="slides">
+        <!-- slides/intro.html -->
+        <section class="layout-centered-text">
+        <div>
+            Welcome to the Show
+        </div>
+        </section>
+        <section class="layout-header-bullets">
+        <div class="header">Your Slide Header</div>
+        <ul>
+            <li>First bullet point</li>
+            <li>Second bullet point</li>
+            <li>Third bullet point</li>
+            <li>Fourth bullet point</li>
+        </ul>
+        </section>
+    </div>
+  </div>
+
+  <script src="dist/reveal.js"></script>
+  <script src="plugin/notes/notes.js"></script>
+  <script src="plugin/markdown/markdown.js"></script>
+  <script src="plugin/highlight/highlight.js"></script>
+
+  <script>
+    Reveal.initialize({
+      hash: true,
+      progress: true,
+      slideNumber: false,
+      showSlideNumber: 'all',
+      navigationMode: 'linear',
+      plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ],
+    });
+  </script>
+</body>
+</html>
