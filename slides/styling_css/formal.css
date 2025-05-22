@@ -1,0 +1,300 @@
+/* formal.css */
+
+body {
+  font-family: 'Ubuntu', sans-serif;
+  background-color: #fff;
+  color: #222;
+}
+
+.reveal {
+  font-size: 24px;
+}
+
+.reveal h2 {
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 0.4em;
+}
+
+.reveal p {
+  line-height: 1.6;
+  color: #333;
+}
+
+.reveal section {
+  padding: 2em;
+}
+
+/* -------------------------------------------------- */
+/* Centered large text layout */
+.layout-centered-text {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 10vh; /* Adjust the height as needed */
+  text-align: center;
+  padding: 2em;
+  font-size: 2em;
+  line-height: 1.4;
+  flex-direction: column;
+  transform: translateX(-60px); /* Shift the text 60px to the left */
+}
+
+/* Mobile-friendly adjustments */
+@media (max-width: 768px) {
+  .layout-centered-text {
+    font-size: 1.5em; /* Smaller font size for smaller screens */
+    padding: 1.5em;  /* Less padding on mobile */
+  }
+}
+
+@media (max-width: 480px) {
+  .layout-centered-text {
+    font-size: 1.2em; /* Further reduction in font size for very small screens */
+    padding: 1em;  /* Further adjust padding */
+  }
+}
+
+/* -------------------------------------------------- */
+/* Slide layout with header and bullet points */
+.layout-header-bullets {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Align to the left */
+  height: 100%; /* Full height of the slide */
+  padding-left: 1em; /* Reduce left padding */
+  padding-right: 3em; /* Increase right padding to shift more left */
+  font-size: 1.5em;
+  line-height: 1.6;
+  text-align: left;
+  transform: translateX(-120px) translateY(-30px);; /* Shift the text 60px to the left */
+}
+
+/* Header Styling */
+.layout-header-bullets .header {
+  font-size: 1.1em; /* Smaller font size */
+  font-weight: bold; /* Lighter weight */
+  margin-bottom: 0.5em; /* Slightly higher header */
+  margin-top: 0; /* No top margin */
+  align-self: flex-start; /* Align the header to the left */
+}
+
+/* Bullet points section */
+.layout-header-bullets ul {
+  list-style-type: disc;
+  font-size: 0.8em; /* Smaller font for bullet points */
+  line-height: 1.4;
+}
+
+/* -------------------------------------------------- */
+/* Slide layout with header and two columns of bullet points */
+.layout-header-two-columns {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Align to the left */
+  height: 100%; /* Full height of the slide */
+  padding-left: 1em; /* Reduce left padding */
+  padding-right: 3em; /* Increase right padding to shift more left */
+  font-size: 1.5em;
+  line-height: 1.6;
+  text-align: left;
+  transform: translateX(-120px) translateY(-30px); /* Shift the text */
+}
+
+/* Header Styling */
+.layout-header-two-columns .header {
+  font-size: 1.1em; /* Smaller font size */
+  font-weight: bold; /* Lighter weight */
+  margin-bottom: 0.5em; /* Slightly higher header */
+  margin-top: 0; /* No top margin */
+  align-self: flex-start; /* Align the header to the left */
+}
+
+/* Content section for the two columns */
+.layout-header-two-columns .content {
+  display: flex;
+  justify-content: space-between;
+  width: 120%;
+  gap: 1.5em; /* Adds space between the two columns */
+}
+
+/* Bullet points in columns */
+.layout-header-two-columns .column {
+  width: 45%; /* Set each column width */
+  list-style-type: disc;
+  font-size: 0.8em; /* Smaller font for bullet points */
+  line-height: 1.4;
+}
+
+/* -------------------------------------------------- */
+/* Slide layout with header and text-image columns */
+.layout-text-image {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  height: 100%;
+  padding-left: 1em;
+  padding-right: 3em;
+  font-size: 1.5em;
+  line-height: 1.6;
+  text-align: left;
+  transform: translateX(-120px) translateY(-30px);
+}
+
+/* Header Styling */
+.layout-text-image .header {
+  font-size: 1.1em;
+  font-weight: bold;
+  margin-bottom: 0.5em;
+  margin-top: 0;
+  align-self: flex-start;
+}
+
+/* Content section for text and image */
+.layout-text-image .content {
+  display: flex;
+  justify-content: space-between;
+  width: 120%;
+  gap: 2em; /* Space between text and image */
+}
+
+/* Text column (bullet points) */
+.layout-text-image .text-column {
+  width: 55%;
+}
+
+.layout-text-image .text-column ul {
+  list-style-type: disc;
+  font-size: 0.8em;
+  line-height: 1.4;
+}
+
+/* Image column */
+.layout-text-image .image-column {
+  width: 40%;
+}
+
+.layout-text-image .image-column img {
+  max-width: 90%;
+  max-height: 80%; /* Limit image height to fit within slide */
+  height: auto;
+  width: auto;
+  object-fit: contain; /* Preserve aspect ratio and contain within area */
+  display: block;
+  margin: 0 auto; /* Center horizontally */
+  border-radius: 2px;
+}
+
+/* -------------------------------------------------- */
+/* Layout wrapper */
+.layout-text-wide-image {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  height: 100%;
+  padding-left: 1em;
+  padding-right: 3em;
+  transform: translateX(-120px) translateY(-30px); /* Keep consistent with your other slides */
+}
+
+/* Header Styling Ð Ensure it's same size as other slides */
+.layout-text-wide-image .header {
+  font-size: 1.5em; /* Adjusted to match your other slides */
+  font-weight: bold;
+  margin-bottom: 0.5em;
+  margin-top: 0;
+  align-self: flex-start;
+  transform: translateX(-330px) translateY(30px);
+}
+
+/* Content section */
+.layout-text-wide-image .content {
+  display: flex;
+  justify-content: space-between;
+  width: 120%;
+  gap: 2em;
+  align-items: flex-start; /* Align both columns to the top */
+  transform: translateY(30px);
+}
+
+/* Text column (bullet points) */
+.layout-text-wide-image .text-column {
+  width: 30%;
+}
+
+.layout-text-wide-image .text-column ul {
+  list-style-type: disc;
+  font-size: 1.2em; /* Adjusted to match your other slides */
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+}
+
+/* Image column */
+.layout-text-wide-image .image-column {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center; /* Align the image to the top */
+  transform: translateX(40px) translateY(-20px);
+}
+
+.layout-text-wide-image .image-column img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  border-radius: 8px;
+  display: block;
+}
+
+
+/* -------------------------------------------------- */
+/* Layout wrapper */
+.layout-full-width-image {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  height: 100%;
+  padding-left: 1em;
+  padding-right: 1em;
+  transform: translateX(-120px) translateY(-30px); /* Keep consistent with your other slides */
+}
+
+/* Header Styling */
+.layout-full-width-image .header {
+  font-size: 1.5em; /* Adjusted to match your other slides */
+  font-weight: bold;
+  margin-bottom: 0.5em;
+  margin-top: 0;
+  align-self: flex-start;
+  transform: translateX(-330px) translateY(30px);
+}
+
+/* Image column (span the entire width) */
+.layout-full-width-image .image-column {
+  width: 100%; /* Full width of the slide */
+  height: 100%; /* Use full height of the container */
+  display: flex;
+  justify-content: center;  /* Horizontally centers the image */
+  align-items: center;  /* Vertically centers the image */
+  transform: translateX(-40px) translateY(-30px);
+}
+
+/* Add iframe styles */
+.layout-full-width-image .iframe-column {
+  width: 100%; /* Full width of the slide */
+  height: 80vh; /* 80% of the viewport height for a larger iframe */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.layout-full-width-image iframe {
+  width: 100%;  /* Ensure iframe takes full width */
+  height: 100%; /* Ensure iframe takes full height of the column */
+  border: none;
+  max-width: 100%; /* Prevents the iframe from exceeding the container */
+  max-height: 100%; /* Prevents the iframe from exceeding the container */
+  object-fit: contain; /* Makes sure the iframe content fits within the bounds */
+  transform: translateX(120px) translateY(40px);
+}
