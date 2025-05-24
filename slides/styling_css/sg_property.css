@@ -1,6 +1,6 @@
 /* formal.css */
 
-.p {
+body {
     font-family: 'Ubuntu', sans-serif;
     background-color: #fff;
     color: #222;
@@ -44,7 +44,7 @@
 
 .layout-centered-text p {
     font-size: 0.5em;
-    transform: translateY(-200px);
+    transform: translateY(-20px);
 }
 
 
