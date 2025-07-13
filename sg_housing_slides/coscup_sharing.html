@@ -1,84 +1,87 @@
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-        <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap" rel="stylesheet">
-        <style>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap" rel="stylesheet">
+    <style>
         body {
             font-family: 'Ubuntu', sans-serif;
         }
-        </style>
+    </style>
 
-		<title>reveal.js</title>
+    <title>SG Public Housing Analytics</title>
 
-		<link rel="stylesheet" href="dist/reset.css">
-		<link rel="stylesheet" href="dist/reveal.css">
-		<link rel="stylesheet" href="dist/theme/white.css">
-        <link rel="stylesheet" href="styling_css/formal.css">
+    <link rel="stylesheet" href="dist/reset.css">
+    <link rel="stylesheet" href="dist/reveal.css">
+    <link rel="stylesheet" href="dist/theme/white.css">
+    <link rel="stylesheet" href="styling_css/formal.css">
 
-		<!-- Theme used for syntax highlighted code -->
-		<link rel="stylesheet" href="plugin/highlight/monokai.css">
-	</head>
-	<body>
-        <div class="reveal">
-            <div class="slides" id="slides-container">
-                <!-- Slides will be loaded here -->
-            </div>
+    <!-- Theme used for syntax highlighted code -->
+    <link rel="stylesheet" href="plugin/highlight/monokai.css">
+</head>
+
+<body>
+    <div class="reveal">
+        <div class="slides" id="slides-container">
+            <!-- Slides will be loaded here -->
         </div>
+    </div>
 
-		<script src="dist/reveal.js"></script>
-		<script src="plugin/notes/notes.js"></script>
-		<script src="plugin/markdown/markdown.js"></script>
-		<script src="plugin/highlight/highlight.js"></script>
-        <script>
-                const slideFiles = [
-                    'slides/1_intro.html',
-                    'slides/2_about_me.html',
-                    'slides/3_sg_housing_intro.html',
-                    'slides/4_y_this_project.html',
-                    'slides/5_the_reasons.html',
-                    'slides/6_the_data.html',
-                    'slides/7_my_dash.html',
-                    'slides/8_findings.html',
-                    'slides/x_whats_next.html',
-                    'slides/x_closing_statement_1.html',
-                    'slides/x_closing_statement_2.html',
-                    'slides/second_intro.html',
-                    'slides/third_slide.html',
-                    'slides/image_slide.html',
-                    'slides/plotly_slide.html',
-                    'slides/large_image_slide.html',
-                ];
+    <script src="dist/reveal.js"></script>
+    <script src="plugin/notes/notes.js"></script>
+    <script src="plugin/markdown/markdown.js"></script>
+    <script src="plugin/highlight/highlight.js"></script>
+    <script>
+        const slideFiles = [
+            'slides/1_intro.html',
+            'slides/2_about_me.html',
+            'slides/3_sg_housing_intro.html',
+            'slides/4_y_this_project.html',
+            'slides/5_the_reasons.html',
+            'slides/6_the_data.html',
+            'slides/7_my_dash.html',
+            'slides/8_findings.html',
+            'slides/x_whats_next.html',
+            'slides/x_closing_statement_1.html',
+            'slides/x_closing_statement_2.html',
+            'slides/second_intro.html',
+            'slides/third_slide.html',
+            'slides/image_slide.html',
+            'slides/plotly_slide.html',
+            'slides/large_image_slide.html',
+        ];
 
-                const container = document.getElementById('slides-container');
+        const container = document.getElementById('slides-container');
 
-                // Function to load each slide in order
-                async function loadSlides() {
-                    for (let i = 0; i < slideFiles.length; i++) {
-                        const slideFile = slideFiles[i];
-                        const response = await fetch(slideFile);
-                        const html = await response.text();
+        // Function to load each slide in order
+        async function loadSlides() {
+            for (let i = 0; i < slideFiles.length; i++) {
+                const slideFile = slideFiles[i];
+                const response = await fetch(slideFile);
+                const html = await response.text();
 
-                        const div = document.createElement('div');
-                        div.innerHTML = html;
-                        container.appendChild(div.firstElementChild);
-                    }
+                const div = document.createElement('div');
+                div.innerHTML = html;
+                container.appendChild(div.firstElementChild);
+            }
 
-                    // Initialize Reveal after all slides are loaded
-                    Reveal.initialize({
-                        hash: true,
-                        progress: true,
-                        slideNumber: false,
-                        showSlideNumber: 'all',
-                        navigationMode: 'linear',
-                        shuffle: false,
-                        plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ]
-                    });
-                }
+            // Initialize Reveal after all slides are loaded
+            Reveal.initialize({
+                hash: true,
+                progress: true,
+                slideNumber: false,
+                showSlideNumber: 'all',
+                navigationMode: 'linear',
+                shuffle: false,
+                plugins: [RevealMarkdown, RevealHighlight, RevealNotes]
+            });
+        }
 
-                // Load slides and then initialize Reveal.js
-                loadSlides();
-            </script>
-	</body>
+        // Load slides and then initialize Reveal.js
+        loadSlides();
+    </script>
+</body>
+
 </html>
