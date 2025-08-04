@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Primary Meta Tags -->
+    <title>Cliff Chew | Lead Data Analyst</title>
+    <meta name="description" content="I’m a Lead Data Analyst with a social science background, bringing a human-centered lens to data. I don’t just crunch numbers—I uncover the ‘why’ behind the data and turn it into clear, actionable insights. Whether through sharp visualizations or deep analysis, I help teams and businesses make smarter, faster decisions that drive real impact.">
+    <meta name="author" content="Cliff Chew">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Cliff Chew | Lead Data Analyst">
+    <meta property="og:description" content="I’m a Lead Data Analyst with a social science background, bringing a human-centered lens to data. I don’t just crunch numbers—I uncover the ‘why’ behind the data and turn it into clear, actionable insights. Whether through sharp visualizations or deep analysis, I help teams and businesses make smarter, faster decisions that drive real impact.">
+    <meta property="og:image" content="https://media.licdn.com/dms/image/v2/C5603AQHnVkiNIOLdzA/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1616774993533?e=1756944000&v=beta&t=BOEtkCi1h7rjbJRAGo89RjsvnVa0hQdSGKk0213Zt74">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Cliff Chew | Lead Data Analyst">
+    <meta property="twitter:description" content="I’m a Lead Data Analyst with a social science background, bringing a human-centered lens to data. I don’t just crunch numbers—I uncover the ‘why’ behind the data and turn it into clear, actionable insights. Whether through sharp visualizations or deep analysis, I help teams and businesses make smarter, faster decisions that drive real impact.">
+    <meta property="twitter:image" content="https://media.licdn.com/dms/image/v2/C5603AQHnVkiNIOLdzA/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1616774993533?e=1756944000&v=beta&t=BOEtkCi1h7rjbJRAGo89RjsvnVa0hQdSGKk0213Zt74">
+    
+    <!-- Font Loading Optimization -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Zen+Kaku+Gothic+Antique:wght@400;500;700&display=swap" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Zen+Kaku+Gothic+Antique:wght@400;500;700&display=swap"></noscript>
+
+    <!-- Tailwind Play CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['"Zen Kaku Gothic Antique"', 'sans-serif'],
+              display: ['Orbitron', 'sans-serif'],
+            },
+            animation: {
+              pan: 'pan 200s linear infinite',
+              scan: 'scan 5s linear infinite',
+              'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
+            },
+            keyframes: {
+              pan: {
+                '0%': { backgroundPosition: '0 0' },
+                '100%': { backgroundPosition: '-2000px -2000px' },
+              },
+              scan: {
+                '0%': { backgroundPosition: '0 0, 0 0, 0 0' },
+                '100%': { backgroundPosition: '0 0, 0 0, 0 100vh' },
+              },
+              fadeInUp: {
+                from: {
+                  opacity: '0',
+                  transform: 'translateY(20px)',
+                },
+                to: {
+                  opacity: '1',
+                  transform: 'translateY(0)',
+                },
+              },
+            },
+          },
+        },
+      }
+    </script>
+    <style type="text/tailwindcss">
+      @layer base {
+        :root {
+          --color-bg: #181C2A; /* Dark Slate Blue */
+          --color-primary: #faff00;   /* Yellow */
+          --color-secondary: #ff00ff; /* Magenta */
+          --color-grid: rgba(100, 125, 150, 0.1);
+        }
+
+        body {
+          font-family: 'Zen Kaku Gothic Antique', sans-serif;
+          background-color: var(--color-bg);
+          color: #E0E0E0;
+          background-image:
+            linear-gradient(var(--color-grid) 1px, transparent 1px),
+            linear-gradient(90deg, var(--color-grid) 1px, transparent 1px),
+            linear-gradient(rgba(0, 0, 0, 0.3) 50%, transparent 50%);
+          background-size: 40px 40px, 40px 40px, 100% 4px;
+          background-attachment: fixed;
+          animation: pan 200s linear infinite, scan 5s linear infinite;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+          font-family: 'Orbitron', sans-serif;
+          font-weight: 700;
+          text-transform: uppercase;
+        }
+      }
+
+      @layer utilities {
+          /* Custom Scrollbar */
+          ::-webkit-scrollbar {
+            width: 12px;
+          }
+          ::-webkit-scrollbar-track {
+            background: #111520;
+          }
+          ::-webkit-scrollbar-thumb {
+            background-color: var(--color-primary);
+            border-radius: 20px;
+            border: 3px solid #111520;
+          }
+          ::-webkit-scrollbar-thumb:hover {
+            background-color: #ffff80;
+          }
+
+          /* Accessibility: Reduce motion */
+          @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+              animation-duration: 0.01ms !important;
+              animation-iteration-count: 1 !important;
+              transition-duration: 0.01ms !important;
+              scroll-behavior: auto !important;
+            }
+            body {
+              /* Specifically disable the infinite background animations */
+              animation: none;
+            }
+          }
+      }
+    </style>
+
+
+  <link rel="stylesheet" href="/index.css">
+    <script type="importmap">
+      {
+        "imports": {
+          "react-dom/": "https://esm.sh/react-dom@^19.1.1/",
+          "react": "https://esm.sh/react@^19.1.1",
+          "react/": "https://esm.sh/react@^19.1.1/"
+        }
+      }
+    </script>
+  <script type="module" crossorigin src="/assets/index-DBpNOCPg.js"></script>
+</head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
