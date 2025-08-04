@@ -131,6 +131,9 @@
       }
     </style>
 
+    <!-- In-browser transpiler for TSX/JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
 
   <link rel="stylesheet" href="/index.css">
     <script type="importmap">
@@ -146,5 +149,6 @@
 </head>
   <body>
     <div id="root"></div>
+    <script type="text/babel" data-type="module" src="./index.tsx"></script>
 </body>
 </html>
