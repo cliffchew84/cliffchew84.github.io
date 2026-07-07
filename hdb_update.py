@@ -13,7 +13,7 @@ BASE_URL = os.environ.get("BASE_URL", "https://data.gov.sg/api/action/datastore_
 EXT_URL = os.environ.get("EXT_URL", "?resource_id=d_8b059b2e34d588b0d36b4038734cd28d")
 
 
-def hdb_api_calls(mth, base_url=BASE_URL, ext_url=EXT_URL, API_KEY=API_KEY):
+def hdb_api_calls(mth):
     df_cols = [
         "month",
         "town",
@@ -24,7 +24,7 @@ def hdb_api_calls(mth, base_url=BASE_URL, ext_url=EXT_URL, API_KEY=API_KEY):
     ]
     param_fields = ",".join(df_cols)
 
-    full_url = base_url + ext_url
+    full_url = BASE_URL + EXT_URL
     headers = {"X-API-Key": API_KEY, "Accept": "application/json"}
     params = {
         "fields": param_fields,
@@ -33,8 +33,6 @@ def hdb_api_calls(mth, base_url=BASE_URL, ext_url=EXT_URL, API_KEY=API_KEY):
     }
 
     result = pl.DataFrame(schema={c: pl.String for c in df_cols})
-
-    # Added a timeout here so your GitHub Action doesn't hang forever if data.gov.sg is slow
     response = requests.get(full_url, params=params, headers=headers, timeout=60)
 
     if response.status_code == 200:
