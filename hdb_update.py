@@ -8,38 +8,42 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-API_KEY = os.environ["SOURCE_API_KEY"]
-BASE_URL = os.environ.get("BASE_URL", "https://data.gov.sg/api/action/datastore_search")
-EXT_URL = os.environ.get("EXT_URL", "?resource_id=d_8b059b2e34d588b0d36b4038734cd28d")
-
 
 def hdb_api_calls(mth):
+    # Define columns and URL
     df_cols = [
         "month",
+        "block",
         "town",
         "flat_type",
+        "street_name",
+        "storey_range",
         "floor_area_sqm",
         "remaining_lease",
         "resale_price",
     ]
     param_fields = ",".join(df_cols)
+    API_KEY = os.environ["SOURCE_API_KEY"]
+    BASE_URL = os.environ.get(
+        "BASE_URL", "https://data.gov.sg/api/action/datastore_search?resource_id="
+    )
+    EXT_URL = os.environ.get("EXT_URL", "d_8b84c4ee58e3cfc0ece0d773c8ca6abc")
 
     full_url = BASE_URL + EXT_URL
     headers = {"X-API-Key": API_KEY, "Accept": "application/json"}
+    empty_df = pl.DataFrame(schema=df_cols)
+
     params = {
         "fields": param_fields,
         "filters": json.dumps({"month": mth}),
         "limit": 10000,
     }
-
-    result = pl.DataFrame(schema={c: pl.String for c in df_cols})
-    response = requests.get(full_url, params=params, headers=headers, timeout=60)
-
+    result = empty_df
+    response = requests.get(full_url, params=params, headers=headers)
     if response.status_code == 200:
-        records = response.json().get("result", {}).get("records", [])
-        if records:  # Cleaner way to check if data actually exists
-            result = pl.DataFrame(records)
-
+        table_result = pl.DataFrame(response.json().get("result").get("records"))
+        if table_result.columns != []:
+            result = table_result
     return result
 
 
