@@ -52,9 +52,11 @@ def hdb_process(df: pl.DataFrame) -> pl.DataFrame:
     return (
         df.with_columns(
             pl.col("month").str.to_date(format="%Y-%m"),
+            # Handle remaining_lease: coerce to String first (handles all-null columns),
+            # then extract numeric part, defaulting to null if missing/invalid
             pl.col("remaining_lease")
-            .str.split(" ")
-            .list[0]
+            .cast(pl.String)
+            .str.extract(r"(\d+)")
             .cast(pl.Float64)
             .alias("lease"),
             pl.col("flat_type")
