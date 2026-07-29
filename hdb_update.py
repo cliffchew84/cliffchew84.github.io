@@ -124,7 +124,8 @@ first_day_this_month = today.replace(day=1)
 previous_mth = (first_day_this_month - timedelta(days=1)).strftime("%Y-%m")
 print(current_mth, previous_mth)
 
-hdb_api_calls(previous_mth).shape
+print(hdb_api_calls(previous_mth).shape)
+print(hdb_api_calls(current_mth).shape)
 
 # Combining them the forming new data
 latest_df = pl.concat(
