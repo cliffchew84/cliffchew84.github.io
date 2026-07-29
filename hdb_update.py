@@ -130,6 +130,8 @@ latest_df = pl.concat(
     ]
 ).pipe(hdb_process)
 
+print(latest_df.shape)
+
 cutoff_date = datetime.strptime(previous_mth, "%Y-%m").date()
 
 # Extracting old data and updating the latest two months data
