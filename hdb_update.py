@@ -33,6 +33,9 @@ def hdb_api_calls(mth):
     headers = {"X-API-Key": API_KEY, "Accept": "application/json"}
     empty_df = pl.DataFrame(schema=df_cols)
 
+    print(API_KEY)
+    print(full_url)
+
     params = {
         "fields": param_fields,
         "filters": json.dumps({"month": mth}),
