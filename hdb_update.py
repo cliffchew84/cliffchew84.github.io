@@ -24,10 +24,8 @@ def hdb_api_calls(mth):
     ]
     param_fields = ",".join(df_cols)
     API_KEY = os.environ["SOURCE_API_KEY"]
-    BASE_URL = os.environ.get(
-        "BASE_URL", "https://data.gov.sg/api/action/datastore_search?resource_id="
-    )
-    EXT_URL = "d_8b84c4ee58e3cfc0ece0d773c8ca6abc"
+    BASE_URL = "https://data.gov.sg/api/action/datastore_search"
+    EXT_URL = "?resource_id=d_8b84c4ee58e3cfc0ece0d773c8ca6abc"
     full_url = BASE_URL + EXT_URL
     headers = {"X-API-Key": API_KEY, "Accept": "application/json"}
     empty_df = pl.DataFrame(schema=df_cols)
