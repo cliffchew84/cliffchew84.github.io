@@ -2,8 +2,8 @@ name: Scheduled HDB Data Sync to R2
 
 on:
   schedule:
-    # Triggers every Sunday at midnight UTC (8:00 AM Singapore Time)
-    - cron: "0 0 * * 0"
+    # Triggers daily at 22:00 UTC (06:00 AM Singapore Time)
+    - cron: "0 22 * * *"
   workflow_dispatch: # This adds a manual "Run workflow" button in the GitHub UI
 
 jobs:
