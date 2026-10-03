@@ -39,7 +39,14 @@ def hdb_api_calls(mth):
         "limit": 10000,
     }
     result = empty_df
-    response = requests.get(full_url, params=params, headers=headers)
+    # Retry for transient 429/500/502/503/504 — backoff 1s, max 3 tries, reuse session
+    from urllib3.util import Retry
+    from requests.adapters import HTTPAdapter
+    session = requests.Session()
+    retry = Retry(total=3, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])
+    session.mount("https://", HTTPAdapter(max_retries=retry))
+    session.mount("http://", HTTPAdapter(max_retries=retry))
+    response = session.get(full_url, params=params, headers=headers)
     if response.status_code == 200:
         table_result = pl.DataFrame(response.json().get("result").get("records"))
         if table_result.columns != []:
@@ -73,17 +80,22 @@ def hdb_process(df: pl.DataFrame) -> pl.DataFrame:
     )
 
 
-def load_cloudflare_parquet(df: pl.DataFrame) -> None:
-    """
-    Uploads and overwrites the HDB parquet file inside Cloudflare R2,
-    re-applying performance optimizations optimized for client-side DuckDB-Wasm.
-    """
-    R2_STORAGE_OPTIONS = {
+def get_r2_storage_options() -> dict:
+    """Returns R2 storage options for use across read and write operations."""
+    return {
         "aws_access_key_id": os.environ["R2_ACCESS_KEY_ID"],
         "aws_secret_access_key": os.environ["R2_SECRET_ACCESS_KEY"],
         "endpoint_url": f"https://{os.environ['R2_ACCOUNT_ID']}.r2.cloudflarestorage.com",
         "region": "auto",
     }
+
+
+def load_cloudflare_parquet(df: pl.DataFrame) -> None:
+    """
+    Uploads and overwrites the HDB parquet file inside Cloudflare R2,
+    re-applying performance optimizations optimized for client-side DuckDB-Wasm.
+    """
+    R2_STORAGE_OPTIONS = get_r2_storage_options()
     R2_FILE_PATH = "s3://cliff-hdb-data/hdb.parquet"
 
     print(f"Uploading and replacing file at: {R2_FILE_PATH}...")
@@ -99,39 +111,31 @@ def load_cloudflare_parquet(df: pl.DataFrame) -> None:
     print("Upload complete! File successfully overwritten.")
 
 
-# Pulling current dates
-today = datetime.now().date()
-current_mth = today.strftime("%Y-%m")
+# Rolling window: fetch the last N months and refresh them in the parquet
+WINDOW_MONTHS = 6  # change this one value to widen/narrow the window
 
-# 3. Safe, clean previous month calculation
-# Replace the first day of this month, subtract 1 day to land on the previous month safely
-first_day_this_month = today.replace(day=1)
-previous_mth = (first_day_this_month - timedelta(days=1)).strftime("%Y-%m")
-print(current_mth, previous_mth)
 
-print(hdb_api_calls(previous_mth).shape)
-print(hdb_api_calls(current_mth).shape)
+def last_n_months(n: int) -> list[str]:
+    """Returns the last n month strings in YYYY-MM format (oldest first)."""
+    today = datetime.now().date()
+    months = []
+    for i in range(n - 1, -1, -1):
+        months.append((today.replace(day=1) - timedelta(days=1 + i * 30)).strftime("%Y-%m"))
+    return months
 
-# Combining them the forming new data
-latest_df = pl.concat(
-    [
-        hdb_api_calls(previous_mth),
-        hdb_api_calls(current_mth),
-    ]
-).pipe(hdb_process)
 
+months_to_fetch = last_n_months(WINDOW_MONTHS)
+print("Fetching months:", months_to_fetch)
+
+latest_df = pl.concat([hdb_api_calls(m) for m in months_to_fetch]).pipe(hdb_process)
 print(latest_df.shape)
 
-cutoff_date = datetime.strptime(previous_mth, "%Y-%m").date()
+# Cutoff = start of the oldest month in the window; drop everything before it
+cutoff_date = datetime.strptime(months_to_fetch[0], "%Y-%m").date()
 
 # Extracting old data and updating the latest two months data
 # Uses scan_parquet to lazy-filter — only rows before cutoff_date are materialized
-R2_STORAGE_OPTIONS = {
-    "aws_access_key_id": os.environ["R2_ACCESS_KEY_ID"],
-    "aws_secret_access_key": os.environ["R2_SECRET_ACCESS_KEY"],
-    "endpoint_url": f"https://{os.environ['R2_ACCOUNT_ID']}.r2.cloudflarestorage.com",
-    "region": "auto",
-}
+R2_STORAGE_OPTIONS = get_r2_storage_options()
 R2_FILE_PATH = "s3://cliff-hdb-data/hdb.parquet"
 
 old_parquet = (
