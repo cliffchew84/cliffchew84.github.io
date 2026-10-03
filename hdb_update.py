@@ -5,6 +5,16 @@ from datetime import datetime, timedelta
 import polars as pl
 import requests
 from dotenv import load_dotenv
+from urllib3.util import Retry
+from requests.adapters import HTTPAdapter
+
+load_dotenv()
+
+# ---- env var guard -------------------------------------------------
+required = ["SOURCE_API_KEY", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_ACCOUNT_ID"]
+missing = [v for v in required if not os.getenv(v)]
+if missing:
+    raise RuntimeError(f"Missing environment variables: {missing}")
 
 load_dotenv()
 
@@ -30,7 +40,6 @@ def hdb_api_calls(mth):
     headers = {"X-API-Key": API_KEY, "Accept": "application/json"}
     empty_df = pl.DataFrame(schema=df_cols)
 
-    print(API_KEY)
     print(full_url)
 
     params = {
@@ -40,13 +49,13 @@ def hdb_api_calls(mth):
     }
     result = empty_df
     # Retry for transient 429/500/502/503/504 — backoff 1s, max 3 tries, reuse session
-    from urllib3.util import Retry
-    from requests.adapters import HTTPAdapter
     session = requests.Session()
     retry = Retry(total=3, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])
     session.mount("https://", HTTPAdapter(max_retries=retry))
     session.mount("http://", HTTPAdapter(max_retries=retry))
     response = session.get(full_url, params=params, headers=headers)
+    if response.status_code != 200:
+        raise RuntimeError(f"API failed {response.status_code} for month {mth}")
     if response.status_code == 200:
         table_result = pl.DataFrame(response.json().get("result").get("records"))
         if table_result.columns != []:
@@ -120,7 +129,13 @@ def last_n_months(n: int) -> list[str]:
     today = datetime.now().date()
     months = []
     for i in range(n - 1, -1, -1):
-        months.append((today.replace(day=1) - timedelta(days=1 + i * 30)).strftime("%Y-%m"))
+        # Exact month arithmetic — no approximate timedelta
+        y, m = today.year, today.month
+        for _ in range(i):
+            m -= 1
+            if m == 0:
+                m, y = 12, y - 1
+        months.append(f"{y}-{m:02d}")
     return months
 
 
@@ -138,11 +153,27 @@ cutoff_date = datetime.strptime(months_to_fetch[0], "%Y-%m").date()
 R2_STORAGE_OPTIONS = get_r2_storage_options()
 R2_FILE_PATH = "s3://cliff-hdb-data/hdb.parquet"
 
-old_parquet = (
-    pl.scan_parquet(R2_FILE_PATH, storage_options=R2_STORAGE_OPTIONS)
-    .filter(pl.col("month") < cutoff_date)
-    .collect()
-)
+# First-run guard: if R2 parquet hasn't been created yet, start with empty frame
+try:
+    old_parquet = (
+        pl.scan_parquet(R2_FILE_PATH, storage_options=R2_STORAGE_OPTIONS)
+        .filter(pl.col("month") < cutoff_date)
+        .collect()
+    )
+except Exception:
+    old_parquet = pl.DataFrame(
+        schema=[
+            "month",
+            "block",
+            "town",
+            "flat_type",
+            "street_name",
+            "storey_range",
+            "floor_area_sqm",
+            "remaining_lease",
+            "resale_price",
+        ]
+    )
 new_parquet = pl.concat(
     [old_parquet, latest_df]
 ).sort("month")
