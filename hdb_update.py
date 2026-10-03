@@ -73,21 +73,6 @@ def hdb_process(df: pl.DataFrame) -> pl.DataFrame:
     )
 
 
-def extract_cloudflare_parquet() -> pl.DataFrame:
-    """Downloads the HDB parquet file from Cloudflare R2 using shared configurations."""
-
-    R2_STORAGE_OPTIONS = {
-        "aws_access_key_id": os.environ["R2_ACCESS_KEY_ID"],
-        "aws_secret_access_key": os.environ["R2_SECRET_ACCESS_KEY"],
-        "endpoint_url": f"https://{os.environ['R2_ACCOUNT_ID']}.r2.cloudflarestorage.com",
-        "region": "auto",
-    }
-    R2_FILE_PATH = "s3://cliff-hdb-data/hdb.parquet"
-
-    print(f"Streaming data from Cloudflare R2: {R2_FILE_PATH}")
-    return pl.read_parquet(R2_FILE_PATH, storage_options=R2_STORAGE_OPTIONS)
-
-
 def load_cloudflare_parquet(df: pl.DataFrame) -> None:
     """
     Uploads and overwrites the HDB parquet file inside Cloudflare R2,
@@ -140,9 +125,22 @@ print(latest_df.shape)
 cutoff_date = datetime.strptime(previous_mth, "%Y-%m").date()
 
 # Extracting old data and updating the latest two months data
-old_parquet = extract_cloudflare_parquet()
+# Uses scan_parquet to lazy-filter — only rows before cutoff_date are materialized
+R2_STORAGE_OPTIONS = {
+    "aws_access_key_id": os.environ["R2_ACCESS_KEY_ID"],
+    "aws_secret_access_key": os.environ["R2_SECRET_ACCESS_KEY"],
+    "endpoint_url": f"https://{os.environ['R2_ACCOUNT_ID']}.r2.cloudflarestorage.com",
+    "region": "auto",
+}
+R2_FILE_PATH = "s3://cliff-hdb-data/hdb.parquet"
+
+old_parquet = (
+    pl.scan_parquet(R2_FILE_PATH, storage_options=R2_STORAGE_OPTIONS)
+    .filter(pl.col("month") < cutoff_date)
+    .collect()
+)
 new_parquet = pl.concat(
-    [old_parquet.filter(pl.col("month") < cutoff_date), latest_df]
+    [old_parquet, latest_df]
 ).sort("month")
 
 load_cloudflare_parquet(new_parquet)
