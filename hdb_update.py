@@ -120,7 +120,13 @@ def last_n_months(n: int) -> list[str]:
     today = datetime.now().date()
     months = []
     for i in range(n - 1, -1, -1):
-        months.append((today.replace(day=1) - timedelta(days=1 + i * 30)).strftime("%Y-%m"))
+        # Exact month arithmetic — no approximate timedelta
+        y, m = today.year, today.month
+        for _ in range(i):
+            m -= 1
+            if m == 0:
+                m, y = 12, y - 1
+        months.append(f"{y}-{m:02d}")
     return months
 
 
