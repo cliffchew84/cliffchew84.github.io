@@ -5,6 +5,8 @@ on:
     # Triggers daily at 22:00 UTC (06:00 AM Singapore Time)
     - cron: "0 22 * * *"
   workflow_dispatch: # This adds a manual "Run workflow" button in the GitHub UI
+  push:
+    branches: [main]
 
 jobs:
   run-sync-pipeline:
