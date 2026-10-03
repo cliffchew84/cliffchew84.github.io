@@ -112,7 +112,7 @@ def load_cloudflare_parquet(df: pl.DataFrame) -> None:
 
 
 # Rolling window: fetch the last N months and refresh them in the parquet
-WINDOW_MONTHS = 6  # change this one value to widen/narrow the window
+WINDOW_MONTHS = 3  # change this one value to widen/narrow the window
 
 
 def last_n_months(n: int) -> list[str]:
@@ -133,7 +133,7 @@ print(latest_df.shape)
 # Cutoff = start of the oldest month in the window; drop everything before it
 cutoff_date = datetime.strptime(months_to_fetch[0], "%Y-%m").date()
 
-# Extracting old data and updating the latest two months data
+# Extracting old data and updating the latest 3 months data
 # Uses scan_parquet to lazy-filter — only rows before cutoff_date are materialized
 R2_STORAGE_OPTIONS = get_r2_storage_options()
 R2_FILE_PATH = "s3://cliff-hdb-data/hdb.parquet"
