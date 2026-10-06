@@ -87,7 +87,7 @@ def hdb_process(df: pl.DataFrame) -> pl.DataFrame:
             area=pl.col("floor_area_sqm").cast(pl.Float64) * 10.7639,
             address=pl.col("block") + " " + pl.col("street_name"),
         )
-        .select("month", "address", "town", "flat_type", "area", "lease", "resale_price")
+        .select("month", "town", "flat_type", "area", "lease", "resale_price", "address")
         .rename({"resale_price": "price", "flat_type": "type"})
     )
 
