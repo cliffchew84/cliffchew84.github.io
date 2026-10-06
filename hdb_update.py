@@ -10,6 +10,8 @@ from requests.adapters import HTTPAdapter
 
 load_dotenv()
 
+# Cosmetic update for git push
+
 # ---- env var guard -------------------------------------------------
 required = ["SOURCE_API_KEY", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_ACCOUNT_ID"]
 missing = [v for v in required if not os.getenv(v)]
