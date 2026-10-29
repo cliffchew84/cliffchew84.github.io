@@ -7,7 +7,7 @@ on:
     - cron: "30 2 * * *"
 jobs:
   run-hdb_dash:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps: 
       - name: Checkout repo content
         uses: actions/checkout@v4
