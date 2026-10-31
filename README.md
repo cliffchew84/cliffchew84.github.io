@@ -21,7 +21,8 @@ URL changes.
 - <https://cliffchew84.github.io/talks/sg_housing/> — SG housing slides
 - <https://cliffchew84.github.io/talks/tw_slides/tw_dbt_slides.html> — TW slides
 
-The root URL <https://cliffchew84.github.io/> returns 404.
+The root URL <https://cliffchew84.github.io/> returns 200. It renders this
+README as a Jekyll page. It is not a real landing page.
 
 ## Hosts
 
@@ -45,7 +46,8 @@ The root URL <https://cliffchew84.github.io/> returns 404.
 
 - The live site comes from `main`.
 - `main` is the only long-lived branch. `master` was retired on 2026-10-31.
-- The root URL returns 404, because `main` has no root `index.html`.
+- The root URL serves a Jekyll build of `README.md`, because `main` has no
+  root `index.html`.
 - `dist/index.html` is not served by Pages. It deploys to Netlify instead.
 - `.github/workflows/deploy.yml` uploads only `talks/sg_housing`. It is unused, because Pages uses legacy branch builds.
 
@@ -87,7 +89,7 @@ Secrets not used by any workflow: `BASE_URL`, `EXT_URL`, `MONGO_PASSWORD`. `BASE
 
 ## To do
 
-- [ ] Add a root `index.html` on `main`, so `/` does not return 404.
+- [ ] Add a root `index.html` on `main`, so `/` stops rendering this README.
 - [ ] Decide one portfolio to keep: `profile/` or `dist/`.
 - [ ] Remove or use the unused secrets named above.
 - [ ] Turn on secret scanning and push protection.
