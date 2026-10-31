@@ -5,6 +5,10 @@ reveal_slides/**/*.markdown
 # macOS
 .DS_Store
 
+# Dependencies
+node_modules/
+.bundle/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
