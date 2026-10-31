@@ -1,8 +1,8 @@
-name: Deploy pages
+name: Deploy Pages
 
 on:
-  # Manual only until the new site exists.
-  # Auto-deploy currently publishes talks/sg_housing as the whole site.
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -12,38 +12,43 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
+      - name: Assemble site
+        run: |
+          rm -rf site
+          mkdir -p site
 
-      - name: Setup @antfu/ni
-        run: npm i -g @antfu/ni
+          # Portfolio at root — use profile/ as stopgap until portfolio/ exists
+          cp -r profile/* site/
 
-      - name: Install dependencies
-        run: nci
+          # Talks at /talks/
+          cp -r talks site/talks
 
-      - name: Build
-        run: nr build
+          # Disable Jekyll so static files are served as-is
+          touch site/.nojekyll
+
+          echo "=== site tree ==="
+          find site -type f | sort
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
-      - uses: actions/upload-pages-artifact@v3
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          path: talks/sg_housing
+          path: site
 
   deploy:
     environment:
       name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     needs: build
     runs-on: ubuntu-latest
     name: Deploy
