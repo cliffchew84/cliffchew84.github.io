@@ -28,6 +28,9 @@ jobs:
           # Portfolio at root — use profile/ as stopgap until portfolio/ exists
           cp -r profile/* site/
 
+          # Also keep /profile/ working for legacy links
+          cp -r profile site/profile
+
           # Talks at /talks/
           cp -r talks site/talks
 
