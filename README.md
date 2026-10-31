@@ -38,14 +38,14 @@ The root URL <https://cliffchew84.github.io/> returns 404.
 | ------------- | ---------------------------- |
 | Status        | built                        |
 | Build type    | legacy (branch deploy)       |
-| Source        | branch `master`, path `/`    |
+| Source        | branch `main`, path `/`      |
 | Custom domain | none                         |
 | HTTPS         | enforced                     |
 | Last build    | commit `3c2db7f`, 2026-10-30 |
 
-- The live site comes from `master`. The working branch is `main`.
-- A push to `main` does not update the site.
-- The root URL returns 404, because `master` has no root `index.html`.
+- The live site comes from `main`.
+- `main` is the only long-lived branch. `master` was retired on 2026-10-31.
+- The root URL returns 404, because `main` has no root `index.html`.
 - `dist/index.html` is not served by Pages. It deploys to Netlify instead.
 - `.github/workflows/deploy.yml` uploads only `talks/sg_housing`. It is unused, because Pages uses legacy branch builds.
 
@@ -87,8 +87,7 @@ Secrets not used by any workflow: `BASE_URL`, `EXT_URL`, `MONGO_PASSWORD`. `BASE
 
 ## To do
 
-- [ ] Merge `main` into `master`, or change the Pages source to `main`.
-- [ ] Add a root `index.html` on `master`, so `/` does not return 404.
+- [ ] Add a root `index.html` on `main`, so `/` does not return 404.
 - [ ] Decide one portfolio to keep: `profile/` or `dist/`.
 - [ ] Remove or use the unused secrets named above.
 - [ ] Turn on secret scanning and push protection.

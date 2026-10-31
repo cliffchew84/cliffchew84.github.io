@@ -6,7 +6,7 @@ on:
     - cron: "0 22 * * *"
   workflow_dispatch: # This adds a manual "Run workflow" button in the GitHub UI
   push:
-    branches: [master]
+    branches: [master, main]
 
 jobs:
   run-sync-pipeline:
