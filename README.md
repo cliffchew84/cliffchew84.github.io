@@ -42,14 +42,17 @@ README as a Jekyll page. It is not a real landing page.
 | Source        | branch `main`, path `/`      |
 | Custom domain | none                         |
 | HTTPS         | enforced                     |
-| Last build    | commit `3c2db7f`, 2026-10-30 |
+| Last build    | commit `9e272195`, 2026-10-31 |
 
 - The live site comes from `main`.
 - `main` is the only long-lived branch. `master` was retired on 2026-10-31.
 - The root URL serves a Jekyll build of `README.md`, because `main` has no
   root `index.html`.
 - `dist/index.html` is not served by Pages. It deploys to Netlify instead.
-- `.github/workflows/deploy.yml` uploads only `talks/sg_housing`. It is unused, because Pages uses legacy branch builds.
+- `.github/workflows/deploy.yml` is **manual only** (`workflow_dispatch`).
+  It uploads only `talks/sg_housing`, so running it replaces the whole site
+  with the slide deck. Do not run it until it is rewritten.
+- A push to `main` also starts the R2 data sync in `hdb_parquet.yml`.
 
 ## Data pipelines
 
