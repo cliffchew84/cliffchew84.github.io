@@ -12,7 +12,6 @@ URL changes.
 | Old portfolio page    | GitHub Pages  | `profile/`          | live    |
 | SG housing slide deck | GitHub Pages  | `talks/sg_housing/` | live    |
 | TW dbt slide deck     | GitHub Pages  | `talks/tw_slides/`  | live    |
-| New portfolio page    | Netlify       | `dist/`             | live    |
 | HDB parquet data      | Cloudflare R2 | `data/hdb_update.py`| unknown |
 
 ## Live URLs
@@ -33,6 +32,9 @@ README as a Jekyll page. It is not a real landing page.
 | Vercel        | unknown  | no       |
 | Cloudflare R2 | 1 bucket | no       |
 
+- `dist/`, `package.json`, `package-lock.json`, `netlify.toml`, `vercel.json` were removed on 2026-10-31.
+- Netlify and Vercel configs are gone. The 20 Netlify sites and any Vercel project are unchanged.
+
 ## GitHub Pages
 
 | Item          | Value                        |
@@ -48,7 +50,6 @@ README as a Jekyll page. It is not a real landing page.
 - `main` is the only long-lived branch. `master` was retired on 2026-10-31.
 - The root URL serves a Jekyll build of `README.md`, because `main` has no
   root `index.html`.
-- `dist/index.html` is not served by Pages. It deploys to Netlify instead.
 - `.github/workflows/deploy.yml` is **manual only** (`workflow_dispatch`).
   It uploads only `talks/sg_housing`, so running it replaces the whole site
   with the slide deck. Do not run it until it is rewritten.
@@ -100,11 +101,10 @@ Secrets not used by any workflow: `BASE_URL`, `EXT_URL`, `MONGO_PASSWORD`. `BASE
 ## To do
 
 - [ ] Add a root `index.html` on `main`, so `/` stops rendering this README.
-- [ ] Decide one portfolio to keep: `profile/` or `dist/`.
 - [ ] Remove or use the unused secrets named above.
 - [ ] Turn on secret scanning and push protection.
 - [ ] Log in to Vercel and record the project, domain, and deploy method here.
-- [ ] Remove `deploy.yml`, or change Pages to workflow builds and use it.
+- [ ] Rewrite `deploy.yml` and switch Pages to workflow builds.
 - [ ] Record the R2 bucket public URL, if the data is public.
 
 ## Check commands
