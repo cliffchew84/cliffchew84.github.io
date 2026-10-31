@@ -21,7 +21,7 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-# dist/
+/dist/
 downloads/
 eggs/
 .eggs/
@@ -165,8 +165,13 @@ Untitled*.ipynb
 credentials.*
 .credentials.*
 
-# data file
-data/
+# Local data exports (keep the pipeline source in data/ tracked)
+data/**/*.parquet
+data/**/*.csv
+data/**/*.json
+data/*.parquet
+data/*.csv
+data/*.json
 
 # Config folder for app_bot
 bot/bot_scripts/config
