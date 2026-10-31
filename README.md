@@ -13,7 +13,7 @@ URL changes.
 | SG housing slide deck | GitHub Pages  | `talks/sg_housing/` | live    |
 | TW dbt slide deck     | GitHub Pages  | `talks/tw_slides/`  | live    |
 | New portfolio page    | Netlify       | `dist/`             | live    |
-| HDB parquet data      | Cloudflare R2 | `hdb_update.py`     | unknown |
+| HDB parquet data      | Cloudflare R2 | `data/hdb_update.py`| unknown |
 
 ## Live URLs
 
@@ -56,11 +56,18 @@ README as a Jekyll page. It is not a real landing page.
 
 ## Data pipelines
 
-`hdb_parquet.yml` runs daily at 22:00 UTC. It calls `hdb_update.py`. The script reads the HDB resale dataset from
-data.gov.sg, then writes `s3://cliff-hdb-data/hdb.parquet` in Cloudflare R2.
+All pipeline files live in `data/`. `data/requirements.txt` lists every Python
+dependency for both workflows.
 
-`hdb_dash.yml` runs daily at 02:30 UTC. It calls `create_hdb_dash.py`. The script calls a Render deploy hook and writes
-`execute_date.txt`. The workflow then commits the result with `PERSONAL_ACCESS_TOKEN`.
+`hdb_parquet.yml` runs daily at 22:00 UTC. It calls `data/hdb_update.py`. The
+script reads the HDB resale dataset from data.gov.sg, then writes
+`s3://cliff-hdb-data/hdb.parquet` in Cloudflare R2.
+
+`hdb_dash.yml` runs daily at 02:30 UTC. It calls `data/create_hdb_dash.py`. The
+script calls a Render deploy hook and writes `data/execute_date.txt`. The
+workflow then commits the result with `PERSONAL_ACCESS_TOKEN`.
+
+`data/full_hdb_upload.py` is a manual backfill script. No workflow calls it.
 
 ## Secrets
 
