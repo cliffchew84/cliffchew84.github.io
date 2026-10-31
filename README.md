@@ -16,12 +16,14 @@ URL changes.
 
 ## Live URLs
 
-- <https://cliffchew84.github.io/profile/> — old portfolio
+- <https://cliffchew84.github.io/> — portfolio (stopgap from `profile/`)
+- <https://cliffchew84.github.io/profile/> — same portfolio, legacy path
+- <https://cliffchew84.github.io/profile/portfolio-details.html> — inner page
 - <https://cliffchew84.github.io/talks/sg_housing/> — SG housing slides
 - <https://cliffchew84.github.io/talks/tw_slides/tw_dbt_slides.html> — TW slides
 
-The root URL <https://cliffchew84.github.io/> returns 200. It renders this
-README as a Jekyll page. It is not a real landing page.
+The root URL <https://cliffchew84.github.io/> returns 200. It now serves the
+portfolio page assembled by the Actions workflow, not the README.
 
 ## Hosts
 
@@ -40,19 +42,18 @@ README as a Jekyll page. It is not a real landing page.
 | Item          | Value                        |
 | ------------- | ---------------------------- |
 | Status        | built                        |
-| Build type    | legacy (branch deploy)       |
+| Build type    | workflow (Actions)           |
 | Source        | branch `main`, path `/`      |
 | Custom domain | none                         |
 | HTTPS         | enforced                     |
-| Last build    | commit `9e272195`, 2026-10-31 |
+| Last build    | commit `25042741`, 2026-10-31 |
 
 - The live site comes from `main`.
 - `main` is the only long-lived branch. `master` was retired on 2026-10-31.
-- The root URL serves a Jekyll build of `README.md`, because `main` has no
-  root `index.html`.
-- `.github/workflows/deploy.yml` is **manual only** (`workflow_dispatch`).
-  It uploads only `talks/sg_housing`, so running it replaces the whole site
-  with the slide deck. Do not run it until it is rewritten.
+- The root URL serves the portfolio page assembled by `deploy.yml`.
+- `.github/workflows/deploy.yml` runs on every push to `main`. It assembles
+  `site/` from `profile/` (stopgap portfolio at root, plus `/profile/` legacy
+  path), `talks/` at `/talks/`, and `.nojekyll` to disable Jekyll.
 - A push to `main` also starts the R2 data sync in `hdb_parquet.yml`.
 
 ## Data pipelines
@@ -100,12 +101,14 @@ Secrets not used by any workflow: `BASE_URL`, `EXT_URL`, `MONGO_PASSWORD`. `BASE
 
 ## To do
 
-- [ ] Add a root `index.html` on `main`, so `/` stops rendering this README.
 - [ ] Remove or use the unused secrets named above.
 - [ ] Turn on secret scanning and push protection.
 - [ ] Log in to Vercel and record the project, domain, and deploy method here.
-- [ ] Rewrite `deploy.yml` and switch Pages to workflow builds.
 - [ ] Record the R2 bucket public URL, if the data is public.
+- [ ] **Phase 4: Build new portfolio in `portfolio/`.** When ready, update
+  `deploy.yml` to copy `portfolio/*` to `site/` instead of `profile/*`.
+  The new portfolio can be any framework (React, Vue, Astro, Svelte, plain
+  HTML). Keep `profile/` and `talks/` copied for legacy paths.
 
 ## Check commands
 
