@@ -19,8 +19,9 @@ jobs:
           python-version: '3.9'
           cache: 'pip'
       - name: Install dependencies 
-        run: pip install -r requirements.txt
+        run: pip install -r data/requirements.txt
       - name: Create HDB Dashboards
+        working-directory: data
         env: 
           RENDER_DEPLOY: ${{ secrets.RENDER_DEPLOY }}
           OGP_API_KEY: ${{ secrets.OGP_API_KEY }}
