@@ -73,6 +73,7 @@ writes `data/execute_date.txt`. The workflow then commits the result with `PERSO
 - No key was found in the tracked files or in the commit history.
 - Credentials live in GitHub Actions secrets.
 - Secret scanning and push protection are both **enabled** (2026-10-31).
+- **Scan completed**: 0 alerts found. History is clean.
 
 Secrets used by workflows: `SOURCE_API_KEY`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ACCOUNT_ID`,
 `PERSONAL_ACCESS_TOKEN`, `RENDER_DEPLOY`, `OGP_API_KEY`.
@@ -85,6 +86,7 @@ Secrets not used by any workflow: `BASE_URL`, `EXT_URL`, `MONGO_PASSWORD`. `BASE
 - GitHub Pages config, source branch, and last build.
 - All workflow runs and both data workflows.
 - `.env` ignore rule and full commit history.
+- **Secret scanning and push protection enabled; 0 alerts found.**
 - All Netlify sites, for repo link and status.
 - HTTP status of the live URLs above.
 - Personal contact data scan in tracked files: none found.
