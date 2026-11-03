@@ -52,15 +52,22 @@ workflow (`deploy-pages.yml`), not the README.
 - `.github/workflows/deploy-pages.yml` runs on every push to `main`. It uploads the repo root (`.`) as the Pages artifact.
 - A push to `main` also starts the R2 data sync in `hdb_parquet.yml`.
 
+## GitHub Actions workflows
+
+| Workflow | File | Trigger | Purpose |
+|----------|------|---------|---------|
+| Deploy to GitHub Pages | `.github/workflows/deploy-pages.yml` | Push to `main` | Uploads repo root as Pages artifact; publishes portfolio to `cliffchew84.github.io/` |
+| Scheduled HDB Data Sync to R2 | `.github/workflows/hdb_parquet.yml` | Daily 22:00 UTC (06:00 SGT) + push to `main` | Fetches HDB resale data from data.gov.sg, writes parquet to Cloudflare R2 |
+
+GitHub also shows two platform-managed entries in the Actions tab:
+- **Dependency Graph** — auto-scans `requirements.txt` for vulnerabilities.
+- **pages-build-deployment** — internal Pages step that runs after the deploy workflow uploads the artifact.
+
 ## Data pipelines
 
 All pipeline files live in `data/`. `data/requirements.txt` lists every Python dependency for both workflows.
 
-`hdb_parquet.yml` runs daily at 22:00 UTC. It calls `data/hdb_update.py`. The script reads the HDB resale dataset from
-data.gov.sg, then writes `s3://cliff-hdb-data/hdb.parquet` in Cloudflare R2.
-
-`hdb_dash.yml` runs daily at 02:30 UTC. It calls `data/create_hdb_dash.py`. The script calls a Render deploy hook and
-writes `data/execute_date.txt`. The workflow then commits the result with `PERSONAL_ACCESS_TOKEN`.
+`hdb_parquet.yml` runs daily at 22:00 UTC (06:00 SGT). It calls `data/hdb_update.py`. The script reads the HDB resale dataset from data.gov.sg, then writes `s3://cliff-hdb-data/hdb.parquet` in Cloudflare R2.
 
 `data/full_hdb_upload.py` is a manual backfill script. No workflow calls it.
 
@@ -73,15 +80,15 @@ writes `data/execute_date.txt`. The workflow then commits the result with `PERSO
 - **Scan completed**: 0 alerts found. History is clean.
 
 Secrets used by workflows: `SOURCE_API_KEY`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ACCOUNT_ID`,
-`PERSONAL_ACCESS_TOKEN`, `RENDER_DEPLOY`, `OGP_API_KEY`.
+`PERSONAL_ACCESS_TOKEN`.
 
-Secrets not used by any workflow: `BASE_URL`, `EXT_URL`, `MONGO_PASSWORD`. `BASE_URL` and `EXT_URL` are hardcoded in
-`hdb_parquet.yml`. Remove these three secrets, or move the values into secrets.
+Secrets not used by any workflow: `BASE_URL`, `EXT_URL`, `MONGO_PASSWORD`, `RENDER_DEPLOY`, `OGP_API_KEY`. `BASE_URL` and `EXT_URL` are hardcoded in
+`hdb_parquet.yml`. Remove these five secrets, or move the values into secrets.
 
 ## Reviewed
 
 - GitHub Pages config, source branch, and last build.
-- All workflow runs and both data workflows.
+- All workflow runs and the data workflow (`hdb_parquet.yml`).
 - `.env` ignore rule and full commit history.
 - **Secret scanning and push protection enabled; 0 alerts found.**
 - HTTP status of the live URLs above.
