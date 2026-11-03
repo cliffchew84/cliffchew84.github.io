@@ -141,9 +141,9 @@ button { font-family: inherit; }
 }
 @keyframes idleBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
 .character-wrap.walking .character { animation: none; }
-.char-move-left { animation: walk-left 0.8s steps(3) infinite !important; }
+.char-move-left { animation: walk-left 0.8s steps(3) infinite; }
 @keyframes walk-left { 0% { background-image: url('assets/young_frame_r2_c0.png'); } 33% { background-image: url('assets/young_frame_r2_c1.png'); } 66% { background-image: url('assets/young_frame_r2_c2.png'); } 100% { background-image: url('assets/young_frame_r2_c0.png'); } }
-.char-move-right { animation: walk-right 0.8s steps(3) infinite !important; }
+.char-move-right { animation: walk-right 0.8s steps(3) infinite; }
 @keyframes walk-right { 0% { background-image: url('assets/young_frame_r3_c0.png'); } 33% { background-image: url('assets/young_frame_r3_c1.png'); } 66% { background-image: url('assets/young_frame_r3_c2.png'); } 100% { background-image: url('assets/young_frame_r3_c0.png'); } }
 
 /* --- Scroll Panel --------------------------------------------------------- */

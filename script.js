@@ -5,6 +5,12 @@
 document.documentElement.classList.add('js');
 if (matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('no-anim');
 
+/* --- Preload character sprites to prevent flicker -------------------------- */
+['young_frame_r1_c1.png',
+ 'young_frame_r2_c0.png', 'young_frame_r2_c1.png', 'young_frame_r2_c2.png',
+ 'young_frame_r3_c0.png', 'young_frame_r3_c1.png', 'young_frame_r3_c2.png']
+  .forEach(f => { const img = new Image(); img.src = 'assets/' + f; });
+
 /* --- 1. BUILDING DATA ------------------------------------------------------ */
 function entryList(icon, rows) {
   return '<ul class="scroll-entries">' + rows.map(([t, m, h, d]) => `
@@ -114,7 +120,7 @@ function walk(dir) {
   ui.charEl.classList.remove('char-move-left', 'char-move-right');
   ui.charEl.offsetWidth;
   if (dir === 'left' || dir === 'right') ui.charEl.classList.add('char-move-' + dir);
-  setTimeout(() => { ui.charEl.classList.remove('char-move-left', 'char-move-right'); ui.char.classList.remove('walking'); }, 750);
+  setTimeout(() => { ui.charEl.classList.remove('char-move-left', 'char-move-right'); ui.char.classList.remove('walking'); }, 800);
 }
 
 /* --- 6. SCROLL ANIMATION END ---------------------------------------------- */
