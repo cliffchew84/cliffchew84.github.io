@@ -11,10 +11,10 @@
       "big": false,
       "pointer": null,
       "title": "Residence",
-      "subtitle": "Resume · Profile",
+      "subtitle": "About · Me",
       "indoor": "residenc-indoor.webp",
-      "intro": "I turn messy public data into clear tools. I write and speak about the craft. Ten years of pipelines and dashboards.",
-      "highlights": "Quests: HDB Resale Dashboard, SG Library Scraper, This Portfolio.",
+      "intro": "A social science major turned data professional. Using this place as my creative outlet, because well, everyone is a builder right now.",
+      "highlights": "",
       "skills": [
         {
           "category": "Human Languages",
@@ -65,24 +65,10 @@
       "big": true,
       "pointer": "item-book-transparent.webp",
       "title": "Library",
-      "subtitle": "Essays · Notes",
+      "subtitle": "Writings · Thoughts",
       "indoor": "library-indoor.webp",
-      "intro": "Writings on data craft, public information, and the slow work of making things clear.",
+      "intro": "Place of my writings and thoughts.",
       "entries": [
-        {
-          "title": "Scraping ethics, in public",
-          "meta": "Essay · 2025",
-          "url": "https://github.com/cliffchew84",
-          "desc": "A reflection on responsible data collection from public sources.",
-          "icon": "item-book-transparent.webp"
-        },
-        {
-          "title": "Visualization choices that matter",
-          "meta": "Essay · 2024",
-          "url": "https://github.com/cliffchew84",
-          "desc": "Why chart type, color, and annotation choices change how data is understood.",
-          "icon": "item-book-transparent.webp"
-        },
         {
           "title": "Building in public, sustainably",
           "meta": "Notes · 2024",
@@ -101,27 +87,27 @@
       "title": "Blacksmith",
       "subtitle": "Projects · Tools",
       "indoor": "blacksmith-indoor.webp",
-      "intro": "The tools I forge: dashboards, scrapers, pipelines. Each one made in the open.",
+      "intro": "Where I keep the things I forge.",
       "entries": [
         {
-          "title": "Library Books Explorer",
-          "meta": "Dashboard · 2025",
+          "title": "Book Notes Mind Map",
+          "meta": "Visualisation · 2025",
           "url": "https://cliff-library-books.netlify.app/",
-          "desc": "Search the public library catalogue by title, author, or ISBN. Filter by branch and year, then keep a reading list.",
+          "desc": "A network graph of books I read since 2011. For personal use, but decided to release it to anyone interested for the fun of it.",
           "icon": "item-hammer-transparent.webp"
         },
         {
-          "title": "Fitness Tracker",
+          "title": "Fitness Package Tracker",
           "meta": "App · 2024",
           "url": "https://cliff-fitness-tracker.netlify.app/",
-          "desc": "Log workouts, sets, and body metrics. Charts show progress by week, month, and year.",
+          "desc": "Tracker of all the fitness package I bought, so none will expire on me. Uses localstorage, so you cannot see my packages. But this means you can use it if you need something like this. No login or payment required.",
           "icon": "item-hammer-transparent.webp"
         },
         {
           "title": "Grocery Run Planner",
           "meta": "Tool · 2024",
           "url": "https://cliff-grocery-run.netlify.app/",
-          "desc": "Plan a shopping run by aisle. Group items by store section and keep a running total.",
+          "desc": "Quick groceries items calculator, with the quirky feature that allows toggling on-off for items that you are deciding to buy or not.",
           "icon": "item-hammer-transparent.webp"
         }
       ]
@@ -133,20 +119,14 @@
       "big": true,
       "pointer": "item-bag-of-coins-transparent.webp",
       "title": "Market",
-      "subtitle": "Talks · Services",
+      "subtitle": "Products · Services",
       "indoor": "marketplace-indoors.webp",
-      "intro": "Where I speak and offer work. Talks on data craft and open data.",
+      "intro": "If you're good at something, never do it for free",
       "entries": [
         {
-          "title": "Data Craft in the Open",
-          "meta": "Talk · 2025",
-          "url": "https://github.com/cliffchew84",
-          "icon": "item-bag-of-coins-transparent.webp"
-        },
-        {
-          "title": "Open Data Pipelines",
-          "meta": "Talk · 2024",
-          "url": "https://github.com/cliffchew84",
+          "title": "Pending",
+          "meta": "",
+          "url": "",
           "icon": "item-bag-of-coins-transparent.webp"
         }
       ]
@@ -160,7 +140,7 @@
       "title": "Tavern",
       "subtitle": "Contact · Hire",
       "indoor": "tavern-indoors.webp",
-      "intro": "A place for more communications (Currently just with me)",
+      "intro": "A place of meetings (Currently just with me)",
       "entries": [
         {
           "title": "GitHub",
