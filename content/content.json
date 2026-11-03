@@ -13,7 +13,8 @@
       "title": "Residence",
       "subtitle": "Resume · Profile",
       "indoor": "residenc-indoor.webp",
-      "intro": "I turn messy public data into clear tools. I write and speak about the craft. Ten years of pipelines and dashboards.\n\nQuests: HDB Resale Dashboard, SG Library Scraper, This Portfolio.",
+      "intro": "I turn messy public data into clear tools. I write and speak about the craft. Ten years of pipelines and dashboards.",
+      "highlights": "Quests: HDB Resale Dashboard, SG Library Scraper, This Portfolio.",
       "skills": [
         {
           "category": "Human Languages",
@@ -71,19 +72,19 @@
         {
           "title": "Scraping ethics, in public",
           "meta": "Essay · 2025",
-          "url": "https://github.com/cliffchew84",
+          "url": "<https://github.com/cliffchew84>",
           "icon": "item-book-transparent.webp"
         },
         {
           "title": "Visualization choices that matter",
           "meta": "Essay · 2024",
-          "url": "https://github.com/cliffchew84",
+          "url": "<https://github.com/cliffchew84>",
           "icon": "item-book-transparent.webp"
         },
         {
           "title": "Building in public, sustainably",
           "meta": "Notes · 2024",
-          "url": "https://github.com/cliffchew84",
+          "url": "<https://github.com/cliffchew84>",
           "icon": "item-book-transparent.webp"
         }
       ]
@@ -102,22 +103,22 @@
         {
           "title": "Library Books Explorer",
           "meta": "Dashboard",
-          "url": "https://cliff-library-books.netlify.app/",
-          "desc": "Search the public library catalogue by title, author, or ISBN. Filter by branch and year, then keep a reading list.",
+          "url": "<https://cliff-library-books.netlify.app/> Search the public library catalogue by title, author, or ISBN.",
+          "desc": "Filter by branch and year, then keep a reading list.",
           "icon": "item-hammer-transparent.webp"
         },
         {
           "title": "Fitness Tracker",
           "meta": "App",
-          "url": "https://cliff-fitness-tracker.netlify.app/",
-          "desc": "Log workouts, sets, and body metrics. Charts show progress by week, month, and year.",
+          "url": "<https://cliff-fitness-tracker.netlify.app/> Log workouts, sets, and body metrics. Charts show progress by week,",
+          "desc": "month, and year.",
           "icon": "item-hammer-transparent.webp"
         },
         {
           "title": "Grocery Run Planner",
           "meta": "Tool",
-          "url": "https://cliff-grocery-run.netlify.app/",
-          "desc": "Plan a shopping run by aisle. Group items by store section and keep a running total.",
+          "url": "<https://cliff-grocery-run.netlify.app/> Plan a shopping run by aisle. Group items by store section and keep a",
+          "desc": "running total.",
           "icon": "item-hammer-transparent.webp"
         }
       ]
@@ -136,13 +137,13 @@
         {
           "title": "Data Craft in the Open",
           "meta": "Talk · 2025",
-          "url": "https://github.com/cliffchew84",
+          "url": "<https://github.com/cliffchew84>",
           "icon": "item-bag-of-coins-transparent.webp"
         },
         {
           "title": "Open Data Pipelines",
           "meta": "Talk · 2024",
-          "url": "https://github.com/cliffchew84",
+          "url": "<https://github.com/cliffchew84>",
           "icon": "item-bag-of-coins-transparent.webp"
         }
       ]
@@ -156,18 +157,18 @@
       "title": "Tavern",
       "subtitle": "Contact · Hire",
       "indoor": "tavern-indoors.webp",
-      "intro": "A place to rest and speak.",
+      "intro": "A place for more communications (Currently just with me)",
       "entries": [
         {
           "title": "GitHub",
           "meta": "Code & projects",
-          "url": "https://github.com/cliffchew84",
+          "url": "<https://github.com/cliffchew84>",
           "icon": "item-beer-transparent.webp"
         },
         {
           "title": "LinkedIn",
           "meta": "Professional profile",
-          "url": "https://www.linkedin.com/in/cliff-chew-kt/",
+          "url": "<https://www.linkedin.com/in/cliff-chew-kt/>",
           "icon": "item-beer-transparent.webp"
         }
       ]

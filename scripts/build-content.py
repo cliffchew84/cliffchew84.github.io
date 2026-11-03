@@ -26,7 +26,18 @@ def parse_residence(body, fm):
     """Parse residence content with skills sections."""
     # Split intro and skills
     parts = re.split(r'\n## Skills\n', body, maxsplit=1)
-    intro = parts[0].strip()
+    intro_section = parts[0].strip()
+    
+    # Extract highlights (line starting with "Quests:") from intro_section
+    intro_lines = intro_section.split('\n')
+    highlights = ''
+    intro_lines_filtered = []
+    for line in intro_lines:
+        if line.strip().startswith('Quests:'):
+            highlights = line.strip()
+        else:
+            intro_lines_filtered.append(line)
+    intro = '\n'.join(intro_lines_filtered).strip()
     
     skills = []
     if len(parts) > 1:
@@ -45,6 +56,7 @@ def parse_residence(body, fm):
     return {
         **fm,
         'intro': intro,
+        'highlights': highlights,
         'skills': skills
     }
 
