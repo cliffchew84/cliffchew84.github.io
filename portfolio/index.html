@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Town — Horizontal Prototype, Redesigned</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="town-strip" id="strip">
+  <div class="hero-title">
+    <h1>Cliff's Town</h1>
+    <p>A walkable portfolio — pick a building, read its scroll.</p>
+  </div>
+  <button class="night-toggle" id="night-toggle" aria-pressed="false">🌙 Night</button>
+  <button class="town-arrow prev" id="town-prev" aria-label="Previous building">‹</button>
+  <button class="town-arrow next" id="town-next" aria-label="Next building">›</button>
+  <div class="buildings-row">
+    <!-- Buttons built from buildings data in prototype.js -->
+  </div>
+  <div class="character-wrap" id="char"><div class="character" id="char-el"></div></div>
+</div>
+
+<main class="main-panel">
+  <div class="scroll-stage" id="scroll-stage">
+    <div class="roll-top" aria-hidden="true"></div>
+    <!-- Fallback content. prototype.js replaces this on load. -->
+    <article class="parchment" id="panel" aria-live="polite">
+      <header class="panel-header">
+        <h2 id="panel-title">Residence</h2>
+        <p id="panel-sub">Resume · Profile</p>
+      </header>
+      <div class="panel-body" id="panel-body">
+        <p>I turn messy public data into clear tools. I write and speak about the craft. Ten years of pipelines and dashboards.</p>
+      </div>
+    </article>
+    <div class="roll-rod" aria-hidden="true"></div>
+  </div>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>
