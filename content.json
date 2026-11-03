@@ -11,10 +11,10 @@
       "big": false,
       "pointer": null,
       "title": "Residence",
-      "subtitle": "About · Me",
+      "subtitle": "Resume · Profile",
       "indoor": "residenc-indoor.webp",
-      "intro": "I am a social science major turned data professional. I have always been a lover of all things tech, and had tried to\nbecome more of a software builder. I have worked in government agencies, large corporations, small startups and big tech\ncompanies, and is a returning analytics consultant. With the advent of GenAI, it seems like everyone can be a builder as\nwell. Using this space as my personal creative outlet.",
-      "highlights": "",
+      "intro": "I turn messy public data into clear tools. I write and speak about the craft. Ten years of pipelines and dashboards.",
+      "highlights": "Quests: HDB Resale Dashboard, SG Library Scraper, This Portfolio.",
       "skills": [
         {
           "category": "Human Languages",
@@ -105,17 +105,23 @@
       "entries": [
         {
           "title": "Library Books Explorer",
-          "desc": "- Search the public library catalogue by title, author, or ISBN. Filter by branch and year, then keep a reading list.",
+          "meta": "Dashboard · 2025",
+          "url": "https://cliff-library-books.netlify.app/",
+          "desc": "Search the public library catalogue by title, author, or ISBN. Filter by branch and year, then keep a reading list.",
           "icon": "item-hammer-transparent.webp"
         },
         {
           "title": "Fitness Tracker",
-          "desc": "- Log workouts, sets, and body metrics. Charts show progress by week, month, and year.",
+          "meta": "App · 2024",
+          "url": "https://cliff-fitness-tracker.netlify.app/",
+          "desc": "Log workouts, sets, and body metrics. Charts show progress by week, month, and year.",
           "icon": "item-hammer-transparent.webp"
         },
         {
           "title": "Grocery Run Planner",
-          "desc": "- Plan a shopping run by aisle. Group items by store section and keep a running total.",
+          "meta": "Tool · 2024",
+          "url": "https://cliff-grocery-run.netlify.app/",
+          "desc": "Plan a shopping run by aisle. Group items by store section and keep a running total.",
           "icon": "item-hammer-transparent.webp"
         }
       ]
