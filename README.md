@@ -79,11 +79,9 @@ All pipeline files live in `data/`. `data/requirements.txt` lists every Python d
 - Secret scanning and push protection are both **enabled** (2026-10-31).
 - **Scan completed**: 0 alerts found. History is clean.
 
-Secrets used by workflows: `SOURCE_API_KEY`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ACCOUNT_ID`,
-`PERSONAL_ACCESS_TOKEN`.
+Secrets used by workflows: `SOURCE_API_KEY`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ACCOUNT_ID`.
 
-Secrets not used by any workflow: `BASE_URL`, `EXT_URL`, `MONGO_PASSWORD`, `RENDER_DEPLOY`, `OGP_API_KEY`. `BASE_URL` and `EXT_URL` are hardcoded in
-`hdb_parquet.yml`. Remove these five secrets, or move the values into secrets.
+All other secrets removed (2026-11-03): `PERSONAL_ACCESS_TOKEN`, `BASE_URL`, `EXT_URL`, `MONGO_PASSWORD`, `OGP_API_KEY`, `RENDER_DEPLOY`.
 
 ## Reviewed
 
@@ -117,7 +115,7 @@ Secrets not used by any workflow: `BASE_URL`, `EXT_URL`, `MONGO_PASSWORD`, `REND
 
 ## To do
 
-- [ ] Remove or use the unused secrets named above (`BASE_URL`, `EXT_URL`, `MONGO_PASSWORD`).
+- [x] Remove unused secrets (`PERSONAL_ACCESS_TOKEN`, `BASE_URL`, `EXT_URL`, `MONGO_PASSWORD`, `OGP_API_KEY`, `RENDER_DEPLOY`) — deleted 2026-11-03.
 - [ ] Log in to Vercel and record the project, domain, and deploy method here.
 - [ ] Record the R2 bucket public URL, if the data is public.
 - [x] **Phase 4: Build new portfolio at repo root.** Portfolio is live at `https://cliffchew84.github.io/`. `deploy-pages.yml` uploads root (`.`). `talks/` preserved for legacy paths.
