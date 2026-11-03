@@ -52,7 +52,7 @@ let charTargetLeft = 0;
 
 async function init() {
   try {
-    const res = await fetch('content.json');
+    const res = await fetch('content/content.json');
     if (!res.ok) throw new Error('Failed to load content.json');
     const data = await res.json();
 
