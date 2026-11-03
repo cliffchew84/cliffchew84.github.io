@@ -9,33 +9,31 @@ URL changes.
 
 | Asset                 | Host          | Source               | Status  |
 | --------------------- | ------------- | -------------------- | ------- |
-| Old portfolio page    | GitHub Pages  | `profile/`           | live    |
+| Portfolio (root)      | GitHub Pages  | repo root (`.`)      | live    |
 | SG housing slide deck | GitHub Pages  | `talks/sg_housing/`  | live    |
 | TW dbt slide deck     | GitHub Pages  | `talks/tw_slides/`   | live    |
 | HDB parquet data      | Cloudflare R2 | `data/hdb_update.py` | unknown |
 
 ## Live URLs
 
-- <https://cliffchew84.github.io/> — portfolio (stopgap from `profile/`)
-- <https://cliffchew84.github.io/profile/> — same portfolio, legacy path
-- <https://cliffchew84.github.io/profile/portfolio-details.html> — inner page
+- <https://cliffchew84.github.io/> — portfolio (served from repo root)
 - <https://cliffchew84.github.io/talks/sg_housing/> — SG housing slides
 - <https://cliffchew84.github.io/talks/tw_slides/tw_dbt_slides.html> — TW slides
 
-The root URL <https://cliffchew84.github.io/> returns 200. It now serves the portfolio page assembled by the Actions
-workflow, not the README.
+The root URL <https://cliffchew84.github.io/> returns 200. It serves the portfolio page assembled by the Actions
+workflow (`deploy-pages.yml`), not the README.
 
 ## Hosts
 
 | Host          | Count    | Reviewed |
 | ------------- | -------- | -------- |
 | GitHub Pages  | 1 site   | yes      |
-| Netlify       | 20 sites | yes      |
+| Netlify       | 20 sites | no       |
 | Vercel        | unknown  | no       |
 | Cloudflare R2 | 1 bucket | no       |
 
 - `dist/`, `package.json`, `package-lock.json`, `netlify.toml`, `vercel.json` were removed on 2026-10-31.
-- Netlify and Vercel configs are gone. The 20 Netlify sites and any Vercel project are unchanged.
+- Netlify and Vercel configs are gone. The 20 Netlify sites and any Vercel project are unchanged (not reviewed).
 
 ## GitHub Pages
 
@@ -46,13 +44,12 @@ workflow, not the README.
 | Source        | branch `main`, path `/`       |
 | Custom domain | none                          |
 | HTTPS         | enforced                      |
-| Last build    | commit `25042741`, 2026-10-31 |
+| Last build    | commit `7447b46f`, 2026-11-03 |
 
 - The live site comes from `main`.
 - `main` is the only long-lived branch. `master` was retired on 2026-10-31.
-- The root URL serves the portfolio page assembled by `deploy.yml`.
-- `.github/workflows/deploy.yml` runs on every push to `main`. It assembles `site/` from `profile/` (stopgap portfolio
-  at root, plus `/profile/` legacy path), `talks/` at `/talks/`, and `.nojekyll` to disable Jekyll.
+- The root URL serves the portfolio page assembled by `deploy-pages.yml`.
+- `.github/workflows/deploy-pages.yml` runs on every push to `main`. It uploads the repo root (`.`) as the Pages artifact.
 - A push to `main` also starts the R2 data sync in `hdb_parquet.yml`.
 
 ## Data pipelines
@@ -87,7 +84,6 @@ Secrets not used by any workflow: `BASE_URL`, `EXT_URL`, `MONGO_PASSWORD`. `BASE
 - All workflow runs and both data workflows.
 - `.env` ignore rule and full commit history.
 - **Secret scanning and push protection enabled; 0 alerts found.**
-- All Netlify sites, for repo link and status.
 - HTTP status of the live URLs above.
 - Personal contact data scan in tracked files: none found.
 
@@ -95,17 +91,31 @@ Secrets not used by any workflow: `BASE_URL`, `EXT_URL`, `MONGO_PASSWORD`. `BASE
 
 - **Vercel.** No token, CLI, or login file. Unknown project and unknown domain.
 - Cloudflare R2 bucket state and file date.
+- Netlify sites (20) — repo links and status unverified.
 - Page content on the live sites. Only HTTP status and titles were checked.
+
+## HDB Resale Blog (archived)
+
+- **Former URL:** `https://sg-housing.onrender.com/blog` (Render service deleted)
+- **Source repo:** `cliffchew84/sg_housing` (local: `~/Work/tia/cliff/sg_housing/sg_housing/`)
+- **Stack:** FastAPI + `fastapi-blog` (markdown posts) + Dash dashboards
+- **Posts** (in `posts/`):
+  - `sg-mil-public-homes-2024.md` — deep dive on million-dollar HDB flats
+  - `sg-public-homes-still-cheap.md` — affordability analysis (large, chart-heavy)
+  - `lowest-10-percentile.md`, `private-vs-public.md`, `sg-md-public-homes.md`, `dssg-findings.md`, `20-yrs-public-home.md`, `using-my-dash-outlier.md`, `sg-public-house-data.md`
+- **Dashboards** (also in that repo):
+  - `/sg-public-home-trends` — price trends
+  - `/public-homes` — transaction search
+- **Plan:** Extract and revise posts for new portfolio `Library` section (static MD/HTML). Dashboards can be rebuilt as static Quarto/Observable notebooks if needed.
 
 ## To do
 
-- [ ] Remove or use the unused secrets named above.
-- [ ] Turn on secret scanning and push protection.
+- [ ] Remove or use the unused secrets named above (`BASE_URL`, `EXT_URL`, `MONGO_PASSWORD`).
 - [ ] Log in to Vercel and record the project, domain, and deploy method here.
 - [ ] Record the R2 bucket public URL, if the data is public.
-- [ ] **Phase 4: Build new portfolio in `portfolio/`.** When ready, update `deploy.yml` to copy `portfolio/*` to `site/`
-      instead of `profile/*`. The new portfolio can be any framework (React, Vue, Astro, Svelte, plain HTML). Keep
-      `profile/` and `talks/` copied for legacy paths.
+- [x] **Phase 4: Build new portfolio at repo root.** Portfolio is live at `https://cliffchew84.github.io/`. `deploy-pages.yml` uploads root (`.`). `talks/` preserved for legacy paths.
+- [ ] **Migrate blog content:** Copy selected posts from `~/Work/tia/cliff/sg_housing/sg_housing/posts/` into new portfolio `content.json` (Library entries).
+- [ ] Review Netlify sites: verify repo links and status for all 20 sites.
 
 ## Check commands
 
@@ -120,5 +130,5 @@ gh api repos/cliffchew84/cliffchew84.github.io/pages/builds/latest
 gh run list --limit 5
 
 # Page status
-curl -s -o /dev/null -w "%{http_code}\n" https://cliffchew84.github.io/profile/
+curl -s -o /dev/null -w "%{http_code}\n" https://cliffchew84.github.io/
 ```
