@@ -67,12 +67,27 @@
       "title": "Library",
       "subtitle": "Essays · Notes",
       "indoor": "library-indoor.webp",
-      "intro": "Writings on data craft, public engagements",
+      "intro": "Writings on data craft, public information, and the slow work of making things clear.",
       "entries": [
         {
           "title": "Scraping ethics, in public",
           "meta": "Essay · 2025",
-          "url": "<https://github.com/cliffchew84>",
+          "url": "https://github.com/cliffchew84",
+          "desc": "A reflection on responsible data collection from public sources.",
+          "icon": "item-book-transparent.webp"
+        },
+        {
+          "title": "Visualization choices that matter",
+          "meta": "Essay · 2024",
+          "url": "https://github.com/cliffchew84",
+          "desc": "Why chart type, color, and annotation choices change how data is understood.",
+          "icon": "item-book-transparent.webp"
+        },
+        {
+          "title": "Building in public, sustainably",
+          "meta": "Notes · 2024",
+          "url": "https://github.com/cliffchew84",
+          "desc": "Lessons from shipping side projects without burning out.",
           "icon": "item-book-transparent.webp"
         }
       ]
@@ -90,23 +105,17 @@
       "entries": [
         {
           "title": "Library Books Explorer",
-          "meta": "Dashboard · 2025",
-          "url": "https://cliff-library-books.netlify.app/",
-          "desc": "Search the public library catalogue by title, author, or ISBN. Filter by branch and year, then keep a reading list.",
+          "desc": "- Search the public library catalogue by title, author, or ISBN. Filter by branch and year, then keep a reading list.",
           "icon": "item-hammer-transparent.webp"
         },
         {
           "title": "Fitness Tracker",
-          "meta": "App · 2024",
-          "url": "https://cliff-fitness-tracker.netlify.app/",
-          "desc": "Log workouts, sets, and body metrics. Charts show progress by week, month, and year.",
+          "desc": "- Log workouts, sets, and body metrics. Charts show progress by week, month, and year.",
           "icon": "item-hammer-transparent.webp"
         },
         {
           "title": "Grocery Run Planner",
-          "meta": "Tool · 2024",
-          "url": "https://cliff-grocery-run.netlify.app/",
-          "desc": "Plan a shopping run by aisle. Group items by store section and keep a running total.",
+          "desc": "- Plan a shopping run by aisle. Group items by store section and keep a running total.",
           "icon": "item-hammer-transparent.webp"
         }
       ]
