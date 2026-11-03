@@ -9,15 +9,11 @@ subtitle: Essays · Notes
 indoor: library-indoor.webp
 ---
 
-Writings on data craft, public information, and the slow work of making things clear.
+Writings on data craft, public engagements
 
 ## Entries
 
 ### Scraping ethics, in public
-**Essay · 2025** | https://github.com/cliffchew84
 
-### Visualization choices that matter
-**Essay · 2024** | https://github.com/cliffchew84
+**Essay · 2025** | <https://github.com/cliffchew84>
 
-### Building in public, sustainably
-**Notes · 2024** | https://github.com/cliffchew84

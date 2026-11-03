@@ -14,13 +14,13 @@ The tools I forge: dashboards, scrapers, pipelines. Each one made in the open.
 ## Entries
 
 ### Library Books Explorer
-**Dashboard** | https://cliff-library-books.netlify.app/
+**Dashboard · 2025** | https://cliff-library-books.netlify.app/
 Search the public library catalogue by title, author, or ISBN. Filter by branch and year, then keep a reading list.
 
 ### Fitness Tracker
-**App** | https://cliff-fitness-tracker.netlify.app/
+**App · 2024** | https://cliff-fitness-tracker.netlify.app/
 Log workouts, sets, and body metrics. Charts show progress by week, month, and year.
 
 ### Grocery Run Planner
-**Tool** | https://cliff-grocery-run.netlify.app/
+**Tool · 2024** | https://cliff-grocery-run.netlify.app/
 Plan a shopping run by aisle. Group items by store section and keep a running total.

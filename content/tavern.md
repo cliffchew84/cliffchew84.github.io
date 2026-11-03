@@ -9,7 +9,7 @@ subtitle: Contact · Hire
 indoor: tavern-indoors.webp
 ---
 
-A place to rest and speak.
+A place for more communications (Currently just with me)
 
 ## Entries
 

@@ -11,10 +11,10 @@
       "big": false,
       "pointer": null,
       "title": "Residence",
-      "subtitle": "Resume · Profile",
+      "subtitle": "About · Me",
       "indoor": "residenc-indoor.webp",
-      "intro": "I turn messy public data into clear tools. I write and speak about the craft. Ten years of pipelines and dashboards.",
-      "highlights": "Quests: HDB Resale Dashboard, SG Library Scraper, This Portfolio.",
+      "intro": "I am a social science major turned data professional. I have always been a lover of all things tech, and had tried to\nbecome more of a software builder. I have worked in government agencies, large corporations, small startups and big tech\ncompanies, and is a returning analytics consultant. With the advent of GenAI, it seems like everyone can be a builder as\nwell. Using this space as my personal creative outlet.",
+      "highlights": "",
       "skills": [
         {
           "category": "Human Languages",
@@ -67,23 +67,11 @@
       "title": "Library",
       "subtitle": "Essays · Notes",
       "indoor": "library-indoor.webp",
-      "intro": "Writings on data craft, public information, and the slow work of making things clear.",
+      "intro": "Writings on data craft, public engagements",
       "entries": [
         {
           "title": "Scraping ethics, in public",
           "meta": "Essay · 2025",
-          "url": "<https://github.com/cliffchew84>",
-          "icon": "item-book-transparent.webp"
-        },
-        {
-          "title": "Visualization choices that matter",
-          "meta": "Essay · 2024",
-          "url": "<https://github.com/cliffchew84>",
-          "icon": "item-book-transparent.webp"
-        },
-        {
-          "title": "Building in public, sustainably",
-          "meta": "Notes · 2024",
           "url": "<https://github.com/cliffchew84>",
           "icon": "item-book-transparent.webp"
         }
@@ -102,23 +90,23 @@
       "entries": [
         {
           "title": "Library Books Explorer",
-          "meta": "Dashboard",
-          "url": "<https://cliff-library-books.netlify.app/> Search the public library catalogue by title, author, or ISBN.",
-          "desc": "Filter by branch and year, then keep a reading list.",
+          "meta": "Dashboard · 2025",
+          "url": "https://cliff-library-books.netlify.app/",
+          "desc": "Search the public library catalogue by title, author, or ISBN. Filter by branch and year, then keep a reading list.",
           "icon": "item-hammer-transparent.webp"
         },
         {
           "title": "Fitness Tracker",
-          "meta": "App",
-          "url": "<https://cliff-fitness-tracker.netlify.app/> Log workouts, sets, and body metrics. Charts show progress by week,",
-          "desc": "month, and year.",
+          "meta": "App · 2024",
+          "url": "https://cliff-fitness-tracker.netlify.app/",
+          "desc": "Log workouts, sets, and body metrics. Charts show progress by week, month, and year.",
           "icon": "item-hammer-transparent.webp"
         },
         {
           "title": "Grocery Run Planner",
-          "meta": "Tool",
-          "url": "<https://cliff-grocery-run.netlify.app/> Plan a shopping run by aisle. Group items by store section and keep a",
-          "desc": "running total.",
+          "meta": "Tool · 2024",
+          "url": "https://cliff-grocery-run.netlify.app/",
+          "desc": "Plan a shopping run by aisle. Group items by store section and keep a running total.",
           "icon": "item-hammer-transparent.webp"
         }
       ]
@@ -137,13 +125,13 @@
         {
           "title": "Data Craft in the Open",
           "meta": "Talk · 2025",
-          "url": "<https://github.com/cliffchew84>",
+          "url": "https://github.com/cliffchew84",
           "icon": "item-bag-of-coins-transparent.webp"
         },
         {
           "title": "Open Data Pipelines",
           "meta": "Talk · 2024",
-          "url": "<https://github.com/cliffchew84>",
+          "url": "https://github.com/cliffchew84",
           "icon": "item-bag-of-coins-transparent.webp"
         }
       ]
@@ -162,13 +150,13 @@
         {
           "title": "GitHub",
           "meta": "Code & projects",
-          "url": "<https://github.com/cliffchew84>",
+          "url": "https://github.com/cliffchew84",
           "icon": "item-beer-transparent.webp"
         },
         {
           "title": "LinkedIn",
           "meta": "Professional profile",
-          "url": "<https://www.linkedin.com/in/cliff-chew-kt/>",
+          "url": "https://www.linkedin.com/in/cliff-chew-kt/",
           "icon": "item-beer-transparent.webp"
         }
       ]
