@@ -87,6 +87,7 @@ buttons.forEach((b, i) => b.onclick = () => select(i, Object.keys(buildings)[i])
 
 /* --- 4. LAYOUT + CHARACTER ------------------------------------------------- */
 let idx = 0, ro = 0;
+let charTargetLeft = 0;
 
 function layout() {
   const sw = ui.strip.clientWidth;
@@ -109,16 +110,44 @@ function layout() {
   }
 
   const cb = buttons[idx];
-  if (cb) ui.char.style.left = Math.max(0, cb.offsetLeft + cb.offsetWidth / 2 + ro - 42) + 'px';
+  if (cb) {
+    const newLeft = Math.max(0, cb.offsetLeft + cb.offsetWidth / 2 + ro - 42);
+    charTargetLeft = newLeft;
+    // Set initial position without transition on first load
+    if (ui.char.style.left === '' || ui.char.style.transitionDuration === '0s') {
+      ui.char.style.left = newLeft + 'px';
+    } else {
+      ui.char.style.left = newLeft + 'px';
+    }
+  }
 }
 
 /* --- 5. CHARACTER WALK ----------------------------------------------------- */
 function walk(dir) {
-  ui.char.classList.add('walking');
+  if (dir === 'none') return;
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduced) {
+    // Instant move for reduced motion
+    ui.char.style.left = charTargetLeft + 'px';
+    return;
+  }
+  const currentLeft = parseFloat(ui.char.style.left) || 0;
+  const distance = Math.abs(charTargetLeft - currentLeft);
+  // Base speed: ~200px per second, min 0.4s, max 1.2s
+  const duration = Math.min(1.2, Math.max(0.4, distance / 200));
+  
+  ui.char.style.transitionDuration = `${duration}s`;
+  ui.char.style.setProperty('--walk-duration', `${duration}s`);
+  
   ui.charEl.classList.remove('char-move-left', 'char-move-right');
   ui.charEl.offsetWidth;
   if (dir === 'left' || dir === 'right') ui.charEl.classList.add('char-move-' + dir);
-  setTimeout(() => { ui.charEl.classList.remove('char-move-left', 'char-move-right'); ui.char.classList.remove('walking'); }, 800);
+  
+  setTimeout(() => { 
+    ui.charEl.classList.remove('char-move-left', 'char-move-right'); 
+    ui.char.style.removeProperty('--walk-duration');
+    ui.char.style.transitionDuration = '0.9s'; // reset to default
+  }, duration * 1000);
 }
 
 /* --- 6. SCROLL ANIMATION END ---------------------------------------------- */

@@ -140,20 +140,21 @@ button { font-family: inherit; }
   image-rendering: pixelated; animation: idleBob 2.4s ease-in-out infinite;
 }
 @keyframes idleBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
-.character-wrap.walking .character {
+.char-move-left,
+.char-move-right {
   animation: none;
   background-image: url('assets/character-walk-sprite.webp');
   background-repeat: no-repeat;
   background-size: 5472px 84px;
 }
-.char-move-left { animation: walk-left 0.8s steps(3) infinite; }
+.char-move-left { animation: walk-left var(--walk-duration, 0.8s) steps(3) infinite; }
 @keyframes walk-left {
   0%   { background-position: 0 0; }
   33%  { background-position: -912px 0; }
   66%  { background-position: -1824px 0; }
   100% { background-position: 0 0; }
 }
-.char-move-right { animation: walk-right 0.8s steps(3) infinite; }
+.char-move-right { animation: walk-right var(--walk-duration, 0.8s) steps(3) infinite; }
 @keyframes walk-right {
   0%   { background-position: -2736px 0; }
   33%  { background-position: -3648px 0; }
