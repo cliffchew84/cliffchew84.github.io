@@ -70,10 +70,10 @@
       "intro": "Place of my writings and thoughts.",
       "entries": [
         {
-          "title": "Building in public, sustainably",
-          "meta": "Notes · 2024",
-          "url": "https://github.com/cliffchew84",
-          "desc": "Lessons from shipping side projects without burning out.",
+          "title": "Pending",
+          "meta": "",
+          "url": "",
+          "desc": "",
           "icon": "item-book-transparent.webp"
         }
       ]
@@ -89,6 +89,13 @@
       "indoor": "blacksmith-indoor.webp",
       "intro": "Where I keep the things I forge.",
       "entries": [
+        {
+          "title": "Singapore Public Housing Resale Analysis",
+          "meta": "Visualisation · 2024",
+          "url": "https://singapore-hdb-resale.vercel.app/",
+          "desc": "Personal side project that takes public resale data from Singapore's data.gov.sg to analyse and visualise our Singapore public housing resale prices. Currently implementation uses DuckDB.",
+          "icon": "item-hammer-transparent.webp"
+        },
         {
           "title": "Book Notes Mind Map",
           "meta": "Visualisation · 2025",
