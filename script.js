@@ -5,17 +5,15 @@
 document.documentElement.classList.add('js');
 if (matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('no-anim');
 
-/* --- Preload character sprites to prevent flicker -------------------------- */
-['young_frame_r1_c1.png',
- 'young_frame_r2_c0.png', 'young_frame_r2_c1.png', 'young_frame_r2_c2.png',
- 'young_frame_r3_c0.png', 'young_frame_r3_c1.png', 'young_frame_r3_c2.png']
+/* --- Preload character sprites (idle + walk sprite sheet) ------------------- */
+['character-idle.webp', 'character-walk-sprite.webp']
   .forEach(f => { const img = new Image(); img.src = 'assets/' + f; });
 
 /* --- 1. BUILDING DATA ------------------------------------------------------ */
 function entryList(icon, rows) {
   return '<ul class="scroll-entries">' + rows.map(([t, m, h, d]) => `
     <li><a href="${h}" target="_blank" rel="noopener noreferrer">
-      <img class="entry-icon" src="assets/${icon}" alt="" aria-hidden="true">
+      <img class="entry-icon" src="assets/${icon}" alt="" aria-hidden="true" width="36" height="36">
       <div class="entry-content"><div class="entry-head"><span class="entry-title">${t}</span><span class="entry-meta">${m}</span></div>
       ${d ? `<p class="entry-desc-text">${d}</p>` : ''}</div><span class="entry-arrow">→</span></a></li>`).join('') + '</ul>';
 }
@@ -28,7 +26,7 @@ const B = (o) => ({
 });
 
 const buildings = {
-  residence: B({ k: 'residence', l: 'Residence', i: 'residence-new.png', b: 0, p: null,
+  residence: B({ k: 'residence', l: 'Residence', i: 'residence-new.webp', b: 0, p: null,
     t: 'Residence', s: 'Resume · Profile', g: 'residenc-indoor.webp', y: `
     <p>I turn messy public data into clear tools. I write and speak about the craft. Ten years of pipelines and dashboards.</p>
     <p>Quests: HDB Resale Dashboard, SG Library Scraper, This Portfolio.</p>
@@ -39,29 +37,29 @@ const buildings = {
     <section class="skill-group"><h4>Tech Tools</h4><ul><li>Tableau</li><li>Looker</li><li>Airflow</li><li>JupyterLab</li><li>Quarto</li><li>Neovim</li><li>DBeaver</li></ul></section>
     </div>` }),
 
-  library: B({ k: 'library', l: 'Library', i: 'workshop-transparent-door.png', b: 1, p: 'item-book-transparent.png',
+  library: B({ k: 'library', l: 'Library', i: 'workshop-transparent-door.webp', b: 1, p: 'item-book-transparent.webp',
     t: 'Library', s: 'Essays · Notes', g: 'library-indoor.webp', y: `<p>Writings on data craft, public information, and the slow work of making things clear.</p>` +
-    entryList('item-book-transparent.png', [['Scraping ethics, in public', 'Essay · 2025', 'https://github.com/cliffchew84'],
+    entryList('item-book-transparent.webp', [['Scraping ethics, in public', 'Essay · 2025', 'https://github.com/cliffchew84'],
                ['Visualization choices that matter', 'Essay · 2024', 'https://github.com/cliffchew84'],
                ['Building in public, sustainably', 'Notes · 2024', 'https://github.com/cliffchew84']]) }),
 
-  smith: B({ k: 'smith', l: 'Blacksmith', i: 'blacksmith-transparent.png', b: 1, p: 'item-hammer-transparent.png',
+  smith: B({ k: 'smith', l: 'Blacksmith', i: 'blacksmith-transparent.webp', b: 1, p: 'item-hammer-transparent.webp',
     t: 'Blacksmith', s: 'Projects · Tools', g: 'blacksmith-indoor.webp', y: `<p>The tools I forge: dashboards, scrapers, pipelines. Each one made in the open.</p>` +
-    entryList('item-hammer-transparent.png', [['Library Books Explorer', 'Dashboard', 'https://cliff-library-books.netlify.app/',
+    entryList('item-hammer-transparent.webp', [['Library Books Explorer', 'Dashboard', 'https://cliff-library-books.netlify.app/',
       'Search the public library catalogue by title, author, or ISBN. Filter by branch and year, then keep a reading list.'],
       ['Fitness Tracker', 'App', 'https://cliff-fitness-tracker.netlify.app/',
         'Log workouts, sets, and body metrics. Charts show progress by week, month, and year.'],
       ['Grocery Run Planner', 'Tool', 'https://cliff-grocery-run.netlify.app/',
         'Plan a shopping run by aisle. Group items by store section and keep a running total.']]) }),
 
-  market: B({ k: 'market', l: 'Market', i: 'market-transparent.png', b: 1, p: 'item-bag-of-coins-transparent.png',
+  market: B({ k: 'market', l: 'Market', i: 'market-transparent.webp', b: 1, p: 'item-bag-of-coins-transparent.webp',
     t: 'Market', s: 'Talks · Services', g: 'marketplace-indoors.webp', y: `<p>Where I speak and offer work. Talks on data craft and open data.</p>` +
-    entryList('item-bag-of-coins-transparent.png', [['Data Craft in the Open', 'Talk · 2025', 'https://github.com/cliffchew84'],
+    entryList('item-bag-of-coins-transparent.webp', [['Data Craft in the Open', 'Talk · 2025', 'https://github.com/cliffchew84'],
                ['Open Data Pipelines', 'Talk · 2024', 'https://github.com/cliffchew84']]) }),
 
-  tavern: B({ k: 'tavern', l: 'Tavern', i: 'guild-hall-transparent-door.png', b: 1, p: 'item-beer-transparent.png',
+  tavern: B({ k: 'tavern', l: 'Tavern', i: 'guild-hall-transparent-door.webp', b: 1, p: 'item-beer-transparent.webp',
     t: 'Tavern', s: 'Contact · Hire', g: 'tavern-indoors.webp', y: `<p>A place to rest and speak.</p>` +
-    entryList('item-beer-transparent.png', [['GitHub', 'Code & projects', 'https://github.com/cliffchew84'],
+    entryList('item-beer-transparent.webp', [['GitHub', 'Code & projects', 'https://github.com/cliffchew84'],
                ['LinkedIn', 'Professional profile', 'https://www.linkedin.com/in/cliff-chew-kt/']]) }),
 };
 
@@ -78,8 +76,8 @@ const ui = {
 ui.row.innerHTML = Object.entries(buildings).map(([k, b], i) => `
   <button class="bldg-btn${b.big ? ' big' : ''}${i === 0 ? ' active' : ''}" data-key="${k}" aria-label="${b.label}">
     <div class="bldg-img-wrap">
-      ${b.pointer ? `<img class="bldg-pointer" src="assets/${b.pointer}" alt="" aria-hidden="true" style="left:${DPO.left}px;top:${DPO.top}px">` : ''}
-      <img class="bldg-img" src="${b.img}" alt="${b.label}">
+      ${b.pointer ? `<img class="bldg-pointer" src="assets/${b.pointer}" alt="" aria-hidden="true" style="left:${DPO.left}px;top:${DPO.top}px" width="46" height="46">` : ''}
+      <img class="bldg-img" src="${b.img}" alt="${b.label}" width="150" height="150" ${i > 0 ? 'loading="lazy"' : ''}>
     </div>
     <span class="bldg-label">${b.label}</span>
   </button>`).join('');

@@ -136,15 +136,30 @@ button { font-family: inherit; }
 }
 .character {
   width: 84px; height: 84px; margin: 0 auto;
-  background: url('assets/young_frame_r1_c1.png') no-repeat center/contain;
+  background: url('assets/character-idle.webp') no-repeat center/contain;
   image-rendering: pixelated; animation: idleBob 2.4s ease-in-out infinite;
 }
 @keyframes idleBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
-.character-wrap.walking .character { animation: none; }
+.character-wrap.walking .character {
+  animation: none;
+  background-image: url('assets/character-walk-sprite.webp');
+  background-repeat: no-repeat;
+  background-size: 5472px 84px;
+}
 .char-move-left { animation: walk-left 0.8s steps(3) infinite; }
-@keyframes walk-left { 0% { background-image: url('assets/young_frame_r2_c0.png'); } 33% { background-image: url('assets/young_frame_r2_c1.png'); } 66% { background-image: url('assets/young_frame_r2_c2.png'); } 100% { background-image: url('assets/young_frame_r2_c0.png'); } }
+@keyframes walk-left {
+  0%   { background-position: 0 0; }
+  33%  { background-position: -912px 0; }
+  66%  { background-position: -1824px 0; }
+  100% { background-position: 0 0; }
+}
 .char-move-right { animation: walk-right 0.8s steps(3) infinite; }
-@keyframes walk-right { 0% { background-image: url('assets/young_frame_r3_c0.png'); } 33% { background-image: url('assets/young_frame_r3_c1.png'); } 66% { background-image: url('assets/young_frame_r3_c2.png'); } 100% { background-image: url('assets/young_frame_r3_c0.png'); } }
+@keyframes walk-right {
+  0%   { background-position: -2736px 0; }
+  33%  { background-position: -3648px 0; }
+  66%  { background-position: -4560px 0; }
+  100% { background-position: -2736px 0; }
+}
 
 /* --- Scroll Panel --------------------------------------------------------- */
 .main-panel {
