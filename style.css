@@ -288,7 +288,7 @@ button { font-family: inherit; }
 .entry-desc-text { margin: 0; padding-left: 24px; font-size: 15px; line-height: 1.6; color: var(--ink); opacity: 0.85; }
 .entry-arrow { color: var(--gold); font-size: 18px; flex: 0 0 22px; text-align: right; align-self: flex-start; line-height: 1; }
 
-.entry-icon { flex: 0 0 auto; width: 26px; height: 26px; object-fit: contain; align-self: flex-start; }
+.entry-icon { flex: 0 0 auto; width: 36px; height: 36px; object-fit: contain; align-self: flex-start; }
 
 /* --- Responsive ----------------------------------------------------------- */
 @media (max-width: 700px) {
@@ -305,7 +305,7 @@ button { font-family: inherit; }
   .entry-desc-text { padding-left: 20px; font-size: 14px; }
   .skills-title { font-size: 22px; }
   .skill-group li { font-size: 15px; }
-  .entry-icon { width: 20px; height: 20px; }
+  .entry-icon { width: 28px; height: 28px; }
 }
 
 /* --- Reduced Motion ------------------------------------------------------- */
