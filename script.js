@@ -21,6 +21,13 @@ const ui = {
 /* --- HELPERS ---------------------------------------------------------------- */
 const DPO = { left: 0, top: -46 };
 
+/* Send an event to PostHog if the SDK loaded. Ad blockers can remove it. */
+function phCapture(event, props) {
+  if (window.posthog && typeof window.posthog.capture === 'function') {
+    window.posthog.capture(event, props);
+  }
+}
+
 function buildEntryHTML(entry, defaultIcon) {
   const icon = entry.icon || defaultIcon;
   const desc = entry.desc ? `<p class="entry-desc-text">${entry.desc}</p>` : '';
@@ -79,7 +86,7 @@ async function init() {
     buildButtons();
     setupListeners();
     layout();
-    select(0, buildings[0].key);
+    select(0, buildings[0].key, 'initial');
 
   } catch (err) {
     console.error('Content load failed:', err);
@@ -110,14 +117,16 @@ function buildButtons() {
 }
 
 function setupListeners() {
-  buttons.forEach((btn, i) => btn.onclick = () => select(i, buildings[i].key));
+  buttons.forEach((btn, i) => btn.onclick = () => select(i, buildings[i].key, 'click'));
   ui.prev.onclick = () => nav(-1);
   ui.next.onclick = () => nav(1);
   document.onkeydown = e => { if (e.key === 'ArrowRight') nav(1); if (e.key === 'ArrowLeft') nav(-1); };
+  document.addEventListener('click', trackLinkClick);
   $('night-toggle').addEventListener('click', e => {
     const n = ui.strip.classList.toggle('night');
     e.target.textContent = n ? '☀️ Day' : '🌙 Night';
     e.target.setAttribute('aria-pressed', n);
+    phCapture('theme_toggled', { theme: n ? 'night' : 'day' });
   });
   ui.panel.addEventListener('animationend', e => {
     if (e.animationName === 'unroll') { ui.stage.classList.add('is-open'); ui.stage.classList.remove('is-unrolling'); }
@@ -189,11 +198,34 @@ function walk(dir) {
 /* --- NAVIGATION ------------------------------------------------------------- */
 function nav(d) {
   const n = Math.min(Math.max(idx + d, 0), buttons.length - 1);
-  if (n !== idx) select(n, buildings[n].key);
+  if (n !== idx) select(n, buildings[n].key, 'arrow-key');
+}
+
+/* --- LINK TRACKING ---------------------------------------------------------- */
+function trackLinkClick(e) {
+  const a = e.target.closest('a[href]');
+  if (!a) return;
+  const raw = a.getAttribute('href');
+  if (!raw || raw.startsWith('javascript:') || raw.startsWith('#')) return;
+  let url;
+  try { url = new URL(a.href); } catch (_) { return; }
+
+  const external = url.host !== location.host;
+  const samePage = !external && url.pathname === location.pathname && url.search === location.search;
+
+  phCapture('link_clicked', {
+    link_url: url.href,
+    link_host: url.host,
+    link_path: url.pathname,
+    link_text: (a.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 120),
+    link_type: external ? 'external' : (samePage ? 'same_page' : 'internal'),
+    building: buildings[idx]?.key,
+    entry_title: a.querySelector('.entry-title')?.textContent || null
+  });
 }
 
 /* --- BUILDING SELECTION ----------------------------------------------------- */
-function select(i, k) {
+function select(i, k, source) {
   const b = buildings.find(x => x.key === k); if (!b) return;
   const dir = i > idx ? 'right' : i < idx ? 'left' : 'none';
   idx = i;
@@ -203,6 +235,13 @@ function select(i, k) {
 
   ui.mainPanel.style.backgroundImage = `url('${b.bg}')`;
   ui.title.textContent = b.title; ui.sub.textContent = b.sub; ui.body.innerHTML = b.body;
+
+  phCapture('building_viewed', {
+    building: b.key,
+    building_label: b.label,
+    scroll_title: b.title,
+    source: source || 'click'
+  });
 
   const tr = Math.max(0, ui.stage.offsetHeight - 7);
   const tm = Math.min(1.7, Math.max(0.75, 0.35 + tr / 700));

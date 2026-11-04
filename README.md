@@ -63,6 +63,26 @@ GitHub also shows two platform-managed entries in the Actions tab:
 - **Dependency Graph** — auto-scans `requirements.txt` for vulnerabilities.
 - **pages-build-deployment** — internal Pages step that runs after the deploy workflow uploads the artifact.
 
+## Analytics
+
+PostHog tracks the portfolio. The snippet lives in `index.html`. The SDK sends events to the US Cloud host.
+
+| Item | Value |
+|------|-------|
+| Project | Default project (ID 339161) |
+| Ingestion host | `https://us.i.posthog.com` |
+| Super property | `site: portfolio` |
+
+Custom events sent by `script.js`:
+
+| Event | When | Key properties |
+|-------|------|----------------|
+| `building_viewed` | A scroll opens | `building`, `source` (`initial`, `click`, `arrow-key`) |
+| `link_clicked` | Any link click | `link_url`, `link_host`, `link_type` (`internal`, `external`, `same_page`), `entry_title` |
+| `theme_toggled` | Night or day toggle | `theme` |
+
+Pageviews and autocapture come from the default PostHog config. The project token is public and safe to ship.
+
 ## Data pipelines
 
 All pipeline files live in `data/`. `data/requirements.txt` lists every Python dependency for both workflows.
