@@ -306,12 +306,11 @@ button { font-family: inherit; }
 
 .entry-icon { flex: 0 0 auto; width: 36px; height: 36px; object-fit: contain; align-self: flex-start; }
 
-/* Optional tag bubbles under an entry icon. Fixed column keeps titles aligned. */
-.entry-icon-wrap {
-  flex: 0 0 66px; display: flex; flex-direction: column; align-items: center; gap: 6px;
+/* Optional tag bubbles below an entry description. */
+.entry-tags {
+  display: flex; flex-wrap: wrap; gap: 4px;
+  padding-left: 24px; margin-top: 2px;
 }
-.entry-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
-.entry-icon-wrap .entry-icon { align-self: center; }
 .tag-bubble {
   display: inline-block; padding: 2px 7px; border-radius: 999px;
   border: 1px solid rgba(196,160,74,0.55); background: rgba(196,160,74,0.12);
@@ -335,7 +334,7 @@ button { font-family: inherit; }
   .skills-title { font-size: 22px; }
   .skill-group li { font-size: 15px; }
   .entry-icon { width: 28px; height: 28px; }
-  .entry-icon-wrap { flex-basis: 52px; }
+  .entry-tags { padding-left: 20px; }
   .tag-bubble { font-size: 9px; padding: 2px 6px; }
 }
 

@@ -46,13 +46,11 @@ function buildEntryHTML(entry, defaultIcon) {
   const icon = entry.icon || defaultIcon;
   const desc = entry.desc ? `<p class="entry-desc-text">${entry.desc}</p>` : '';
   return `<li><a href="${entry.url}" target="_blank" rel="noopener noreferrer">
-    <div class="entry-icon-wrap">
-      <img class="entry-icon" src="assets/${icon}" alt="" aria-hidden="true" width="36" height="36">
-      ${buildTagsHTML(entry.tags)}
-    </div>
+    <img class="entry-icon" src="assets/${icon}" alt="" aria-hidden="true" width="36" height="36">
     <div class="entry-content">
       <div class="entry-head"><span class="entry-title">${entry.title}</span><span class="entry-meta">${entry.meta}</span></div>
       ${desc}
+      ${buildTagsHTML(entry.tags)}
     </div>
     <span class="entry-arrow">→</span></a></li>`;
 }
