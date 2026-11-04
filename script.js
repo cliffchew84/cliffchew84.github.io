@@ -35,11 +35,21 @@ function phCapture(event, props) {
   }
 }
 
+function buildTagsHTML(tags) {
+  if (!tags) return '';
+  const list = (Array.isArray(tags) ? tags : [tags]).filter(t => t && String(t).trim());
+  if (!list.length) return '';
+  return '<div class="entry-tags">' + list.map(t => `<span class="tag-bubble">${t}</span>`).join('') + '</div>';
+}
+
 function buildEntryHTML(entry, defaultIcon) {
   const icon = entry.icon || defaultIcon;
   const desc = entry.desc ? `<p class="entry-desc-text">${entry.desc}</p>` : '';
   return `<li><a href="${entry.url}" target="_blank" rel="noopener noreferrer">
-    <img class="entry-icon" src="assets/${icon}" alt="" aria-hidden="true" width="36" height="36">
+    <div class="entry-icon-wrap">
+      <img class="entry-icon" src="assets/${icon}" alt="" aria-hidden="true" width="36" height="36">
+      ${buildTagsHTML(entry.tags)}
+    </div>
     <div class="entry-content">
       <div class="entry-head"><span class="entry-title">${entry.title}</span><span class="entry-meta">${entry.meta}</span></div>
       ${desc}

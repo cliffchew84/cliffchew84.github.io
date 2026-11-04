@@ -306,6 +306,19 @@ button { font-family: inherit; }
 
 .entry-icon { flex: 0 0 auto; width: 36px; height: 36px; object-fit: contain; align-self: flex-start; }
 
+/* Optional tag bubbles under an entry icon. Fixed column keeps titles aligned. */
+.entry-icon-wrap {
+  flex: 0 0 66px; display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.entry-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
+.entry-icon-wrap .entry-icon { align-self: center; }
+.tag-bubble {
+  display: inline-block; padding: 2px 7px; border-radius: 999px;
+  border: 1px solid rgba(196,160,74,0.55); background: rgba(196,160,74,0.12);
+  color: var(--ink); font-size: 10px; line-height: 1.5;
+  letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap;
+}
+
 /* --- Responsive ----------------------------------------------------------- */
 @media (max-width: 700px) {
   .town-strip { height: 230px; }
@@ -322,6 +335,8 @@ button { font-family: inherit; }
   .skills-title { font-size: 22px; }
   .skill-group li { font-size: 15px; }
   .entry-icon { width: 28px; height: 28px; }
+  .entry-icon-wrap { flex-basis: 52px; }
+  .tag-bubble { font-size: 9px; padding: 2px 6px; }
 }
 
 /* --- Reduced Motion ------------------------------------------------------- */

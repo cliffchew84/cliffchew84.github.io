@@ -94,7 +94,10 @@
           "meta": "Visualisation · 2024",
           "url": "https://singapore-hdb-resale.vercel.app/",
           "desc": "Personal side project that takes public resale data from Singapore's data.gov.sg to analyse and visualise our Singapore public housing resale prices. Currently implementation uses DuckDB.",
-          "icon": "item-hammer-transparent.webp"
+          "icon": "item-hammer-transparent.webp",
+          "tags": [
+            "DuckDB"
+          ]
         },
         {
           "title": "Book Notes Mind Map",
