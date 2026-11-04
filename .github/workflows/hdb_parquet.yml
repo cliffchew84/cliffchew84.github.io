@@ -7,6 +7,9 @@ on:
   workflow_dispatch: # This adds a manual "Run workflow" button in the GitHub UI
   push:
     branches: [main]
+    paths:
+      - data/**
+      - .github/workflows/hdb_parquet.yml
 
 jobs:
   run-sync-pipeline:
