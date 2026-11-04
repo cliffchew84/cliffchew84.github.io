@@ -83,6 +83,17 @@ Custom events sent by `script.js`:
 
 Pageviews and autocapture come from the default PostHog config. The project token is public and safe to ship.
 
+### Internal traffic
+
+PostHog ignores your own visits by default. The project has a test account filter on `internal_user`.
+
+| URL | Effect |
+|-----|--------|
+| `https://cliffchew84.github.io/?internal=1` | Marks the browser as internal. Stored in localStorage. |
+| `https://cliffchew84.github.io/?internal=0` | Clears the marker. Browser counts as a normal visitor. |
+
+The flag only affects the browser where you set it. To verify the filter works, turn the flag on, reload, and check that the events show the `internal_user` property.
+
 ## Data pipelines
 
 All pipeline files live in `data/`. `data/requirements.txt` lists every Python dependency for both workflows.

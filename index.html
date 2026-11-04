@@ -22,6 +22,15 @@ posthog.init('phc_yk5bjgNaJ6JAaDNPNFJyF6nhyeRiIJi6NsWFdH5zE5h', {
   defaults: '2026-08-30'
 });
 posthog.register({ site: 'portfolio' });
+
+/* Internal-user toggle. Use ?internal=1 to mark this browser, ?internal=0 to clear. */
+try {
+  var internalParam = new URLSearchParams(location.search).get('internal');
+  if (internalParam === '1' || internalParam === '0') localStorage.setItem('ph_internal', internalParam);
+  if (localStorage.getItem('ph_internal') === '1') posthog.register({ internal_user: true });
+} catch (err) {
+  /* localStorage can fail in private mode. Ignore. */
+}
 </script>
 </head>
 <body>
