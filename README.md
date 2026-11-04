@@ -92,7 +92,7 @@ PostHog ignores your own visits by default. The project has a test account filte
 | `https://cliffchew84.github.io/?internal=1` | Marks the browser as internal. Stored in localStorage. |
 | `https://cliffchew84.github.io/?internal=0` | Clears the marker. Browser counts as a normal visitor. |
 
-The flag only affects the browser where you set it. To verify the filter works, turn the flag on, reload, and check that the events show the `internal_user` property.
+The flag only affects the browser where you set it. A small red "Internal" badge appears in the bottom-left corner while the flag is on. To verify the filter works, turn the flag on, reload, and check that the events show the `internal_user` property.
 
 ## Data pipelines
 

@@ -9,6 +9,13 @@ if (matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentEle
 ['character-idle.webp', 'character-walk-sprite.webp']
   .forEach(f => { const img = new Image(); img.src = 'assets/' + f; });
 
+/* --- Internal badge: shows only when this browser is marked internal ------- */
+try {
+  if (localStorage.getItem('ph_internal') === '1') {
+    document.getElementById('internal-badge').hidden = false;
+  }
+} catch (e) { /* localStorage can fail in private mode. Ignore. */ }
+
 /* --- UI ELEMENTS ------------------------------------------------------------ */
 const $ = (id) => document.getElementById(id);
 const ui = {
