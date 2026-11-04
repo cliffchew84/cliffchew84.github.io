@@ -3,7 +3,54 @@
    ========================================================================== */
 
 document.documentElement.classList.add('js');
-if (matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('no-anim');
+/* --- PAGINATION ------------------------------------------------------------- */
+const ENTRY_PER_PAGE = 4;
+let pagPage = 1;
+
+function renderPagination() {
+  const b = buildings[idx];
+  const raw = b && b._raw;
+  const entries = (raw && raw.entries) || [];
+  const totalPages = Math.max(1, Math.ceil(entries.length / ENTRY_PER_PAGE));
+
+  pagPage = Math.min(Math.max(pagPage, 1), totalPages);
+
+  const start = (pagPage - 1) * ENTRY_PER_PAGE;
+  const pageEntries = entries.slice(start, start + ENTRY_PER_PAGE);
+  const defaultIcon = entries[0]?.icon;
+  const intro = raw && raw.intro ? `<p>${raw.intro}</p>` : '';
+
+  ui.body.innerHTML = entries.length
+    ? intro + buildEntriesHTML(pageEntries, defaultIcon)
+    : '<p>No entries yet.</p>';
+
+  const pager = $('panel-pager');
+  if (totalPages > 1) {
+    pager.innerHTML = buildPaginationHTML(pagPage, totalPages);
+    pager.hidden = false;
+    pager.querySelectorAll('.pagination-btn').forEach(btn => {
+      btn.onclick = () => {
+        pagPage += Number(btn.dataset.step);
+        renderPagination();
+      };
+    });
+  } else {
+    hidePager();
+  }
+}
+
+function hidePager() {
+  const pager = $('panel-pager');
+  if (!pager) return;
+  pager.hidden = true;
+  pager.innerHTML = '';
+}
+
+function buildPaginationHTML(page, total) {
+  return `<button type="button" class="pagination-btn" data-step="-1" aria-label="Previous page"${page === 1 ? ' disabled' : ''}>&#8249;</button>
+    <span class="pagination-info">${page} / ${total}</span>
+    <button type="button" class="pagination-btn" data-step="1" aria-label="Next page"${page === total ? ' disabled' : ''}>&#8250;</button>`;
+}
 
 /* --- Preload character sprites (idle + walk sprite sheet) ------------------- */
 ['character-idle.webp', 'character-walk-sprite.webp']
@@ -26,7 +73,6 @@ const ui = {
 };
 
 /* --- HELPERS ---------------------------------------------------------------- */
-const DPO = { left: 0, top: -46 };
 
 /* Send an event to PostHog if the SDK loaded. Ad blockers can remove it. */
 function phCapture(event, props) {
@@ -89,7 +135,6 @@ async function init() {
       label: b.label,
       img: `assets/${b.exterior}`,
       big: b.big,
-      pointer: b.pointer ? `assets/${b.pointer}` : null,
       title: b.title,
       sub: b.subtitle,
       bg: `assets/${b.indoor}`,
@@ -111,7 +156,7 @@ async function init() {
 
 function buildBodyHTML(b) {
   if (b.key === 'residence') {
-    return `<p>${b.intro}</p><p>${b.highlights}</p>${buildSkillsHTML(b.skills)}`;
+    return `<p>${b.intro}</p>${buildSkillsHTML(b.skills)}`;
   }
   // Library, Blacksmith, Market, Tavern
   const defaultIcon = b.entries[0]?.icon;
@@ -122,8 +167,7 @@ function buildButtons() {
   ui.row.innerHTML = buildings.map((b, i) => `
     <button class="bldg-btn${b.big ? ' big' : ''}${i === 0 ? ' active' : ''}" data-key="${b.key}" aria-label="${b.label}">
       <div class="bldg-img-wrap">
-        ${b.pointer ? `<img class="bldg-pointer" src="${b.pointer}" alt="" aria-hidden="true" style="left:${DPO.left}px;top:${DPO.top}px" width="46" height="46">` : ''}
-        <img class="bldg-img" src="${b.img}" alt="${b.label}" width="150" height="150" ${i > 0 ? 'loading="lazy"' : ''}>
+        <img class="bldg-img" src="${b.img}" alt="${b.label}" width="104" height="104" ${i > 0 ? 'loading="lazy"' : ''}>
       </div>
       <span class="bldg-label">${b.label}</span>
     </button>`).join('');
@@ -154,7 +198,6 @@ function setupListeners() {
 /* --- LAYOUT + CHARACTER ----------------------------------------------------- */
 function layout() {
   const sw = ui.strip.clientWidth;
-  ui.strip.classList.add('can-slide');
   const st = getComputedStyle(ui.row);
   const gap = parseFloat(st.columnGap) || 0;
   const cw = buttons.reduce((s, b) => s + b.offsetWidth, 0) + gap * (buttons.length - 1);
@@ -174,13 +217,10 @@ function layout() {
 
   const cb = buttons[idx];
   if (cb) {
-    const newLeft = Math.max(0, cb.offsetLeft + cb.offsetWidth / 2 + ro - 42);
+    const charHalf = (ui.char.offsetWidth || 58) / 2;
+    const newLeft = Math.max(0, cb.offsetLeft + cb.offsetWidth / 2 + ro - charHalf);
     charTargetLeft = newLeft;
-    if (ui.char.style.left === '' || ui.char.style.transitionDuration === '0s') {
-      ui.char.style.left = newLeft + 'px';
-    } else {
-      ui.char.style.left = newLeft + 'px';
-    }
+    ui.char.style.left = newLeft + 'px';
   }
 }
 
@@ -244,12 +284,22 @@ function select(i, k, source) {
   const b = buildings.find(x => x.key === k); if (!b) return;
   const dir = i > idx ? 'right' : i < idx ? 'left' : 'none';
   idx = i;
+  pagPage = 1; // reset to first page when switching buildings
 
   buttons.forEach((btn, j) => btn.classList.toggle('active', j === i));
   layout(); walk(dir);
 
   ui.mainPanel.style.backgroundImage = `url('${b.bg}')`;
-  ui.title.textContent = b.title; ui.sub.textContent = b.sub; ui.body.innerHTML = b.body;
+  ui.title.textContent = b.title; ui.sub.textContent = b.sub;
+  ui.body.classList.toggle('is-residence', b.key === 'residence');
+
+  // If the building has entries, render them with pagination instead of raw body HTML
+  const raw = b._raw;
+  if (raw && raw.entries && raw.entries.length > 0) {
+    renderPagination();
+  } else {
+    ui.body.innerHTML = b.body;
+  }
 
   phCapture('building_viewed', {
     building: b.key,

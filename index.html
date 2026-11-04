@@ -44,7 +44,7 @@ try {
   <button class="town-arrow prev" id="town-prev" aria-label="Previous building">‹</button>
   <button class="town-arrow next" id="town-next" aria-label="Next building">›</button>
   <div class="buildings-row">
-    <!-- Buttons built from buildings data in prototype.js -->
+    <!-- Buttons built by script.js from content.json -->
   </div>
   <div class="character-wrap" id="char"><div class="character" id="char-el"></div></div>
 </div>
@@ -52,11 +52,12 @@ try {
 <main class="main-panel">
   <div class="scroll-stage" id="scroll-stage">
     <div class="roll-top" aria-hidden="true"></div>
-    <!-- Fallback content. prototype.js replaces this on load. -->
+    <!-- Fallback content. script.js replaces this on load. -->
     <article class="parchment" id="panel" aria-live="polite">
       <header class="panel-header">
         <h2 id="panel-title">Residence</h2>
         <p id="panel-sub">Resume · Profile</p>
+        <nav class="pagination-nav" id="panel-pager" aria-label="Scroll pages" hidden></nav>
       </header>
       <div class="panel-body" id="panel-body">
         <p>I turn messy public data into clear tools. I write and speak about the craft. Ten years of pipelines and dashboards.</p>

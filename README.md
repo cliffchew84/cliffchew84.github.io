@@ -28,12 +28,13 @@ workflow (`deploy-pages.yml`), not the README.
 | Host          | Count    | Reviewed |
 | ------------- | -------- | -------- |
 | GitHub Pages  | 1 site   | yes      |
-| Netlify       | 20 sites | no       |
+| Netlify       | 3 sites  | yes      |
 | Vercel        | unknown  | no       |
 | Cloudflare R2 | 1 bucket | no       |
 
 - `dist/`, `package.json`, `package-lock.json`, `netlify.toml`, `vercel.json` were removed on 2026-10-31.
-- Netlify and Vercel configs are gone. The 20 Netlify sites and any Vercel project are unchanged (not reviewed).
+- Netlify: 3 presentation slide sites uploaded and reviewed. Other Netlify sites removed or not tracked.
+- Vercel configs are gone. Vercel project status unknown (not reviewed).
 
 ## GitHub Pages
 
@@ -73,13 +74,33 @@ PostHog tracks the portfolio. The snippet lives in `index.html`. The SDK sends e
 | Ingestion host | `https://us.i.posthog.com` |
 | Super property | `site: portfolio` |
 
-Custom events sent by `script.js`:
+### Events data dictionary (Portfolio)
 
-| Event | When | Key properties |
-|-------|------|----------------|
-| `building_viewed` | A scroll opens | `building`, `source` (`initial`, `click`, `arrow-key`) |
-| `link_clicked` | Any link click | `link_url`, `link_host`, `link_type` (`internal`, `external`, `same_page`), `entry_title` |
-| `theme_toggled` | Night or day toggle | `theme` |
+Events sent by `script.js` and `index.html` to PostHog project 339161.
+
+**Super property (set on init):**
+```js
+posthog.register({ site: 'portfolio' });
+```
+
+**Internal flag (set via `?internal=1`):**
+```js
+if (localStorage.getItem('ph_internal') === '1') {
+  posthog.register({ internal_user: true });
+}
+```
+
+| Event | Trigger | Key properties | Description |
+|-------|---------|----------------|-------------|
+| `$pageview` | Page load | `$host`, `$pathname`, `$referrer`, `$geoip_*` | Standard PostHog pageview |
+| `$pageleave` | Page unload | — | Standard PostHog |
+| `$web_vitals` | Browser metrics | — | Core Web Vitals |
+| `$autocapture` | Click/change on any element | `$event_type` (click/change), `$el_text`, `$el_tag_name` | PostHog autocapture (consider `autocapture: false` to reduce noise) |
+| `building_viewed` | User clicks a building in the town strip | `building` (section key: `residence`, `smith`, `library`, `market`, `tavern`), `internal_user` (bool) | Section opened |
+| `link_clicked` | User clicks an entry link | `entry_title`, `link_host`, `link_path`, `link_type` (`external`/`internal`/`same_page`), `building`, `internal_user` | Outbound link click |
+| `theme_toggled` | User toggles day/night | `theme` (`day`/`night`), `internal_user` | Theme change |
+
+Section keys: `residence` = About, `smith` = Blacksmith (Projects), `library` = Writings, `market` = Talks, `tavern` = (unused).
 
 Pageviews and autocapture come from the default PostHog config. The project token is public and safe to ship.
 
@@ -127,7 +148,6 @@ All other secrets removed (2026-11-03): `PERSONAL_ACCESS_TOKEN`, `BASE_URL`, `EX
 
 - **Vercel.** No token, CLI, or login file. Unknown project and unknown domain.
 - Cloudflare R2 bucket state and file date.
-- Netlify sites (20) — repo links and status unverified.
 - Page content on the live sites. Only HTTP status and titles were checked.
 
 ## HDB Resale Blog (archived)
@@ -151,7 +171,8 @@ All other secrets removed (2026-11-03): `PERSONAL_ACCESS_TOKEN`, `BASE_URL`, `EX
 - [ ] Record the R2 bucket public URL, if the data is public.
 - [x] **Phase 4: Build new portfolio at repo root.** Portfolio is live at `https://cliffchew84.github.io/`. `deploy-pages.yml` uploads root (`.`). `talks/` preserved for legacy paths.
 - [ ] **Migrate blog content:** Copy selected posts from `~/Work/tia/cliff/sg_housing/sg_housing/posts/` into new portfolio `content.json` (Library entries).
-- [ ] Review Netlify sites: verify repo links and status for all 20 sites.
+- [x] **Review Netlify sites:** 3 presentation slide sites uploaded and reviewed. Other sites removed or not tracked.
+- [ ] **Clean up HDB resale dashboard analytics:** Add `posthog.register({ site: 'hdb-resale' })`, send custom properties for `filters_applied` and `section_toggled`, add `internal_user` flag logic, consider disabling autocapture.
 
 ## Check commands
 

@@ -9,12 +9,10 @@
       "label": "Residence",
       "exterior": "residence-new.webp",
       "big": false,
-      "pointer": null,
       "title": "Residence",
       "subtitle": "About · Me",
       "indoor": "residenc-indoor.webp",
       "intro": "A social science major turned data professional. Using this place as my creative outlet, because well, everyone is a builder now.",
-      "highlights": "",
       "skills": [
         {
           "category": "Human Languages",
@@ -63,7 +61,6 @@
       "label": "Library",
       "exterior": "workshop-transparent-door.webp",
       "big": true,
-      "pointer": "item-book-transparent.webp",
       "title": "Library",
       "subtitle": "Writings · Thoughts",
       "indoor": "library-indoor.webp",
@@ -83,7 +80,6 @@
       "label": "Blacksmith",
       "exterior": "blacksmith-transparent.webp",
       "big": true,
-      "pointer": "item-hammer-transparent.webp",
       "title": "Blacksmith",
       "subtitle": "Projects · Tools",
       "indoor": "blacksmith-indoor.webp",
@@ -97,6 +93,8 @@
           "icon": "item-hammer-transparent.webp",
           "tags": [
             "DuckDB-Wasm",
+            "Cloudflare R2",
+            "D3.js",
             "React",
             "Vercel"
           ]
@@ -108,7 +106,8 @@
           "desc": "A network graph of books I read since 2011. For personal use, but releasing it for fun.",
           "icon": "item-hammer-transparent.webp",
           "tags": [
-            "React",
+            "HTML",
+            "Javascript",
             "Netlify"
           ]
         },
@@ -133,6 +132,38 @@
             "React",
             "Netlify"
           ]
+        },
+        {
+          "title": "AI Driven Workflows",
+          "meta": "Presentations",
+          "url": "https://ai-workflows-showcase-hdb.netlify.app/",
+          "desc": "Sharing the thought process to using AI for my public housing dashboard.",
+          "icon": "item-hammer-transparent.webp",
+          "tags": [
+            "React",
+            "Netlify",
+            "Google AI Studio"
+          ]
+        },
+        {
+          "title": "Vibe Coding Workshop",
+          "meta": "Workshop slides",
+          "url": "https://pma-vibe-coding.netlify.app/",
+          "desc": "Slides for a 2.5-hour workshop for a group of non-technical professionals.",
+          "icon": "item-hammer-transparent.webp",
+          "tags": [
+            "Google AI Studio"
+          ]
+        },
+        {
+          "title": "Vibe Coding a Dashboard",
+          "meta": "Presentations · 2025",
+          "url": "https://dssg-26-11-2025-vibe-code.netlify.app/",
+          "desc": "Sharing some learnings on my attempts to vibe code an analytics dashboard.",
+          "icon": "item-hammer-transparent.webp",
+          "tags": [
+            "Google AI Studio"
+          ]
         }
       ]
     },
@@ -141,7 +172,6 @@
       "label": "Market",
       "exterior": "market-transparent.webp",
       "big": true,
-      "pointer": "item-bag-of-coins-transparent.webp",
       "title": "Market",
       "subtitle": "Products · Services",
       "indoor": "marketplace-indoors.webp",
@@ -160,7 +190,6 @@
       "label": "Tavern",
       "exterior": "guild-hall-transparent-door.webp",
       "big": true,
-      "pointer": "item-beer-transparent.webp",
       "title": "Tavern",
       "subtitle": "Contact · Hire",
       "indoor": "tavern-indoors.webp",
