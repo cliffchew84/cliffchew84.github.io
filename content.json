@@ -13,7 +13,7 @@
       "title": "Residence",
       "subtitle": "About · Me",
       "indoor": "residenc-indoor.webp",
-      "intro": "A social science major turned data professional. Using this place as my creative outlet, because well, everyone is a builder right now.",
+      "intro": "A social science major turned data professional. Using this place as my creative outlet, because well, everyone is a builder now.",
       "highlights": "",
       "skills": [
         {
@@ -67,7 +67,7 @@
       "title": "Library",
       "subtitle": "Writings · Thoughts",
       "indoor": "library-indoor.webp",
-      "intro": "Place of my writings and thoughts.",
+      "intro": "'You think. I thought. Who confirm?'",
       "entries": [
         {
           "title": "Pending",
@@ -87,38 +87,52 @@
       "title": "Blacksmith",
       "subtitle": "Projects · Tools",
       "indoor": "blacksmith-indoor.webp",
-      "intro": "Where I keep the things I forge.",
+      "intro": "Things I forge.",
       "entries": [
         {
-          "title": "Singapore Public Housing Resale Analysis",
+          "title": "Singapore Resale Public Housing Analysis",
           "meta": "Visualisation · 2024",
           "url": "https://singapore-hdb-resale.vercel.app/",
-          "desc": "Personal side project that takes public resale data from Singapore's data.gov.sg to analyse and visualise our Singapore public housing resale prices. Currently implementation uses DuckDB.",
+          "desc": "Personal project using Singapore public housing resale data from data.gov.sg to analyse our Singapore public housing resale prices.",
           "icon": "item-hammer-transparent.webp",
           "tags": [
-            "DuckDB"
+            "DuckDB-Wasm",
+            "React",
+            "Vercel"
           ]
         },
         {
           "title": "Book Notes Mind Map",
           "meta": "Visualisation · 2025",
           "url": "https://cliff-library-books.netlify.app/",
-          "desc": "A network graph of books I read since 2011. For personal use, but decided to release it to anyone interested for the fun of it.",
-          "icon": "item-hammer-transparent.webp"
+          "desc": "A network graph of books I read since 2011. For personal use, but releasing it for fun.",
+          "icon": "item-hammer-transparent.webp",
+          "tags": [
+            "React",
+            "Netlify"
+          ]
         },
         {
           "title": "Fitness Package Tracker",
           "meta": "App · 2024",
           "url": "https://cliff-fitness-tracker.netlify.app/",
-          "desc": "Tracker of all the fitness package I bought, so none will expire on me. Uses localstorage, so you cannot see my packages. But this means you can use it if you need something like this. No login or payment required.",
-          "icon": "item-hammer-transparent.webp"
+          "desc": "Tracker of all the fitness package I bought, so none will expire on me. Uses localstorage, so you cannot see my packages. Neither can I see yours. No login or payment required.",
+          "icon": "item-hammer-transparent.webp",
+          "tags": [
+            "React",
+            "Netlify"
+          ]
         },
         {
           "title": "Grocery Run Planner",
           "meta": "Tool · 2024",
           "url": "https://cliff-grocery-run.netlify.app/",
-          "desc": "Quick groceries items calculator, with the quirky feature that allows toggling on-off for items that you are deciding to buy or not.",
-          "icon": "item-hammer-transparent.webp"
+          "desc": "Quick grocery items calculator, with the quirky feature toggling of items to the final sum for the flicker-minded.",
+          "icon": "item-hammer-transparent.webp",
+          "tags": [
+            "React",
+            "Netlify"
+          ]
         }
       ]
     },
@@ -131,7 +145,7 @@
       "title": "Market",
       "subtitle": "Products · Services",
       "indoor": "marketplace-indoors.webp",
-      "intro": "If you're good at something, never do it for free",
+      "intro": "'If you are good at something, never do it for free'",
       "entries": [
         {
           "title": "Pending",
