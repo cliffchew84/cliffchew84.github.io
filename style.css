@@ -301,7 +301,7 @@ button { font-family: inherit; }
 .entry-head { display: flex; align-items: baseline; gap: 12px; }
 .entry-title { font-weight: 500; font-size: 20px; }
 .entry-meta { font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: var(--ink); opacity: 0.6; white-space: nowrap; }
-.entry-desc-text { margin: 0; padding-left: 24px; font-size: 15px; line-height: 1.6; color: var(--ink); opacity: 0.85; }
+.entry-desc-text { margin: 0; padding-left: 0; font-size: 15px; line-height: 1.6; color: var(--ink); opacity: 0.85; }
 .entry-arrow { color: var(--gold); font-size: 18px; flex: 0 0 22px; text-align: right; align-self: flex-start; line-height: 1; }
 
 .entry-icon { flex: 0 0 auto; width: 36px; height: 36px; object-fit: contain; align-self: flex-start; }
@@ -309,7 +309,7 @@ button { font-family: inherit; }
 /* Optional tag bubbles below an entry description. */
 .entry-tags {
   display: flex; flex-wrap: wrap; gap: 4px;
-  padding-left: 24px; margin-top: 2px;
+  padding-left: 0; margin-top: -2px;
 }
 .tag-bubble {
   display: inline-block; padding: 2px 7px; border-radius: 999px;
@@ -330,11 +330,11 @@ button { font-family: inherit; }
   .panel-header h2 { font-size: 28px; }
   .entry-title { font-size: 20px; }
   .entry-meta { font-size: 11px; }
-  .entry-desc-text { padding-left: 20px; font-size: 14px; }
+  .entry-desc-text { padding-left: 0; font-size: 14px; }
   .skills-title { font-size: 22px; }
   .skill-group li { font-size: 15px; }
   .entry-icon { width: 28px; height: 28px; }
-  .entry-tags { padding-left: 20px; }
+  .entry-tags { padding-left: 0; }
   .tag-bubble { font-size: 9px; padding: 2px 6px; }
 }
 
