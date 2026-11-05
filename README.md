@@ -23,6 +23,39 @@ URL changes.
 The root URL <https://cliffchew84.github.io/> returns 200. It serves the portfolio page assembled by the Actions
 workflow (`deploy-pages.yml`), not the README.
 
+## Portfolio sections and filters
+
+The portfolio has five buildings in `content.json`. Each one renders a single scroll.
+
+| Key | Title | Subtitle | Entries | Topics |
+| --- | --- | --- | --- | --- |
+| `residence` | Residence | About · Me | 0 (skills list) | none |
+| `smith` | Blacksmith | Projects · Tools | 7 | Housing, Data, Tools, AI, Teaching |
+| `library` | Library | Writings · Thoughts | 1 | none |
+| `market` | Market | Products · Services | 1 | none |
+| `tavern` | Tavern | Contact · Hire | 2 | none |
+
+Layout rules:
+
+- The header is centred and stacked: title, then intro, then subtitle and count on one line. Residence keeps its intro in the body.
+- The intro comes from the `intro` field in `content.json`.
+- A building with entries shows a search field. Only Blacksmith has topics, so only Blacksmith shows chips.
+- The pager sits at the right of the search field. It hides when the result fits on one page.
+- `ENTRY_PER_PAGE` is 4 in `script.js`.
+- A filter searches all entries, then paginates the matches. A filter change resets to page 1.
+- A building switch clears the filters.
+
+### Revert to the original layout
+
+```sh
+git checkout v1-before-blacksmith-split -- index.html script.js style.css content.json
+```
+
+A backup copy of those four files is in `.backup/v1/`. The folder is gitignored.
+
+The old split view is still in the code but hidden. Add `"layout": "split"` to the Blacksmith entry in
+`content.json` to restore it.
+
 ## Hosts
 
 | Host          | Count    | Reviewed |
@@ -99,8 +132,12 @@ if (localStorage.getItem('ph_internal') === '1') {
 | `building_viewed` | User clicks a building in the town strip | `building` (section key: `residence`, `smith`, `library`, `market`, `tavern`), `internal_user` (bool) | Section opened |
 | `link_clicked` | User clicks an entry link | `entry_title`, `link_host`, `link_path`, `link_type` (`external`/`internal`/`same_page`), `building`, `internal_user` | Outbound link click |
 | `theme_toggled` | User toggles day/night | `theme` (`day`/`night`), `internal_user` | Theme change |
+| `scroll_filter_used` | 500 ms after a search keystroke, or on a topic chip click | `source` (`search`/`all`/topic name), `building`, `query_length`, `topics` (array), `results` | Filter used on a scroll list |
+| `blacksmith_entry_selected` | Split view only (dormant) | `entry_title`, `building`, `source`, `query_length`, `topics` | Project picked in the split view |
+| `blacksmith_filter_used` | Split view only (dormant) | `source`, `query_length`, `topics`, `results` | Filter used in the split view |
 
-Section keys: `residence` = About, `smith` = Blacksmith (Projects), `library` = Writings, `market` = Talks, `tavern` = (unused).
+Section keys: `residence` = About, `smith` = Blacksmith (Projects), `library` = Writings, `market` = Products,
+`tavern` = Contact.
 
 Pageviews and autocapture come from the default PostHog config. The project token is public and safe to ship.
 
@@ -143,6 +180,7 @@ All other secrets removed (2026-11-03): `PERSONAL_ACCESS_TOKEN`, `BASE_URL`, `EX
 - **Secret scanning and push protection enabled; 0 alerts found.**
 - HTTP status of the live URLs above.
 - Personal contact data scan in tracked files: none found.
+- Portfolio scroll layout, header, and filter bar on all five buildings.
 
 ## Not reviewed
 
@@ -173,6 +211,7 @@ All other secrets removed (2026-11-03): `PERSONAL_ACCESS_TOKEN`, `BASE_URL`, `EX
 - [ ] **Migrate blog content:** Copy selected posts from `~/Work/tia/cliff/sg_housing/sg_housing/posts/` into new portfolio `content.json` (Library entries).
 - [x] **Review Netlify sites:** 3 presentation slide sites uploaded and reviewed. Other sites removed or not tracked.
 - [ ] **Clean up HDB resale dashboard analytics:** Add `posthog.register({ site: 'hdb-resale' })`, send custom properties for `filters_applied` and `section_toggled`, add `internal_user` flag logic, consider disabling autocapture.
+- [ ] **Remove the dormant split view:** Delete the `split-view` markup, the `.split-*` and `.scene-*` styles, and the `enterSplit`/`renderSplitList` code once the scroll layout is final.
 
 ## Check commands
 

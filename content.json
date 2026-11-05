@@ -91,6 +91,7 @@
           "url": "https://singapore-hdb-resale.vercel.app/",
           "desc": "Personal project using Singapore public housing resale data from data.gov.sg to analyse our Singapore public housing resale prices.",
           "icon": "item-hammer-transparent.webp",
+          "topics": ["Housing", "Data"],
           "tags": [
             "DuckDB-Wasm",
             "Cloudflare R2",
@@ -105,6 +106,7 @@
           "url": "https://cliff-library-books.netlify.app/",
           "desc": "A network graph of books I read since 2011. For personal use, but releasing it for fun.",
           "icon": "item-hammer-transparent.webp",
+          "topics": ["Data"],
           "tags": [
             "HTML",
             "Javascript",
@@ -117,6 +119,7 @@
           "url": "https://cliff-fitness-tracker.netlify.app/",
           "desc": "Tracker of all the fitness package I bought, so none will expire on me. Uses localstorage, so you cannot see my packages. Neither can I see yours. No login or payment required.",
           "icon": "item-hammer-transparent.webp",
+          "topics": ["Tools"],
           "tags": [
             "React",
             "Netlify"
@@ -128,6 +131,7 @@
           "url": "https://cliff-grocery-run.netlify.app/",
           "desc": "Quick grocery items calculator, with the quirky feature toggling of items to the final sum for the flicker-minded.",
           "icon": "item-hammer-transparent.webp",
+          "topics": ["Tools"],
           "tags": [
             "React",
             "Netlify"
@@ -139,6 +143,7 @@
           "url": "https://ai-workflows-showcase-hdb.netlify.app/",
           "desc": "Sharing the thought process to using AI for my public housing dashboard.",
           "icon": "item-hammer-transparent.webp",
+          "topics": ["AI", "Data"],
           "tags": [
             "React",
             "Netlify",
@@ -151,6 +156,7 @@
           "url": "https://pma-vibe-coding.netlify.app/",
           "desc": "Slides for a 2.5-hour workshop for a group of non-technical professionals.",
           "icon": "item-hammer-transparent.webp",
+          "topics": ["AI", "Teaching"],
           "tags": [
             "Google AI Studio"
           ]
@@ -161,6 +167,7 @@
           "url": "https://dssg-26-11-2025-vibe-code.netlify.app/",
           "desc": "Sharing some learnings on my attempts to vibe code an analytics dashboard.",
           "icon": "item-hammer-transparent.webp",
+          "topics": ["AI", "Teaching"],
           "tags": [
             "Google AI Studio"
           ]

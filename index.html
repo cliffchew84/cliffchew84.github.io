@@ -55,16 +55,84 @@ try {
     <!-- Fallback content. script.js replaces this on load. -->
     <article class="parchment" id="panel" aria-live="polite">
       <header class="panel-header">
-        <h2 id="panel-title">Residence</h2>
-        <p id="panel-sub">Resume · Profile</p>
-        <nav class="pagination-nav" id="panel-pager" aria-label="Scroll pages" hidden></nav>
+        <div class="panel-title-group">
+          <h2 id="panel-title">Residence</h2>
+          <p class="panel-intro" id="panel-intro" hidden></p>
+          <p class="panel-sub-line">
+            <span id="panel-sub">Resume · Profile</span>
+            <span class="panel-sub-sep" id="panel-sub-sep" aria-hidden="true" hidden>·</span>
+            <span class="panel-count" id="panel-count" role="status" aria-live="polite" hidden></span>
+          </p>
+        </div>
       </header>
+      <div class="scroll-filters" id="scroll-filters" hidden>
+        <div class="scroll-chips" id="scroll-chips" role="group" aria-label="Filter by topic"></div>
+        <div class="scroll-search">
+          <svg class="scroll-search-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="m20 20-4-4"></path>
+          </svg>
+          <label class="visually-hidden" for="scroll-query">Search this section</label>
+          <input id="scroll-query" type="search" placeholder="Search this section" autocomplete="off" spellcheck="false" />
+          <button class="scroll-search-clear" id="scroll-clear" type="button" aria-label="Clear search" hidden>×</button>
+        </div>
+        <nav class="pagination-nav" id="panel-pager" aria-label="Scroll pages" hidden></nav>
+        <p class="scroll-filter-status" id="scroll-filter-status" hidden>
+          <span id="scroll-filter-count" role="status" aria-live="polite"></span>
+          <button type="button" id="scroll-filter-clear" hidden>Clear</button>
+        </p>
+      </div>
       <div class="panel-body" id="panel-body">
         <p>I turn messy public data into clear tools. I write and speak about the craft. Ten years of pipelines and dashboards.</p>
       </div>
     </article>
     <div class="roll-rod" aria-hidden="true"></div>
   </div>
+
+  <!-- Blacksmith split view. Other buildings keep the scroll view. -->
+  <section class="split-view" id="split-view" hidden aria-labelledby="split-title">
+    <aside class="split-sidebar">
+      <header class="split-head">
+        <p class="split-kicker" id="split-kicker">Projects · Tools</p>
+        <h2 class="split-title" id="split-title">Blacksmith</h2>
+        <p class="split-count" id="split-count" role="status" aria-live="polite">7 projects</p>
+      </header>
+
+      <div class="split-search">
+        <svg class="split-search-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <circle cx="11" cy="11" r="7"></circle>
+          <path d="m20 20-4-4"></path>
+        </svg>
+        <label class="visually-hidden" for="split-query">Search Blacksmith</label>
+        <input id="split-query" type="search" placeholder="Search projects" autocomplete="off" spellcheck="false" />
+        <button class="split-clear" id="split-clear" type="button" aria-label="Clear search" hidden>×</button>
+      </div>
+
+      <div class="split-chips" id="split-chips" role="group" aria-label="Filter by topic"></div>
+
+      <div class="split-list-wrap">
+        <ul class="split-list" id="split-list"></ul>
+        <p class="split-empty" id="split-empty" hidden>No matches. <button type="button" id="split-empty-clear">Clear filters</button></p>
+      </div>
+
+      <p class="split-hint">Pick a project. The forge is always lit.</p>
+    </aside>
+
+    <section class="scene-panel" aria-labelledby="scene-card-title">
+      <article class="scene-card parchment" id="scene-card">
+        <div class="scene-card-inner">
+          <p class="scene-overline" id="scene-overline">Blacksmith · Project</p>
+          <h3 class="scene-card-title" id="scene-card-title"></h3>
+          <p class="scene-meta" id="scene-meta"></p>
+          <p class="scene-desc" id="scene-desc"></p>
+          <div class="scene-tags" id="scene-tags"></div>
+          <a class="scene-link" id="scene-link" href="#" target="_blank" rel="noopener noreferrer">Open project <span aria-hidden="true">→</span></a>
+        </div>
+      </article>
+    </section>
+
+    <p class="visually-hidden" id="split-announce" role="status" aria-live="polite"></p>
+  </section>
 </main>
 
 <script src="script.js"></script>

@@ -176,3 +176,6 @@ data/*.json
 # Config folder for app_bot
 bot/bot_scripts/config
 portfolio/assets/archive/
+
+# Local backups, never deployed
+.backup/
