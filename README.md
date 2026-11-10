@@ -229,6 +229,67 @@ All other secrets removed (2026-11-03): `PERSONAL_ACCESS_TOKEN`, `BASE_URL`, `EX
   - `/public-homes` — transaction search
 - **Plan:** Extract and revise posts for new portfolio `Library` section (static MD/HTML). Dashboards can be rebuilt as static Quarto/Observable notebooks if needed.
 
+## HomeNAS (local project)
+
+A custom web frontend for the LatticeWork Amber NAS (model AM1213-1). Located in `HomeNAS/` (gitignored, local-only).
+
+### Overview
+
+| Component | Stack | Purpose |
+|-----------|-------|---------|
+| Frontend | React + TypeScript + Vite + Tailwind | Modern UI for NAS management |
+| Proxy | FastAPI + Python (smbprotocol) | Bridges REST API to SMB file operations |
+
+### Features (Phase 1 complete)
+
+- Login / JWT session management
+- Dashboard: disks, RAID, SMART, CPU temp, fan, LED status
+- File browser: tree + table, download, rename, delete, mkdir, upload (drag-drop)
+- Share management: list shares, toggle protocols, edit ACLs
+- User management: create/modify/delete users, set passwords
+- LED control: color picker, brightness slider, DND schedule
+- Health monitoring: thermal, sensors, SMART attributes (admin)
+
+### Quick Start
+
+```bash
+# Frontend (Terminal 1)
+cd HomeNAS/frontend && npm run dev
+# Opens at http://localhost:5173
+
+# Proxy (Terminal 2)
+cd HomeNAS/proxy && pip install -r requirements.txt
+export NAS_HOST=<your-nas-ip>
+export NAS_SHARE=<your-share-name>
+export SMB_USER=<your-smb-user>
+export SMB_PASSWORD=<your-smb-password>
+python main.py
+# Runs on http://localhost:3001
+```
+
+### NAS Configuration (example)
+
+| Setting | Example Value |
+|---------|---------------|
+| NAS IP | `192.168.x.x` (DHCP reserved) |
+| mDNS | `<name>.local` |
+| Share | `<share-name>` |
+| Users | `<admin>`, `<family>` |
+
+Credentials are **not stored** in the repo. Set them via environment variables when running the proxy.
+
+### Documentation
+
+Full details in `HomeNAS/README.md` and `HomeNAS/PRD.md`.
+
+### Phase 2 (planned)
+
+- Dark mode, keyboard shortcuts, bulk actions, share links, storage analytics
+
+### Phase 3 (planned)
+
+- Deploy to Raspberry Pi, Tailscale for remote access, HTTPS via Caddy, systemd service
+
 ## To do
 
 - [x] Remove unused secrets (`PERSONAL_ACCESS_TOKEN`, `BASE_URL`, `EXT_URL`, `MONGO_PASSWORD`, `OGP_API_KEY`, `RENDER_DEPLOY`) — deleted 2026-11-03.
