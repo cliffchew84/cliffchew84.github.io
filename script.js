@@ -3,8 +3,27 @@
    ========================================================================== */
 
 document.documentElement.classList.add('js');
+
+/* --- CONFIG ----------------------------------------------------------------- */
+const CONFIG = {
+  entriesPerPage: 4,
+  filterDebounceMs: 500,
+  resizeDebounceMs: 150,
+  mobileBreakpoint: 700,
+  walkPixelsPerSecond: 200,
+  walkMinSeconds: 0.4,
+  walkMaxSeconds: 1.2,
+  slideTriggerRatio: 0.04,
+  rodBaseSeconds: 0.35,
+  rodTravelDivisor: 700,
+  rodMinSeconds: 0.75,
+  rodMaxSeconds: 1.7,
+};
+
+const mqReduced = matchMedia('(prefers-reduced-motion: reduce)');
+const mqMobile = matchMedia(`(max-width: ${CONFIG.mobileBreakpoint}px)`);
+
 /* --- PAGINATION ------------------------------------------------------------- */
-const ENTRY_PER_PAGE = 4;
 let pagPage = 1;
 
 function renderPagination() {
@@ -12,12 +31,12 @@ function renderPagination() {
   const raw = b && b._raw;
   const allEntries = (raw && raw.entries) || [];
   const entries = scrollFilteredEntries();
-  const totalPages = Math.max(1, Math.ceil(entries.length / ENTRY_PER_PAGE));
+  const totalPages = Math.max(1, Math.ceil(entries.length / CONFIG.entriesPerPage));
 
   pagPage = Math.min(Math.max(pagPage, 1), totalPages);
 
-  const start = (pagPage - 1) * ENTRY_PER_PAGE;
-  const pageEntries = entries.slice(start, start + ENTRY_PER_PAGE);
+  const start = (pagPage - 1) * CONFIG.entriesPerPage;
+  const pageEntries = entries.slice(start, start + CONFIG.entriesPerPage);
   const defaultIcon = allEntries[0]?.icon;
   if (!allEntries.length) {
     ui.body.innerHTML = '<p>No entries yet.</p>';
@@ -53,7 +72,7 @@ function hidePager() {
 
 function buildPaginationHTML(page, total) {
   return `<button type="button" class="pagination-btn" data-step="-1" aria-label="Previous page"${page === 1 ? ' disabled' : ''}>&#8249;</button>
-    <span class="pagination-info">${page} / ${total}</span>
+    <span class="pagination-info" aria-live="polite" aria-current="page">${page} / ${total}</span>
     <button type="button" class="pagination-btn" data-step="1" aria-label="Next page"${page === total ? ' disabled' : ''}>&#8250;</button>`;
 }
 
@@ -76,16 +95,6 @@ const ui = {
   title: $('panel-title'), sub: $('panel-sub'), body: $('panel-body'),
   intro: $('panel-intro'),
   row: document.querySelector('.buildings-row'), prev: $('town-prev'), next: $('town-next'),
-};
-
-const splitEl = {
-  view: $('split-view'), title: $('split-title'), kicker: $('split-kicker'),
-  count: $('split-count'), query: $('split-query'), clear: $('split-clear'),
-  chips: $('split-chips'), list: $('split-list'), empty: $('split-empty'),
-  emptyClear: $('split-empty-clear'), announce: $('split-announce'),
-  card: $('scene-card'), cardTitle: $('scene-card-title'),
-  overline: $('scene-overline'), meta: $('scene-meta'), desc: $('scene-desc'),
-  tags: $('scene-tags'), link: $('scene-link'),
 };
 
 const scrollEl = {
@@ -113,10 +122,18 @@ function buildTagsHTML(tags) {
   return '<div class="entry-tags">' + list.map(t => `<span class="tag-bubble">${t}</span>`).join('') + '</div>';
 }
 
+function slugify(text) {
+  return String(text).toLowerCase().normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
 function buildEntryHTML(entry, defaultIcon) {
   const icon = entry.icon || defaultIcon;
   const desc = entry.desc ? `<p class="entry-desc-text">${entry.desc}</p>` : '';
-  return `<li><a href="${entry.url}" target="_blank" rel="noopener noreferrer">
+  const slug = slugify(entry.title);
+  return `<li id="entry-${slug}" data-slug="${slug}"><a href="${entry.url}" target="_blank" rel="noopener noreferrer">
     <img class="entry-icon" src="assets/${icon}" alt="" aria-hidden="true" width="36" height="36">
     <div class="entry-content">
       <div class="entry-head"><span class="entry-title">${entry.title}</span><span class="entry-meta">${entry.meta}</span></div>
@@ -135,302 +152,6 @@ function buildSkillsHTML(skills) {
     skills.map(sg => `<section class="skill-group"><h4>${sg.category}</h4><ul>` +
       sg.items.map(item => `<li>${item}</li>`).join('') +
     '</ul></section>').join('') + '</div>';
-}
-
-/* --- BLACKSMITH SPLIT VIEW -------------------------------------------------- */
-const splitState = {
-  building: null,
-  entries: [],
-  entry: null,
-  query: '',
-  topics: new Set(),
-  filterTimer: 0,
-};
-
-function slugify(text) {
-  return String(text || '')
-    .toLowerCase()
-    .normalize('NFKD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
-
-function isSplitBuilding(b) {
-  return !!(b && b._raw && b._raw.layout === 'split' && (b._raw.entries || []).length);
-}
-
-function filteredSplitEntries() {
-  const q = splitState.query.trim().toLowerCase();
-  return splitState.entries.filter(entry => {
-    const topicOk = splitState.topics.size === 0 ||
-      (entry.topics || []).some(t => splitState.topics.has(t));
-    if (!topicOk) return false;
-    if (!q) return true;
-    const hay = [
-      entry.title, entry.desc, entry.meta,
-      ...(entry.tags || []), ...(entry.topics || [])
-    ].join(' ').toLowerCase();
-    return q.split(/\s+/).every(token => hay.includes(token));
-  });
-}
-
-function enterSplit(b, entrySlug) {
-  splitState.building = b;
-  splitState.entries = (b._raw.entries || []).filter(e => e.url);
-  splitState.query = '';
-  splitState.topics = new Set();
-  splitState.entry = null;
-
-  splitEl.query.value = '';
-  splitEl.clear.hidden = true;
-  splitEl.title.textContent = b.title;
-  splitEl.kicker.textContent = b.sub;
-
-  buildSplitChips();
-
-  const found = entrySlug
-    ? splitState.entries.find(e => slugify(e.title) === entrySlug)
-    : null;
-
-  renderSplitList();
-  selectSplitEntry(found || splitState.entries[0], 'initial', false);
-}
-
-function buildSplitChips() {
-  splitEl.chips.innerHTML = '';
-  const topics = [...new Set(splitState.entries.flatMap(e => e.topics || []))];
-
-  const all = document.createElement('button');
-  all.type = 'button';
-  all.className = 'split-chip';
-  all.textContent = 'All';
-  all.setAttribute('aria-pressed', 'true');
-  all.addEventListener('click', () => {
-    splitState.topics.clear();
-    syncSplitChips();
-    renderSplitList();
-    trackSplitFilter('all');
-  });
-  splitEl.chips.appendChild(all);
-
-  topics.forEach(topic => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'split-chip';
-    btn.textContent = topic;
-    btn.dataset.topic = topic;
-    btn.setAttribute('aria-pressed', 'false');
-    btn.addEventListener('click', () => {
-      if (splitState.topics.has(topic)) splitState.topics.delete(topic);
-      else splitState.topics.add(topic);
-      syncSplitChips();
-      renderSplitList();
-      trackSplitFilter(topic);
-    });
-    splitEl.chips.appendChild(btn);
-  });
-}
-
-function syncSplitChips() {
-  splitEl.chips.querySelectorAll('.split-chip').forEach(btn => {
-    const topic = btn.dataset.topic;
-    const on = topic ? splitState.topics.has(topic) : splitState.topics.size === 0;
-    btn.setAttribute('aria-pressed', String(on));
-  });
-}
-
-function renderSplitList() {
-  const items = filteredSplitEntries();
-  splitEl.list.innerHTML = '';
-
-  items.forEach(entry => {
-    const li = document.createElement('li');
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'split-item';
-    btn.dataset.slug = slugify(entry.title);
-    btn.setAttribute('aria-current', String(splitState.entry === entry));
-
-    const icon = document.createElement('img');
-    icon.className = 'split-item-icon';
-    icon.src = `assets/${entry.icon || splitState.entries[0]?.icon || ''}`;
-    icon.alt = '';
-    icon.width = 26;
-    icon.height = 26;
-
-    const body = document.createElement('span');
-    body.className = 'split-item-body';
-    const title = document.createElement('span');
-    title.className = 'split-item-title';
-    title.textContent = entry.title;
-    const meta = document.createElement('span');
-    meta.className = 'split-item-meta';
-    meta.textContent = entry.meta || '';
-    body.append(title, meta);
-
-    const arrow = document.createElement('span');
-    arrow.className = 'split-item-arrow';
-    arrow.setAttribute('aria-hidden', 'true');
-    arrow.textContent = '→';
-
-    btn.append(icon, body, arrow);
-    btn.addEventListener('click', () => selectSplitEntry(entry, 'list', true));
-    li.appendChild(btn);
-    splitEl.list.appendChild(li);
-  });
-
-  splitEl.empty.hidden = items.length > 0;
-  splitEl.list.hidden = items.length === 0;
-  updateSplitCount(items.length);
-}
-
-function updateSplitCount(shown) {
-  const total = splitState.entries.length;
-  const n = typeof shown === 'number' ? shown : filteredSplitEntries().length;
-  splitEl.count.textContent = n === total
-    ? `${total} projects`
-    : `${n} of ${total} projects`;
-}
-
-function selectSplitEntry(entry, source, updateHash) {
-  if (!entry) return;
-  const changed = splitState.entry !== entry;
-  splitState.entry = entry;
-
-  splitEl.cardTitle.textContent = entry.title;
-  splitEl.meta.textContent = entry.meta || '';
-  splitEl.desc.textContent = entry.desc || '';
-  splitEl.overline.textContent = entry.topics && entry.topics.length
-    ? `Blacksmith · ${entry.topics[0]}`
-    : 'Blacksmith · Project';
-
-  splitEl.tags.innerHTML = '';
-  (entry.tags || []).forEach(tag => {
-    const bubble = document.createElement('span');
-    bubble.className = 'tag-bubble';
-    bubble.textContent = tag;
-    splitEl.tags.appendChild(bubble);
-  });
-
-  splitEl.link.href = entry.url;
-  splitEl.link.hidden = !entry.url;
-  splitEl.link.dataset.entryTitle = entry.title;
-  splitEl.link.setAttribute('aria-label', `Open ${entry.title} in a new tab`);
-
-  syncSplitActive();
-
-  if (changed) {
-    splitEl.card.scrollTop = 0;
-    splitEl.card.classList.remove('is-swapping');
-    void splitEl.card.offsetWidth;
-    splitEl.card.classList.add('is-swapping');
-  }
-
-  splitEl.announce.textContent = `Now showing ${entry.title}`;
-
-  if (updateHash) {
-    history.replaceState(null, '', `#${splitState.building.key}/${slugify(entry.title)}`);
-  }
-
-  if (source === 'list' || source === 'search') {
-    scrollSplitIntoViewOnMobile();
-  }
-
-  phCapture('blacksmith_entry_selected', {
-    entry_title: entry.title,
-    building: splitState.building.key,
-    source: source || 'list',
-    query_length: splitState.query.length,
-    topics: [...splitState.topics]
-  });
-}
-
-function syncSplitActive() {
-  const slug = splitState.entry ? slugify(splitState.entry.title) : '';
-  splitEl.list.querySelectorAll('.split-item').forEach(btn => {
-    btn.setAttribute('aria-current', String(btn.dataset.slug === slug));
-  });
-}
-
-function scrollSplitIntoViewOnMobile() {
-  if (!matchMedia('(max-width: 900px)').matches) return;
-  const panel = document.querySelector('.scene-panel');
-  if (!panel) return;
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  panel.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
-}
-
-function clearSplitFilters() {
-  splitState.query = '';
-  splitState.topics.clear();
-  splitEl.query.value = '';
-  splitEl.clear.hidden = true;
-  syncSplitChips();
-  renderSplitList();
-  splitEl.query.focus();
-}
-
-function trackSplitFilter(source) {
-  clearTimeout(splitState.filterTimer);
-  splitState.filterTimer = setTimeout(() => {
-    phCapture('blacksmith_filter_used', {
-      source,
-      query_length: splitState.query.length,
-      topics: [...splitState.topics],
-      results: filteredSplitEntries().length
-    });
-  }, 500);
-}
-
-function setupSplitListeners() {
-  splitEl.query.addEventListener('input', () => {
-    splitState.query = splitEl.query.value;
-    splitEl.clear.hidden = !splitState.query;
-    renderSplitList();
-    if (splitState.query.trim()) trackSplitFilter('search');
-  });
-
-  splitEl.clear.addEventListener('click', clearSplitFilters);
-  splitEl.emptyClear.addEventListener('click', clearSplitFilters);
-
-  splitEl.query.addEventListener('keydown', e => {
-    if (e.key === 'Escape') {
-      e.stopPropagation();
-      if (splitState.query) clearSplitFilters();
-      else splitEl.query.blur();
-    }
-    if (e.key === 'Enter') {
-      const first = filteredSplitEntries()[0];
-      if (first) {
-        e.preventDefault();
-        selectSplitEntry(first, 'search', true);
-        splitEl.query.blur();
-      }
-    }
-  });
-
-  splitEl.list.addEventListener('keydown', e => {
-    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
-    const items = [...splitEl.list.querySelectorAll('.split-item')];
-    const i = items.indexOf(document.activeElement);
-    if (i < 0) return;
-    e.preventDefault();
-    const next = items[i + (e.key === 'ArrowDown' ? 1 : -1)];
-    if (next) next.focus();
-  });
-
-  document.addEventListener('keydown', e => {
-    if (e.metaKey || e.ctrlKey || e.altKey) return;
-    if (splitEl.view.hidden) return;
-    const typing = e.target.closest('input, textarea, select, [contenteditable="true"]');
-    if (e.key === '/' && !typing) {
-      e.preventDefault();
-      splitEl.query.focus();
-    }
-  });
-
-  window.addEventListener('hashchange', applyHash);
 }
 
 /* --- SCROLL FILTERS --------------------------------------------------------- */
@@ -454,12 +175,13 @@ function scrollFilteredEntries() {
 }
 
 function renderScrollFilters(b) {
+  clearTimeout(scrollFilters.timer);
   const entries = (b && b._raw && b._raw.entries) || [];
   const topics = [...new Set(entries.flatMap(e => e.topics || []))]
     .sort((a, b) => a.localeCompare(b));
 
   // Every building with entries gets the filter bar. Topics add chips when present.
-  const show = !isSplitBuilding(b) && entries.length > 0;
+  const show = entries.length > 0;
   scrollEl.filters.hidden = !show;
   scrollEl.filters.classList.toggle('no-topics', topics.length === 0);
 
@@ -553,7 +275,9 @@ function updateScrollFilterStatus(shown, total) {
     : '';
 }
 
-function clearScrollFilters(focus) {
+function clearScrollFilters(focus, via) {
+  trackFilterClear(via || 'clear');
+  clearTimeout(scrollFilters.timer);
   scrollFilters.query = '';
   scrollFilters.topics.clear();
   scrollEl.query.value = '';
@@ -562,6 +286,25 @@ function clearScrollFilters(focus) {
   pagPage = 1;
   renderPagination();
   if (focus) scrollEl.query.focus();
+}
+
+/*
+ * A clear is a discrete action, so it sends at once, with no debounce.
+ * It records the filter state just before the reset.
+ */
+function trackFilterClear(via) {
+  clearTimeout(scrollFilters.timer);
+  const query = scrollFilters.query;
+  const topics = [...scrollFilters.topics];
+  if (!query.trim() && topics.length === 0) return;
+
+  phCapture('scroll_filter_cleared', {
+    via,
+    building: buildings[idx]?.key,
+    prior_query_length: query.length,
+    prior_topics: topics,
+    prior_results: scrollFilteredEntries().length
+  });
 }
 
 function trackScrollFilter(source) {
@@ -574,25 +317,27 @@ function trackScrollFilter(source) {
       topics: [...scrollFilters.topics],
       results: scrollFilteredEntries().length
     });
-  }, 500);
+  }, CONFIG.filterDebounceMs);
 }
 
 function setupScrollFilterListeners() {
   scrollEl.query.addEventListener('input', () => {
-    scrollFilters.query = scrollEl.query.value;
+    const next = scrollEl.query.value;
+    if (scrollFilters.query.trim() && !next.trim()) trackFilterClear('empty');
+    scrollFilters.query = next;
     scrollEl.clear.hidden = !scrollFilters.query;
     pagPage = 1;
     renderPagination();
     if (scrollFilters.query.trim()) trackScrollFilter('search');
   });
 
-  scrollEl.clear.addEventListener('click', () => clearScrollFilters(true));
-  scrollEl.clearAll.addEventListener('click', () => clearScrollFilters(true));
+  scrollEl.clear.addEventListener('click', () => clearScrollFilters(true, 'search-x'));
+  scrollEl.clearAll.addEventListener('click', () => clearScrollFilters(true, 'status'));
 
   scrollEl.query.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
     e.stopPropagation();
-    if (scrollFilters.query) clearScrollFilters(true);
+    if (scrollFilters.query) clearScrollFilters(true, 'escape');
     else scrollEl.query.blur();
   });
 
@@ -650,7 +395,6 @@ async function init() {
 
     buildButtons();
     setupListeners();
-    setupSplitListeners();
     setupScrollFilterListeners();
     layout();
     if (!applyHash()) select(0, buildings[0].key, 'initial');
@@ -682,6 +426,14 @@ function buildButtons() {
   buttons = Array.from(ui.row.querySelectorAll('.bldg-btn'));
 }
 
+function applyNight(btn, on) {
+  ui.strip.classList.toggle('night', on);
+  document.documentElement.classList.toggle('night', on);
+  btn.textContent = on ? '☀️ Day' : '🌙 Night';
+  btn.setAttribute('aria-pressed', String(on));
+  try { localStorage.setItem('night', on ? '1' : '0'); } catch (e) { /* Ignore private mode. */ }
+}
+
 function setupListeners() {
   buttons.forEach((btn, i) => btn.onclick = () => select(i, buildings[i].key, 'click'));
   ui.prev.onclick = () => nav(-1);
@@ -690,22 +442,29 @@ function setupListeners() {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
     const typing = e.target.closest('input, textarea, select, [contenteditable="true"]');
     if (typing) return;
-    if (!splitEl.view.hidden && e.target.closest('.split-sidebar')) return;
     if (e.key === 'ArrowRight') nav(1);
     if (e.key === 'ArrowLeft') nav(-1);
   });
   document.addEventListener('click', trackLinkClick);
-  $('night-toggle').addEventListener('click', e => {
-    const n = ui.strip.classList.toggle('night');
-    e.target.textContent = n ? '☀️ Day' : '🌙 Night';
-    e.target.setAttribute('aria-pressed', n);
+  addEventListener('hashchange', applyHash);
+
+  const nightBtn = $('night-toggle');
+  applyNight(nightBtn, document.documentElement.classList.contains('night'));
+  nightBtn.addEventListener('click', () => {
+    const n = !ui.strip.classList.contains('night');
+    applyNight(nightBtn, n);
     phCapture('theme_toggled', { theme: n ? 'night' : 'day' });
   });
+
   ui.panel.addEventListener('animationend', e => {
     if (e.animationName === 'unroll') { ui.stage.classList.add('is-open'); ui.stage.classList.remove('is-unrolling'); }
   });
-  addEventListener('resize', layout);
-  matchMedia('(max-width: 700px)').addEventListener('change', layout);
+  let resizeTimer = 0;
+  addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(layout, CONFIG.resizeDebounceMs);
+  });
+  mqMobile.addEventListener('change', layout);
   document.fonts?.ready.then(layout);
 }
 
@@ -715,7 +474,7 @@ function layout() {
   const st = getComputedStyle(ui.row);
   const gap = parseFloat(st.columnGap) || 0;
   const cw = buttons.reduce((s, b) => s + b.offsetWidth, 0) + gap * (buttons.length - 1);
-  const slide = cw + sw * 0.04 > sw + 1;
+  const slide = cw + sw * CONFIG.slideTriggerRatio > sw + 1;
   ui.strip.classList.toggle('can-slide', slide);
 
   if (!slide) {
@@ -741,14 +500,14 @@ function layout() {
 /* --- CHARACTER WALK --------------------------------------------------------- */
 function walk(dir) {
   if (dir === 'none') return;
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const reduced = mqReduced.matches;
   if (reduced) {
     ui.char.style.left = charTargetLeft + 'px';
     return;
   }
   const currentLeft = parseFloat(ui.char.style.left) || 0;
   const distance = Math.abs(charTargetLeft - currentLeft);
-  const duration = Math.min(1.2, Math.max(0.4, distance / 200));
+  const duration = Math.min(CONFIG.walkMaxSeconds, Math.max(CONFIG.walkMinSeconds, distance / CONFIG.walkPixelsPerSecond));
 
   ui.char.style.transitionDuration = `${duration}s`;
   ui.char.style.setProperty('--walk-duration', `${duration}s`);
@@ -803,38 +562,29 @@ function select(i, k, source, entrySlug) {
   buttons.forEach((btn, j) => btn.classList.toggle('active', j === i));
   layout(); walk(dir);
 
-  const splitMode = isSplitBuilding(b);
-  ui.mainPanel.classList.toggle('is-split', splitMode);
-  ui.stage.hidden = splitMode;
-  splitEl.view.hidden = !splitMode;
-
   ui.mainPanel.style.backgroundImage = `url('${b.bg}')`;
 
-  if (splitMode) {
-    hidePager();
-    enterSplit(b, entrySlug);
+  ui.title.textContent = b.title; ui.sub.textContent = b.sub;
+  // Residence keeps its intro in the body, not in the header.
+  const introText = b.key === 'residence'
+    ? ''
+    : ((b._raw && b._raw.intro) || b.intro || '');
+  ui.intro.textContent = introText;
+  ui.intro.hidden = !introText;
+  ui.body.classList.toggle('is-residence', b.key === 'residence');
+  renderScrollFilters(b);
+
+  // If the building has entries, render them with pagination instead of raw body HTML
+  const raw = b._raw;
+  if (raw && raw.entries && raw.entries.length > 0) {
+    renderPagination();
   } else {
-    ui.title.textContent = b.title; ui.sub.textContent = b.sub;
-    // Residence keeps its intro in the body, not in the header.
-    const introText = b.key === 'residence'
-      ? ''
-      : ((b._raw && b._raw.intro) || b.intro || '');
-    ui.intro.textContent = introText;
-    ui.intro.hidden = !introText;
-    ui.body.classList.toggle('is-residence', b.key === 'residence');
-    renderScrollFilters(b);
+    ui.body.innerHTML = b.body;
+  }
 
-    // If the building has entries, render them with pagination instead of raw body HTML
-    const raw = b._raw;
-    if (raw && raw.entries && raw.entries.length > 0) {
-      renderPagination();
-    } else {
-      ui.body.innerHTML = b.body;
-    }
-
-    if (location.hash.startsWith('#smith')) {
-      history.replaceState(null, '', location.pathname + location.search);
-    }
+  // A manual selection clears a stale building or entry hash.
+  if (source !== 'hash' && location.hash) {
+    history.replaceState(null, '', location.pathname + location.search);
   }
 
   phCapture('building_viewed', {
@@ -844,19 +594,42 @@ function select(i, k, source, entrySlug) {
     source: source || 'click'
   });
 
-  if (!splitMode) {
-    const tr = Math.max(0, ui.stage.offsetHeight - 7);
-    const tm = Math.min(1.7, Math.max(0.75, 0.35 + tr / 700));
-    ui.stage.style.setProperty('--rod-travel', `${tr}px`);
-    ui.stage.style.setProperty('--unroll-time', `${tm.toFixed(2)}s`);
-    ui.stage.classList.remove('is-open', 'is-unrolling');
-    ui.stage.offsetWidth;
-    ui.stage.classList.add('is-unrolling');
+  const tr = Math.max(0, ui.stage.offsetHeight - 7);
+  const tm = Math.min(CONFIG.rodMaxSeconds, Math.max(CONFIG.rodMinSeconds, CONFIG.rodBaseSeconds + tr / CONFIG.rodTravelDivisor));
+  ui.stage.style.setProperty('--rod-travel', `${tr}px`);
+  ui.stage.style.setProperty('--unroll-time', `${tm.toFixed(2)}s`);
+  ui.stage.classList.remove('is-open', 'is-unrolling');
+  ui.stage.offsetWidth;
+  ui.stage.classList.add('is-unrolling');
+
+  const tp = window.scrollY + ui.stage.getBoundingClientRect().top;
+  if (window.scrollY > tp + 4) window.scrollTo({ top: tp, behavior: mqReduced.matches ? 'auto' : 'smooth' });
+
+  if (entrySlug) focusEntryBySlug(entrySlug);
+}
+
+/* Open the page that holds an entry, then scroll to it and mark it. */
+function focusEntryBySlug(slug) {
+  const b = buildings[idx];
+  const all = (b && b._raw && b._raw.entries) || [];
+  const index = all.findIndex(e => slugify(e.title) === slug);
+  if (index < 0) return false;
+
+  const page = Math.floor(index / CONFIG.entriesPerPage) + 1;
+  if (page !== pagPage) {
+    pagPage = page;
+    renderPagination();
   }
 
-  const focusEl = splitMode ? splitEl.view : ui.stage;
-  const tp = window.scrollY + focusEl.getBoundingClientRect().top;
-  if (window.scrollY > tp + 4) window.scrollTo({ top: tp, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  const el = document.getElementById(`entry-${slug}`);
+  if (!el) return false;
+
+  document.querySelectorAll('.scroll-entries > li.is-target')
+    .forEach(li => li.classList.remove('is-target'));
+  el.classList.add('is-target');
+  el.scrollIntoView({ block: 'center', behavior: mqReduced.matches ? 'auto' : 'smooth' });
+  el.querySelector('a')?.focus({ preventScroll: true });
+  return true;
 }
 
 /* --- START ------------------------------------------------------------------ */

@@ -6,6 +6,7 @@ import subprocess
 import sys
 import urllib.request
 from datetime import datetime, timezone, timedelta
+from html import escape
 
 POSTHOG_API_KEY = os.environ["POSTHOG_API_KEY"]
 POSTHOG_PROJECT_ID = os.environ["POSTHOG_PROJECT_ID"]
@@ -33,6 +34,11 @@ def site_label(site: str, host: str) -> str:
             return "hdb-resale"
         return "unknown"
     return site
+
+
+def esc(value) -> str:
+    """Escape a value for the Telegram HTML parse mode."""
+    return escape(str(value), quote=False)
 
 
 def main() -> int:
@@ -88,33 +94,87 @@ def main() -> int:
         LIMIT 10
     """)
 
+    # 4. Filter totals for portfolio
+    filters = query("""
+        SELECT
+            sum(if(event = 'scroll_filter_used', 1, 0)) AS applied,
+            sum(if(event = 'scroll_filter_cleared', 1, 0)) AS cleared
+        FROM events
+        WHERE event IN ('scroll_filter_used', 'scroll_filter_cleared')
+          AND timestamp > now() - INTERVAL 24 HOUR
+          AND properties.$host = 'cliffchew84.github.io'
+          AND coalesce(properties.internal_user, false) = false
+    """)
+
+    # 5. Clear paths for portfolio
+    clears = query("""
+        SELECT
+            properties.via AS via,
+            count() AS actions
+        FROM events
+        WHERE event = 'scroll_filter_cleared'
+          AND timestamp > now() - INTERVAL 24 HOUR
+          AND properties.$host = 'cliffchew84.github.io'
+          AND coalesce(properties.internal_user, false) = false
+        GROUP BY via
+        ORDER BY actions DESC
+    """)
+
+    # 6. Top topics for portfolio. A chip click sends the topic in `source`.
+    topics = query("""
+        SELECT
+            properties.source AS topic,
+            count() AS uses
+        FROM events
+        WHERE event = 'scroll_filter_used'
+          AND timestamp > now() - INTERVAL 24 HOUR
+          AND properties.$host = 'cliffchew84.github.io'
+          AND coalesce(properties.internal_user, false) = false
+          AND properties.source NOT IN ('search', 'all')
+        GROUP BY topic
+        ORDER BY uses DESC
+        LIMIT 3
+    """)
+
+    applied = int(filters[0][0] or 0) if filters else 0
+    cleared = int(filters[0][1] or 0) if filters else 0
+    clear_lines = [f"{esc(row[0] or 'unknown')} {row[1]}" for row in clears if row[1] > 0]
+    topic_lines = [f"{esc(row[0] or 'unknown')} {row[1]}" for row in topics if row[1] > 0]
+
     # Singapore time
     sgt = datetime.now(timezone.utc) + timedelta(hours=8)
     date_str = sgt.strftime("%d %b, %H:%M SGT")
 
     # Build message
     lines = []
-    lines.append(f"<b>Portfolio · {date_str}</b>")
+    lines.append(f"<b>Portfolio · {esc(date_str)}</b>")
     lines.append("<i>Last 24 hours</i>")
     lines.append("")
 
     has_data = False
     for s in sites:
         site, host, pv, vis, sc, lc = s
-        if pv == 0 and sc == 0 and lc == 0:
+        is_portfolio = host == "cliffchew84.github.io"
+        if pv == 0 and sc == 0 and lc == 0 and not (is_portfolio and (applied or cleared)):
             continue
         has_data = True
         label = site_label(site, host)
-        lines.append(f"<b>{label}</b> ({host})")
+        lines.append(f"<b>{esc(label)}</b> ({esc(host)})")
         lines.append(f"Views: {pv} · Visitors: {vis}")
-        if sc > 0:
-            sec_lines = [f"{sec[0]} {sec[1]}" for sec in sections if sec[1] > 0]
+        if is_portfolio and sc > 0:
+            sec_lines = [f"{esc(sec[0] or 'unknown')} {sec[1]}" for sec in sections if sec[1] > 0]
             if sec_lines:
                 lines.append("Sections: " + ", ".join(sec_lines))
-        if lc > 0:
-            link_lines = [f"{ln[0]} → {ln[1]} ({ln[2]})" for ln in links if ln[2] > 0]
+        if is_portfolio and lc > 0:
+            link_lines = [f"{esc(ln[0])} → {esc(ln[1])} ({ln[2]})" for ln in links if ln[2] > 0]
             if link_lines:
                 lines.append("Links: " + "; ".join(link_lines))
+        if is_portfolio and (applied or cleared):
+            lines.append(f"Filters: {applied} applied · {cleared} cleared")
+            if cleared and clear_lines:
+                lines.append("Clears: " + " · ".join(clear_lines))
+            if applied and topic_lines:
+                lines.append("Topics: " + " · ".join(topic_lines))
         lines.append("")
 
     if not has_data:

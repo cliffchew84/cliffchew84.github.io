@@ -41,9 +41,13 @@ Layout rules:
 - The intro comes from the `intro` field in `content.json`.
 - A building with entries shows a search field. Only Blacksmith has topics, so only Blacksmith shows chips.
 - The pager sits at the right of the search field. It hides when the result fits on one page.
-- `ENTRY_PER_PAGE` is 4 in `script.js`.
+- `CONFIG.entriesPerPage` is 4 in `script.js`.
 - A filter searches all entries, then paginates the matches. A filter change resets to page 1.
 - A building switch clears the filters.
+- An entry deep link uses `#<building>/<entry-slug>`. The page opens the right page and marks the entry.
+- `CONFIG` in `script.js` holds the page size, the filter debounce, the resize debounce, the walk speed, and the responsive breakpoint.
+- The night mode state is saved in `localStorage` under `night`. Night darkens the room and keeps the parchment light.
+- The Ubuntu font loads from Google Fonts with `display=swap`.
 
 ### Revert to the original layout
 
@@ -52,9 +56,6 @@ git checkout v1-before-blacksmith-split -- index.html script.js style.css conten
 ```
 
 A backup copy of those four files is in `.backup/v1/`. The folder is gitignored.
-
-The old split view is still in the code but hidden. Add `"layout": "split"` to the Blacksmith entry in
-`content.json` to restore it.
 
 ## Hosts
 
@@ -92,6 +93,7 @@ The old split view is still in the code but hidden. Add `"layout": "split"` to t
 |----------|------|---------|---------|
 | Deploy to GitHub Pages | `.github/workflows/deploy-pages.yml` | Push to `main` | Uploads repo root as Pages artifact; publishes portfolio to `cliffchew84.github.io/` |
 | Scheduled HDB Data Sync to R2 | `.github/workflows/hdb_parquet.yml` | Daily 22:00 UTC (06:00 SGT) + push to `main` | Fetches HDB resale data from data.gov.sg, writes parquet to Cloudflare R2 |
+| Telegram Daily Digest | `.github/workflows/telegram-daily.yml` | Daily 02:00 UTC (10:00 SGT) + manual | Queries PostHog for the last 24 hours and sends a Telegram summary |
 
 GitHub also shows two platform-managed entries in the Actions tab:
 - **Dependency Graph** — auto-scans `requirements.txt` for vulnerabilities.
@@ -132,14 +134,39 @@ if (localStorage.getItem('ph_internal') === '1') {
 | `building_viewed` | User clicks a building in the town strip | `building` (section key: `residence`, `smith`, `library`, `market`, `tavern`), `internal_user` (bool) | Section opened |
 | `link_clicked` | User clicks an entry link | `entry_title`, `link_host`, `link_path`, `link_type` (`external`/`internal`/`same_page`), `building`, `internal_user` | Outbound link click |
 | `theme_toggled` | User toggles day/night | `theme` (`day`/`night`), `internal_user` | Theme change |
-| `scroll_filter_used` | 500 ms after a search keystroke, or on a topic chip click | `source` (`search`/`all`/topic name), `building`, `query_length`, `topics` (array), `results` | Filter used on a scroll list |
-| `blacksmith_entry_selected` | Split view only (dormant) | `entry_title`, `building`, `source`, `query_length`, `topics` | Project picked in the split view |
-| `blacksmith_filter_used` | Split view only (dormant) | `source`, `query_length`, `topics`, `results` | Filter used in the split view |
+| `scroll_filter_used` | 500 ms after a search keystroke with text, or on a topic chip click | `source` (`search`/`all`/topic name), `building`, `query_length`, `topics` (array), `results` | Filter applied on a scroll list |
+| `scroll_filter_cleared` | User clears a filter | `via` (`search-x`/`status`/`escape`/`empty`), `building`, `prior_query_length`, `prior_topics` (array), `prior_results` | Filter cleared on a scroll list |
+
+Clear paths:
+
+| `via` | Action |
+|-------|--------|
+| `search-x` | The `×` button in the search field |
+| `status` | The Clear button on the filter status row |
+| `escape` | The Escape key while the search field has focus |
+| `empty` | The user deletes all search text |
+
+The clear event fires at once, with no debounce. It records the state before the reset. A building switch resets filters without an event. Chip toggles always count as `scroll_filter_used`, including the `All` chip.
 
 Section keys: `residence` = About, `smith` = Blacksmith (Projects), `library` = Writings, `market` = Products,
 `tavern` = Contact.
 
 Pageviews and autocapture come from the default PostHog config. The project token is public and safe to ship.
+
+### Daily Telegram digest
+
+`scripts/telegram_digest.py` sends a summary at 10:00 SGT. It reads the last 24 hours of PostHog data for `cliffchew84.github.io` and excludes `internal_user`.
+
+| Section in the message | Source events |
+|------------------------|---------------|
+| Views and Visitors | `$pageview` |
+| Sections | `building_viewed` |
+| Links | `link_clicked`, top 10 |
+| Filters | `scroll_filter_used` and `scroll_filter_cleared` |
+| Clears | `scroll_filter_cleared`, by `via` |
+| Topics | `scroll_filter_used`, top 3 chip topics |
+
+The filter lines appear only when the counts are above zero. Values from `content.json` are HTML-escaped before they go into the Telegram message.
 
 ### Internal traffic
 
@@ -211,7 +238,6 @@ All other secrets removed (2026-11-03): `PERSONAL_ACCESS_TOKEN`, `BASE_URL`, `EX
 - [ ] **Migrate blog content:** Copy selected posts from `~/Work/tia/cliff/sg_housing/sg_housing/posts/` into new portfolio `content.json` (Library entries).
 - [x] **Review Netlify sites:** 3 presentation slide sites uploaded and reviewed. Other sites removed or not tracked.
 - [ ] **Clean up HDB resale dashboard analytics:** Add `posthog.register({ site: 'hdb-resale' })`, send custom properties for `filters_applied` and `section_toggled`, add `internal_user` flag logic, consider disabling autocapture.
-- [ ] **Remove the dormant split view:** Delete the `split-view` markup, the `.split-*` and `.scene-*` styles, and the `enterSplit`/`renderSplitList` code once the scroll layout is final.
 
 ## Check commands
 
