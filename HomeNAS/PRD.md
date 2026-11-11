@@ -28,11 +28,16 @@ The NAS API contract (curl examples, auth, base URL) is documented in this repos
 - No edge router access
 
 ### 2.3 Shares
-| Share | Name shown | Protocols | Recycle Bin |
-|------|-----------|------------|-------------|
-| ChewFamilyMedia | Media | CIFS, AFP, NFS, FTP | Yes |
-| home | home | CIFS only | No |
-| TimeMachine | TimeMachine | CIFS, AFP only | No |
+Verified 2026-11-11 via the app API. Root now contains:
+
+| Name | Internal name | Type |
+|------|---------------|------|
+| home | home | home |
+| Homes | Homes | homes |
+| VPHome | VPHome | vphome |
+| SharedFolder | SharedFolder | internal (created 2026-11-11) |
+
+`TimeMachine` is a folder inside `/home`, not a share. `ChewFamilyMedia` no longer exists. Protocols per share not verified.
 
 ### 2.4 Users
 | Username | Role | Scope |
@@ -40,17 +45,14 @@ The NAS API contract (curl examples, auth, base URL) is documented in this repos
 | admin | Administrator | Everything |
 | chewfamily | Standard | Media share only |
 
-### 2.5 LED Current State
-- Color: Blue, steady; brightness 10%; DND schedule active (off 23:00–07:00)
-
 ### 2.6 Known Limitations
 No native cloud sync, no backup client, no scheduled power on/off, no bulk download endpoint. Pairing external services is out of scope; use each service directly.
 
 ## 3. Public API
 
-The NAS exposes a local HTTP API. Features below are driven by these modules: auth, storage, folder, fileshare, network, smb, system, user, health, hwmonitor (thermal), bonjour, eventlog.
+The NAS exposes a local HTTP API. Features are driven by these modules: auth, folder (via life + batch/commit), storage, nasfs, user, health, hwmonitor (thermal).
 
-Endpoint examples are documented in this repository.
+Endpoint notes are kept in a local-only file (`NAS-API.md`, excluded from this repository via `.git/info/exclude`). No NAS API details are committed to this repository.
 
 ## 4. Requirements
 
@@ -61,7 +63,7 @@ Latest two versions of Chrome, Firefox, Safari, Edge, plus mobile Safari and Chr
 Desktop, tablet, and phone — independent breakpoints.
 
 ### 4.3 Security
-- Access token kept only in memory, never written to disk
+- Access token kept in memory by default; optional “Keep me signed in on this computer” stores it in this browser only
 - HTTPS in production (via a private-network tunnel)
 - Only the admin role can touch admin endpoints
 - Every form is validated before submission
@@ -190,11 +192,15 @@ Access retained from phones and laptops on the home private network. Goals: HTTP
 ## 7.1 Known Issues / Deferred
 
 ### HTTPS for Local Development
-- **Issue**: Browser shows "Not Secure" warning on `http://localhost:8000`
+- **Issue**: Browser shows "Not Secure" warning on `http://localhost:5173`
 - **Cause**: Self-signed certs on NAS; proxy runs HTTP only
 - **Workaround**: Click "Advanced → Proceed" in browser
 - **Fix (later)**: Use `mkcert` for trusted local certs, or terminate TLS at reverse proxy (Caddy/Traefik)
 - **Status**: ⏸ Deferred — does not block LAN usage
+
+### Family (chewfamily) usage untested
+- **Issue**: Login as chewfamily works at the NAS level, but the app is untested with that account. Admin-only actions fail with NAS error toasts — expected.
+- **Status**: ⏸ Known limitation — resolve with a chewfamily test session
 
 ---
 
@@ -206,10 +212,10 @@ The product is ready for release when the following state is reached:
 - File browser can browse share folders, download files, create folders
 - File browser supports recursive tree, file metadata, rename, delete, multi-select, upload
 - Share management lists and edits share display names
-- Health page thermal / sensors / SMART live (admin)
+- Health page thermal and SMART detail live (admin)
 - Health webhook forwards are implemented
 - Multi-file archive download persists in progress
-- Alerts are dismissible and recorded
+- SMART, high temperature, and RAID degraded alerts work
 - A build that serves the UI at any device on the private network is ready to release
 
 ---
