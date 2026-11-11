@@ -45,6 +45,7 @@
       <h1 class="text-lg font-semibold tracking-tight text-neutral-800">HomeNAS</h1>
     </div>
     <div class="flex items-center gap-2">
+      <button class="icon-btn" id="healthBtn" data-tooltip="Health (admin)" data-tooltip-pos="bottom" aria-label="Health (admin)"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></button>
       <button class="icon-btn" id="signOutBtn" data-tooltip="Sign out" data-tooltip-pos="bottom" aria-label="Sign out"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v8"/><path d="M6.3 6.3a8 8 0 1 0 11.4 0"/></svg></button>
       <button class="icon-btn" id="changePasswordBtn" data-tooltip="Change password" data-tooltip-pos="bottom" aria-label="Change password"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></button>
       <span class="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-600 ring-1 ring-inset ring-neutral-200" id="userBadge">admin</span>
@@ -122,6 +123,19 @@
         <button class="btn" id="changePasswordCancel">Cancel</button>
         <button class="btn btn-primary" id="changePasswordConfirm" disabled>Change</button>
       </div>
+    </div>
+  </div>
+
+  <div class="fixed inset-0 z-50 flex hidden items-stretch justify-center overflow-y-auto bg-black/40 p-4 backdrop-blur-[2px]" id="healthModal" role="dialog" aria-modal="true" aria-labelledby="healthTitle">
+    <div class="my-auto w-full max-w-3xl rounded-xl bg-white p-6 shadow-xl ring-1 ring-black/5">
+      <div class="mb-4 flex items-center justify-between gap-3">
+        <h3 class="text-base font-semibold text-neutral-800" id="healthTitle">Health <span class="text-xs font-normal text-neutral-400">(admin)</span></h3>
+        <div class="flex items-center gap-2">
+          <button class="btn" id="healthRefreshBtn">Refresh</button>
+          <button class="icon-btn" id="healthCloseBtn" aria-label="Close" data-tooltip="Close"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </div>
+      </div>
+      <div id="healthBody" class="max-h-[70vh] overflow-y-auto text-sm text-neutral-700"><p class="text-neutral-400">Loading…</p></div>
     </div>
   </div>
 
@@ -388,6 +402,8 @@
 
     function showLogin(msg) {
       document.querySelectorAll('.app-shell').forEach(el => el.classList.add('hidden'));
+      [healthModal, changePasswordModal, shareDeleteModal, modal].forEach(el => el && el.classList.add('hidden'));
+      toast.classList.add('hidden');
       loginView.classList.remove('hidden');
       loginError.textContent = msg || '';
       loginError.classList.toggle('hidden', !msg);
@@ -870,6 +886,212 @@
     document.getElementById('changePasswordCancel').addEventListener('click', closeChangePasswordModal);
     changePasswordConfirm.addEventListener('click', changeAdminPassword);
 
+    // ====== HEALTH (admin) ======
+    // Read-only probes, taken from the Control Panel code (untested against live NAS):
+    //   GET /hwmonitor/get_sensors            -> object {key: value|object}; keys/units not documented, rendered raw
+    //   batch/commit storage/get_diskinfo_list -> [{NAME, TYPE, HIGH, MAX_HIGH, MIN_HIGH, BADSECTOR_THRESHOLD, SMART}]
+    //   batch/commit storage/get_smart_attr    -> {<disk>: [{id, attribute, value, worst, threash, raw, status}]}
+    const healthModal = document.getElementById('healthModal');
+    const healthBody = document.getElementById('healthBody');
+    const healthRefreshBtn = document.getElementById('healthRefreshBtn');
+
+    function sensorValue(v) {
+      if (v === null || v === undefined) return '—';
+      if (typeof v === 'object') return escapeHtml(JSON.stringify(v));
+      return escapeHtml(String(v));
+    }
+
+    async function loadHealth() {
+      healthRefreshBtn.disabled = true;
+      healthRefreshBtn.textContent = 'Refreshing…';
+      healthBody.innerHTML = '<p class="text-neutral-400">Loading…</p>';
+      try {
+        // Thermal sensors (direct endpoint, as the Control Panel calls it)
+        let sensors = null;
+        const sensorWarnings = [];
+        try {
+          // POST, not GET — the NAS 404s otherwise (verified live 2026-11-11)
+          const res = await authFetch(`${PROXY_URL}/hwmonitor/get_sensors`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': cookie ? `Bearer ${cookie}` : '' },
+            body: '{}'
+          });
+          const data = await res.json().catch(() => null);
+          if (data && data.result === false) {
+            sensorWarnings.push('Sensors probe returned an error: ' + String(data.error || data.err || 'unknown'));
+          } else {
+            sensors = data && data.data !== undefined ? data.data : null;
+          }
+        } catch (e) {
+          sensorWarnings.push('Sensors failed: ' + e.message);
+        }
+
+        // Volume + disk info + SMART attributes (one batch call)
+        let disks = [], smartByDisk = {}, volume = null;
+        try {
+          const res = await authFetch(`${PROXY_URL}/batch/commit`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': cookie ? `Bearer ${cookie}` : '' },
+            body: JSON.stringify({ des: [
+              ['storage', 'get_volume_info_list', [], {}],
+              ['storage', 'get_diskinfo_list', [], {}],
+              ['storage', 'get_smart_attr', [], {}]
+            ], blocking: true })
+          });
+          const data = await res.json().catch(() => ({}));
+          const items = Array.isArray(data.data) ? data.data : [];
+          const volItem = items[0] || {}, diskItem = items[1] || {}, smartItem = items[2] || {};
+          if (volItem.result === false) sensorWarnings.push('Volume probe failed: ' + String(volItem.error || 'unknown'));
+          else volume = Array.isArray(volItem.data) ? (volItem.data[0] || null) : (volItem.data || null);
+          if (diskItem.result === false) sensorWarnings.push('Disk probe failed: ' + String(diskItem.error || 'unknown'));
+          else disks = Array.isArray(diskItem.data) ? diskItem.data : [];
+          if (smartItem.result === false) sensorWarnings.push('SMART probe failed: ' + String(smartItem.error || 'unknown'));
+          else smartByDisk = smartItem.data && typeof smartItem.data === 'object' ? smartItem.data : {};
+        } catch (e) {
+          sensorWarnings.push('Storage / SMART probe failed: ' + e.message);
+        }
+
+        const tempTone = (v) => {
+          const n = parseFloat(v);
+          if (Number.isNaN(n)) return 'text-neutral-700';
+          if (n >= 60) return 'text-red-600';
+          if (n >= 55) return 'text-amber-600';
+          return 'text-emerald-600';
+        };
+        const warnBg = (v) => {
+          const n = parseFloat(v);
+          if (Number.isNaN(n)) return 'bg-neutral-50 ring-neutral-200';
+          if (n >= 60) return 'bg-red-50 ring-red-200';
+          if (n >= 55) return 'bg-amber-50 ring-amber-200';
+          return 'bg-emerald-50 ring-emerald-200';
+        };
+        const tempIcon = '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 14.76V5a2 2 0 0 0-4 0v9.76a4.5 4.5 0 1 0 4 0z"/><circle cx="12" cy="17.5" r="1" fill="currentColor" stroke="none"/></svg>';
+        const fanIcon = '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none" fill-opacity="0.9"/><path d="M12 9.8c0-2.6 1.7-4.6 4-4.6 1.9 0 3.3 1.3 3.3 3 0 2.2-2.3 2.9-4.5 2.9M14.2 12c2.3 1.3 3.2 3.6 1.9 5.9-1.2 2-3.7 2.5-5.9.9M12 14.2c-2.6 0-4.6.8-4.6 2.4 0 1.4 2 2.5 4 2.5M9.8 12c-1 2-3.6 2.8-5.9.9-2-1.2-2.5-3.2-1.4-5.3"/></svg>';
+        const plugIcon = '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 7V3M15 7V3M7 7h10v4a5 5 0 0 1-10 0V7z"/><path d="M12 16v5"/></svg>';
+
+        // Overall status banner — derive from whatever the probes returned
+        const healthNotes = [];
+        if (volume) {
+          if (volume.status && String(volume.status).toLowerCase() !== 'normal') healthNotes.push('Volume status: ' + volume.status);
+          if (volume.resync && String(volume.resync) !== '100.0%') healthNotes.push('RAID resync: ' + volume.resync);
+          if (Array.isArray(volume.faileddisks) && volume.faileddisks.length) healthNotes.push(volume.faileddisks.length + ' failed disk(s)');
+        }
+        disks.forEach(d => {
+          if (String(d.SMART).toLowerCase() !== 'normal') healthNotes.push(d.NAME + ': SMART ' + d.SMART);
+          if (String(d.STATE).toLowerCase() !== 'normal') healthNotes.push(d.NAME + ': state ' + d.STATE);
+          const t = parseFloat(d.TEMPERATURE), hi = parseFloat(d.HIGH);
+          if (!Number.isNaN(t) && !Number.isNaN(hi) && t >= hi) healthNotes.push(d.NAME + ': ' + t + '°C ≥ alert threshold');
+        });
+        if (sensors && typeof sensors === 'object') {
+          const cpu = parseFloat(sensors['CPU']);
+          if (!Number.isNaN(cpu) && cpu >= 55) healthNotes.push('CPU: ' + cpu + '°C');
+        }
+        const anyData = !!volume || disks.length > 0 || (sensors && Object.keys(sensors).length > 0);
+        let banner;
+        if (!anyData) {
+          banner = `<div class="mb-4 rounded-xl bg-amber-50 px-4 py-3 ring-1 ring-amber-200"><p class="text-sm font-semibold text-amber-800">No health data returned</p><p class="text-xs text-amber-800/90">Check the probe warnings below.</p></div>`;
+        } else if (healthNotes.length === 0) {
+          banner = `<div class="mb-4 flex items-center gap-3 rounded-xl bg-emerald-50 px-4 py-3 ring-1 ring-emerald-200"><svg class="h-6 w-6 shrink-0 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><div><p class="text-sm font-semibold text-emerald-800">All nominal</p><p class="text-xs text-emerald-700/90">Storage, RAID, SMART and thermals look good.</p></div></div>`;
+        } else {
+          banner = `<div class="mb-4 flex items-start gap-3 rounded-xl bg-amber-50 px-4 py-3 ring-1 ring-amber-200"><svg class="mt-0.5 h-6 w-6 shrink-0 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg><div><p class="text-sm font-semibold text-amber-800">Needs attention</p><ul class="mt-0.5 list-disc pl-4 text-xs text-amber-800/90">${healthNotes.map(n => `<li>${escapeHtml(n)}</li>`).join('')}</ul></div></div>`;
+        }
+
+        let html = banner;
+        html += '<h4 class="mb-2 text-xs font-semibold uppercase tracking-wider text-neutral-500">Thermal / sensors</h4><p class="mb-3 text-[11px] text-neutral-400">Values as reported by the NAS; units not documented (≈ °C / RPM / V).</p>';
+        if (sensors && typeof sensors === 'object' && Object.keys(sensors).length) {
+          const get = (k) => sensors[k];
+          const find = (re) => Object.entries(sensors).find(([k]) => re.test(k));
+          const cpu = get('CPU');
+          const ambient = find(/ambient/i);
+          const system = find(/system/i);
+          const fan = find(/fan/i);
+          const dcin = find(/dcin/i);
+          const cards = [
+            { label: 'CPU', value: cpu, unit: '°C', icon: tempIcon, tone: tempTone(cpu), ring: warnBg(cpu), tip: 'Processor temperature. Sustained high temps make the NAS throttle or shut down. Units not documented by the NAS (assumed °C).' },
+            { label: 'CPU ambient', value: ambient && ambient[1], unit: '°C', icon: tempIcon, tone: tempTone(ambient && ambient[1]), ring: warnBg(ambient && ambient[1]), tip: 'Air temperature around the processor inside the case. Units not documented by the NAS (assumed °C).' },
+            { label: 'System', value: system && system[1], unit: '°C', icon: tempIcon, tone: tempTone(system && system[1]), ring: warnBg(system && system[1]), tip: 'Overall system/enclosure temperature sensor. Exact location is not documented by the NAS (assumed °C).' },
+            { label: 'Fan', value: fan && fan[1], unit: 'RPM', icon: fanIcon, tone: 'text-neutral-700', ring: 'bg-neutral-50 ring-neutral-200', tip: 'System fan speed in rotations per minute. A higher value usually means the NAS is cooling harder.' },
+            { label: 'DC in', value: dcin && dcin[1], unit: 'V', icon: plugIcon, tone: 'text-neutral-700', ring: 'bg-neutral-50 ring-neutral-200', tip: 'External power adapter (DC) input voltage. Nominal for this unit is about 19 V.' },
+          ];
+          html += '<div class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">' +
+            cards.map(c => `<div class="rounded-xl p-3 ring-1 ${c.ring}" data-tooltip="${escapeHtml(c.tip)}"><div class="flex items-center justify-between gap-1 text-neutral-500"><span class="text-[10px] font-semibold uppercase tracking-wider">${escapeHtml(c.label)}</span><span class="text-neutral-400">${c.icon}</span></div><p class="mt-1.5 text-2xl font-semibold tabular-nums leading-none ${c.tone}">${c.value !== undefined ? escapeHtml(String(c.value)) : '—'}<span class="ml-1 text-xs font-medium text-neutral-400">${c.unit}</span></p></div>`).join('') +
+            '</div>';
+        } else {
+          html += '<p class="text-xs text-neutral-400">No sensor data returned.</p>';
+        }
+
+        html += '<h4 class="mb-2 mt-5 text-xs font-semibold uppercase tracking-wider text-neutral-500">Storage &amp; RAID</h4>';
+        if (volume) {
+          const total = Number(volume.totalspace), free = Number(volume.freespace);
+          const usedPct = Number.isFinite(total) && total > 0 ? Math.min(100, Math.round(((total - free) / total) * 100)) : 0;
+          const usedTone = usedPct >= 90 ? 'bg-red-500' : usedPct >= 75 ? 'bg-amber-500' : 'bg-blue-500';
+          const raidOk = String(volume.status || '').toLowerCase() === 'normal';
+          html += `<div class="rounded-xl border border-neutral-200 bg-white p-3 shadow-sm">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div><p class="text-sm font-semibold text-neutral-800">${escapeHtml(String(volume.name || 'volume'))} <span class="text-[11px] font-normal text-neutral-400">${escapeHtml(String(volume.fs_type || ''))}${volume.raidtype ? ' · ' + escapeHtml(String(volume.raidtype)) : ''}</span></p>
+              <p class="mt-0.5 text-xs text-neutral-500">${formatSize(free)} free of ${formatSize(total)} · ${usedPct}% used</p></div>
+              <span class="rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ring-inset ${raidOk ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-red-50 text-red-700 ring-red-200'}">${escapeHtml(String(volume.raidtype || '?').toUpperCase())} · ${escapeHtml(String(volume.status || '?'))}</span>
+            </div>
+            <div class="mt-2 h-2 w-full overflow-hidden rounded-full bg-neutral-100"><div class="h-full rounded-full ${usedTone}" style="width:${Math.max(2, usedPct)}%"></div></div>
+            <p class="mt-1.5 text-[10px] text-neutral-400">Resync: ${escapeHtml(String(volume.resync ?? '—'))} · Encrypted: ${escapeHtml(String(volume.encrypted ?? '—'))}</p>
+          </div>`;
+        } else {
+          html += '<p class="text-xs text-neutral-400">No volume info returned.</p>';
+        }
+
+        html += '<h4 class="mb-2 mt-5 text-xs font-semibold uppercase tracking-wider text-neutral-500">Disks</h4>';
+        if (disks.length) {
+          html += '<div class="grid gap-2 sm:grid-cols-2">' + disks.map(d => {
+            const t = parseFloat(d.TEMPERATURE);
+            const maxH = parseFloat(d.MAX_HIGH);
+            const pct = (Number.isFinite(t) && Number.isFinite(maxH) && maxH > 0) ? Math.min(100, Math.max(2, (t / maxH) * 100)) : 50;
+            const barTone = (Number.isFinite(t) && Number.isFinite(maxH) && t >= maxH) ? 'bg-red-500' : (Number.isFinite(t) && parseFloat(d.HIGH) && t >= parseFloat(d.HIGH)) ? 'bg-amber-500' : 'bg-emerald-500';
+            const smartOk = String(d.SMART).toLowerCase() === 'normal';
+            return `<div class="rounded-xl border border-neutral-200 bg-white p-3 shadow-sm">
+              <div class="flex items-center justify-between gap-2"><p class="text-sm font-semibold text-neutral-800">${escapeHtml(String(d.NAME ?? '—'))}<span class="ml-2 text-[11px] font-normal text-neutral-400">${escapeHtml(String(d.TYPE ?? ''))}</span></p><span class="rounded-full px-2 py-0.5 text-[10px] font-semibold ${smartOk ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}">SMART ${escapeHtml(String(d.SMART ?? '?'))}</span></div>
+              <p class="mt-0.5 truncate text-[11px] text-neutral-400">${escapeHtml(String(d.MODEL ?? ''))}</p>
+              <p class="mt-2 text-3xl font-semibold tabular-nums leading-none ${tempTone(d.TEMPERATURE)}">${escapeHtml(String(d.TEMPERATURE ?? '—'))}<span class="ml-1 text-xs font-medium text-neutral-400">°C</span></p>
+              <div class="mt-2 h-2 w-full overflow-hidden rounded-full bg-neutral-100"><div class="h-full rounded-full ${barTone}" style="width:${pct}%"></div></div>
+              <p class="mt-1.5 text-[10px] text-neutral-400">Shutdown ≥ ${escapeHtml(String(d.MAX_HIGH ?? '—'))} °C · Alert ≥ ${escapeHtml(String(d.HIGH ?? '—'))} °C · State: ${escapeHtml(String(d.STATE ?? '—'))}</p>
+            </div>`;
+          }).join('') + '</div>';
+        } else {
+          html += '<p class="text-xs text-neutral-400">No disk info returned.</p>';
+        }
+
+        html += '<h4 class="mb-2 mt-5 text-xs font-semibold uppercase tracking-wider text-neutral-500">SMART attributes</h4>';
+        const names = Object.keys(smartByDisk);
+        if (!names.length) {
+          html += '<p class="text-xs text-neutral-400">No SMART attributes returned.</p>';
+        } else {
+          html += names.map(name => {
+            const items = Array.isArray(smartByDisk[name]) ? smartByDisk[name] : [];
+            const rows = items.map(a => {
+              const st = String(a.status ?? '').toLowerCase();
+              const stTone = st === 'normal' ? 'text-emerald-600 font-semibold' : 'text-amber-600 font-semibold';
+              return `<tr class="odd:bg-neutral-50/60"><td class="py-1 pl-2 pr-2 text-right tabular-nums text-neutral-500">${escapeHtml(String(a.id ?? ''))}</td><td class="border-b border-neutral-100 py-1 pr-2 text-neutral-700">${escapeHtml(String(a.attribute ?? '—'))}</td><td class="border-b border-neutral-100 py-1 pr-2 text-right tabular-nums text-neutral-800">${escapeHtml(String(a.value ?? '—'))}</td><td class="border-b border-neutral-100 py-1 pr-2 text-right tabular-nums text-neutral-600">${escapeHtml(String(a.worst ?? '—'))}</td><td class="border-b border-neutral-100 py-1 pr-2 text-right tabular-nums text-neutral-600">${escapeHtml(String(a.threash ?? a.threshold ?? '—'))}</td><td class="border-b border-neutral-100 py-1 pr-2 text-right tabular-nums text-neutral-600">${escapeHtml(String(a.raw ?? '—'))}</td><td class="border-b border-neutral-100 py-1 pr-2 ${stTone}">${escapeHtml(String(a.status ?? '—'))}</td></tr>`;
+            }).join('');
+            const head = ['ID', 'Attribute', 'Value', 'Worst', 'Threshold', 'Raw', 'Status'].map(h =>
+              `<th class="border-b border-neutral-200 py-1 text-xs font-semibold text-neutral-500 ${h === 'Attribute' ? 'text-left' : 'text-right'}">${h}</th>`).join('');
+            return `<p class="mb-1 mt-3 text-xs font-semibold text-neutral-600">${escapeHtml(name)}</p>` +
+              `<div class="overflow-x-auto rounded-lg border border-neutral-200"><table class="w-full border-collapse text-xs"><thead><tr class="bg-neutral-50">${head}</tr></thead><tbody>${rows || '<tr><td class="py-2 text-neutral-400" colspan="7">No attributes</td></tr>'}</tbody></table></div>`;
+          }).join('');
+        }
+
+        healthBody.innerHTML = html;
+      } catch (e) {
+        healthBody.innerHTML = '<p class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">Health probe failed: ' + escapeHtml(e.message) + '</p>';
+      } finally {
+        healthRefreshBtn.disabled = false;
+        healthRefreshBtn.textContent = 'Refresh';
+      }
+    }
+
+    document.getElementById('healthBtn').addEventListener('click', () => { healthModal.classList.remove('hidden'); loadHealth(); });
+    document.getElementById('healthCloseBtn').addEventListener('click', () => healthModal.classList.add('hidden'));
+    document.getElementById('healthRefreshBtn').addEventListener('click', loadHealth);
+    healthModal.addEventListener('click', (e) => { if (e.target === healthModal) healthModal.classList.add('hidden'); });
+
     // ====== DOWNLOAD ======
     // The NAS serves the file at /life/v1/file with download=true.
     // The proxy forwards our token as the authorization_code cookie.
@@ -1281,6 +1503,7 @@
       if (!shareDeleteModal.classList.contains('hidden')) { closeShareDeleteModal(); return; }
       if (!changePasswordModal.classList.contains('hidden')) { closeChangePasswordModal(); return; }
       if (!modal.classList.contains('hidden')) { modal.classList.add('hidden'); modalResolve = null; }
+      if (!healthModal.classList.contains('hidden')) { healthModal.classList.add('hidden'); }
     });
     document.getElementById('modalConfirm').addEventListener('click', async () => {
       const val = modalInput.value.trim();

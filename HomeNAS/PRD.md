@@ -81,8 +81,7 @@ Legend: ⬜ Planned | 🚧 In Progress | 🔮 Future | ✅ Done
 - ✅ Change the admin password from within the app (NAS API verified live)
 
 #### 5.1.2 Dashboard
-- ⬜ One view for all main areas: Storage, RAID, Health, Shares, SMART, Thermal
-- ⬜ One auto-refresh cycle per area (every 30 s)
+- ✅ One view for all main areas: Storage, RAID, Health, SMART, Thermal (the Health/overview view; Shares removed by product decision)
 
 #### 5.1.3 File Browser
 - ✅ Folder list, file list, breadcrumb navigation
@@ -99,8 +98,8 @@ Legend: ⬜ Planned | 🚧 In Progress | 🔮 Future | ✅ Done
 - ✅ List, edit display name (pencil action on internal shares; API verified live — the file-browser flow itself needs a click-through test)
 
 #### 5.1.5 Health Monitoring (admin only)
-- ⬜ Thermal status: CPU temperature, disk thermal state, shutdown thresholds
-- ⬜ SMART detail: raw attributes per disk
+- ✅ Thermal status: CPU temperature, disk thermal state, shutdown thresholds (Health view)
+- ✅ SMART detail: raw attributes per disk (Health view)
 
 ### 5.2 Phase 2 — Admin and Maintenance
 
