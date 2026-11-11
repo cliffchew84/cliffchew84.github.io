@@ -49,6 +49,8 @@
     th { background: var(--bg); font-weight: 600; font-size: .8rem; text-transform: uppercase; color: var(--muted); }
     tr:hover { background: var(--bg); }
     tr.selected { background: #eff6ff; }
+    tr.deleting { opacity: .45; }
+    tr.deleting td { pointer-events: none; }
     .name { display: flex; align-items: center; gap: 8px; }
     .icon { width: 18px; height: 18px; flex-shrink: 0; }
     .actions button { margin-left: 4px; padding: 4px 8px; font-size: .75rem; }
@@ -120,6 +122,7 @@
     let cookie = '';
     let currentPath = '/home';
     let selection = new Set();
+    let pendingDeletes = new Set();
     let modalResolve = null;
 
     // ====== DOM ======
@@ -303,19 +306,23 @@
         const isFolder = item.type === 'folder';
         const label = itemLabel(item);
         const realName = label === item.name ? '' : ` title="Folder name: ${escapeHtml(item.name)}"`;
+        const canModify = path !== '/';
+        const pending = pendingDeletes.has(fullPath);
         return `
-        <tr data-name="${escapeHtml(label)}" data-path="${escapeHtml(fullPath)}" data-type="${isFolder ? 'folder' : 'file'}">
-          <td><input type="checkbox" class="row-check" value="${escapeHtml(fullPath)}"></td>
+        <tr${pending ? ' class="deleting"' : ''} data-name="${escapeHtml(label)}" data-path="${escapeHtml(fullPath)}" data-type="${isFolder ? 'folder' : 'file'}">
+          <td><input type="checkbox" class="row-check" value="${escapeHtml(fullPath)}"${pending ? ' disabled' : ''}></td>
           <td class="name"${realName}>
             <span class="icon">${isFolder ? svgFolder() : svgFile(item.name)}</span>
             ${escapeHtml(label)}
           </td>
           <td>${isFolder ? '—' : formatSize(item.size)}</td>
           <td>${formatDate(item.access_date)}</td>
-          <td>${isFolder ? 'Folder' : fileType(item.name)}</td>
+          <td class="type">${pending ? 'Deleting…' : isFolder ? 'Folder' : fileType(item.name)}</td>
           <td class="actions">
-            <button class="btn" onclick="renameItem('${escapeHtml(fullPath)}', '${escapeHtml(label)}')">Rename</button>
-            <button class="btn" onclick="deleteItem('${escapeHtml(fullPath)}')">Delete</button>
+            ${canModify ? `
+              <button class="btn" onclick="renameItem('${escapeHtml(fullPath)}', '${escapeHtml(label)}')"${pending ? ' disabled' : ''}>Rename</button>
+              <button class="btn" onclick="deleteItem('${escapeHtml(fullPath)}')"${pending ? ' disabled' : ''}>Delete</button>
+            ` : '—'}
           </td>
         </tr>
       `;
@@ -373,10 +380,90 @@
       loadFiles(path);
     }
 
-    window.renameItem = (path, name) => openModal('Rename', name, async (newName) => {
-      // TODO: implement rename via NAS API
-      showToast('Rename not yet implemented');
-    });
+    // ====== CREATE / RENAME ======
+    function validName(name) {
+      return Boolean(name) && name !== '.' && name !== '..' && !name.includes('/');
+    }
+
+    function joinPath(base, name) {
+      return (base === '/' ? '' : base) + '/' + name;
+    }
+
+    function parentOf(path) {
+      const index = path.lastIndexOf('/');
+      return index <= 0 ? '/' : path.slice(0, index);
+    }
+
+    async function createFolder(path, name) {
+      const res = await fetch(`${PROXY_URL}/life/v1/folder`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': cookie ? `Bearer ${cookie}` : ''
+        },
+        body: JSON.stringify({
+          action: 'mkdir',
+          items: { source: { root: 'local', path: joinPath(path, name) } }
+        })
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json().catch(() => ({}));
+      if (data.result === false) throw new Error(data.error || 'Create failed');
+    }
+
+    async function renamePath(path, name) {
+      const target = joinPath(parentOf(path), name);
+      if (target === path) return;
+      const res = await fetch(`${PROXY_URL}/life/v1/folder`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': cookie ? `Bearer ${cookie}` : ''
+        },
+        body: JSON.stringify({
+          action: 'move', // a rename is a move to the same folder
+          items: [{ source: { root: 'local', path }, target: { root: 'local', path: target } }]
+        })
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json().catch(() => ({}));
+      if (data.result === false) throw new Error(data.error || 'Rename failed');
+    }
+
+    async function refreshViews(path) {
+      await loadFiles(path);
+      try {
+        await loadTree();
+      } catch (e) {
+        // keep the current tree if it cannot reload
+      }
+      folderTree.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.path === currentPath));
+      // The NAS may apply the change just after the response.
+      setTimeout(() => {
+        if (currentPath === path) loadFiles(path);
+      }, 1000);
+    }
+
+    window.renameItem = (path, name) => {
+      if (currentPath === '/') {
+        showToast('Open a share or folder first.', 6000);
+        return;
+      }
+      openModal('Rename', name, async (newName) => {
+        if (!validName(newName)) {
+          showToast('Invalid name. Do not use "/" or dots only.');
+          return;
+        }
+        try {
+          showToast('Renaming…');
+          await renamePath(path, newName);
+          await refreshViews(currentPath);
+          showToast(`Renamed to ${newName}`);
+        } catch (e) {
+          showToast('Rename failed: ' + e.message, 8000);
+        }
+      });
+    };
 
     // ====== DELETE ======
     async function deletePaths(paths) {
@@ -387,7 +474,7 @@
           'Authorization': cookie ? `Bearer ${cookie}` : ''
         },
         body: JSON.stringify({
-          action: 'delete', // moves the item to the recycle bin
+          action: 'delete',
           items: paths.map(path => ({ source: { root: 'local', path } }))
         })
       });
@@ -396,27 +483,77 @@
       if (data.result === false) throw new Error(data.error || 'Delete failed');
     }
 
+    function markDeleting(paths) {
+      fileList.querySelectorAll('tr').forEach(row => {
+        if (!paths.includes(row.dataset.path)) return;
+        row.classList.add('deleting');
+        const typeCell = row.querySelector('.type');
+        if (typeCell) typeCell.textContent = 'Deleting…';
+        const check = row.querySelector('.row-check');
+        if (check) {
+          check.checked = false;
+          check.disabled = true;
+        }
+        row.querySelectorAll('button').forEach(btn => { btn.disabled = true; });
+      });
+    }
+
+    // The NAS removes items in a background task. Poll until the item is gone.
+    async function waitUntilGone(path, paths, tries = 10, interval = 400) {
+      for (let i = 0; i < tries; i++) {
+        try {
+          const items = await fsList(path);
+          if (!items.some(item => paths.includes(item.path))) return true;
+        } catch (e) {
+          // keep waiting on a transient error
+        }
+        await new Promise(resolve => setTimeout(resolve, interval));
+      }
+      return false;
+    }
+
     async function deleteAndRefresh(paths) {
       const path = currentPath;
-      await deletePaths(paths);
+      const hadFolder = [...fileList.querySelectorAll('tr')]
+        .some(row => paths.includes(row.dataset.path) && row.dataset.type === 'folder');
+
+      paths.forEach(p => pendingDeletes.add(p));
+      markDeleting(paths);
       selection.clear();
       document.getElementById('deleteSelectedBtn').disabled = true;
-      await loadFiles(path);
-      // The NAS deletes in a background task, so refresh once more.
-      setTimeout(() => {
-        if (currentPath === path) loadFiles(path);
-      }, 1500);
+
+      try {
+        await deletePaths(paths);
+      } catch (e) {
+        paths.forEach(p => pendingDeletes.delete(p));
+        if (currentPath === path) await loadFiles(path);
+        throw e;
+      }
+
+      const gone = await waitUntilGone(path, paths);
+      paths.forEach(p => pendingDeletes.delete(p));
+
+      if (currentPath === path) await loadFiles(path);
+      if (hadFolder) {
+        loadTree().catch(() => {});
+        folderTree.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.path === currentPath));
+      }
+      return gone;
     }
 
     window.deleteItem = async (path) => {
+      if (currentPath === '/') {
+        showToast('Open a share or folder first.', 6000);
+        return;
+      }
       const name = path.split('/').pop();
       if (!confirm(`Delete "${name}"?`)) return;
       try {
-        showToast('Deleting ' + name + '…');
-        await deleteAndRefresh([path]);
-        showToast('Deleted ' + name);
+        showToast('Deleting ' + name + '…', 60000);
+        const gone = await deleteAndRefresh([path]);
+        showToast(gone ? `Deleted ${name}` : `Delete of ${name} is still running on the NAS.`, gone ? 3000 : 8000);
       } catch (e) {
-        showToast('Delete failed: ' + e.message);
+        showToast('Delete failed: ' + e.message, 8000);
       }
     };
 
@@ -424,11 +561,11 @@
       const paths = [...selection];
       if (!paths.length || !confirm(`Delete ${paths.length} item(s)?`)) return;
       try {
-        showToast('Deleting ' + paths.length + ' item(s)…');
-        await deleteAndRefresh(paths);
-        showToast('Deleted ' + paths.length + ' item(s)');
+        showToast('Deleting ' + paths.length + ' item(s)…', 60000);
+        const gone = await deleteAndRefresh(paths);
+        showToast(gone ? `Deleted ${paths.length} item(s)` : `Delete is still running on the NAS.`, gone ? 3000 : 8000);
       } catch (e) {
-        showToast('Delete failed: ' + e.message);
+        showToast('Delete failed: ' + e.message, 8000);
       }
     });
 
@@ -505,12 +642,26 @@
     });
 
     // ====== NEW FOLDER ======
-    document.getElementById('newFolderBtn').addEventListener('click', () =>
+    document.getElementById('newFolderBtn').addEventListener('click', () => {
+      if (currentPath === '/') {
+        showToast('Open a share or folder first.', 6000);
+        return;
+      }
       openModal('New Folder', '', async (name) => {
-        // TODO: implement create folder via NAS API
-        showToast('Create folder not yet implemented');
-      })
-    );
+        if (!validName(name)) {
+          showToast('Invalid name. Do not use "/" or dots only.');
+          return;
+        }
+        try {
+          showToast('Creating ' + name + '…');
+          await createFolder(currentPath, name);
+          await refreshViews(currentPath);
+          showToast(`Created ${name}`);
+        } catch (e) {
+          showToast('Create failed: ' + e.message, 8000);
+        }
+      });
+    });
 
     // ====== MODAL ======
     function openModal(title, value, onConfirm) {
