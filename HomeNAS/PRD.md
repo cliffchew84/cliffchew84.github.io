@@ -83,12 +83,12 @@ Legend: ⬜ Planned | 🚧 In Progress | 🔮 Future | ✅ Done
 
 #### 5.1.3 File Browser
 - ✅ Folder list, file list, breadcrumb navigation
-- ⬜ Single file download
+- ✅ Single file download
 - ✅ Create folder
 - ✅ File metadata columns (name, size, modified date, type) once available
 - ✅ Recursive folder tree (left pane)
 - ✅ Rename and delete files/folders
-- ⬜ Drag-and-drop upload (multi-file)
+- ✅ Drag-and-drop upload (multi-file)
 - ✅ Multi-select (checkboxes)
 - ✅ Bulk delete (multiple files)
 

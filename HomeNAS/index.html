@@ -72,6 +72,15 @@
     </div>
   </div>
   <div class="toast hidden" id="toast" role="status"></div>
+  <div id="tooltip" role="tooltip" hidden></div>
+
+  <!-- Drop target for file upload. pointer-events:none so document-level drag handlers keep working. -->
+  <div id="dropOverlay" class="pointer-events-none fixed inset-0 z-40 hidden items-center justify-center bg-blue-600/10 backdrop-blur-[1px]" aria-hidden="true">
+    <div class="rounded-2xl border-2 border-dashed border-blue-500 bg-white/95 px-10 py-8 text-center shadow-xl">
+      <p class="text-base font-semibold text-blue-700">Drop files to upload</p>
+      <p class="mt-1 text-xs text-neutral-500" id="dropPath"></p>
+    </div>
+  </div>
 
   <div class="fixed inset-0 z-50 flex hidden items-center justify-center bg-black/40 p-4 backdrop-blur-[2px]" id="shareDeleteModal" role="dialog" aria-modal="true" aria-labelledby="shareDeleteTitle">
     <div class="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl ring-1 ring-black/5">
@@ -121,6 +130,55 @@
       const btn = e.target.closest && e.target.closest('button');
       if (btn && !btn.disabled && typeof navigator.vibrate === 'function') navigator.vibrate(10);
     });
+
+    // ====== TOOLTIP ======
+    // One fixed element positioned on hover/focus. Keeps tooltips above every
+    // layer and outside the overflow-clipped sidebar and table containers.
+    const tooltip = document.getElementById('tooltip');
+    let tooltipTarget = null;
+
+    function showTooltip(el) {
+      const text = el.getAttribute('data-tooltip');
+      if (!text) { hideTooltip(); return; }
+      tooltipTarget = el;
+      tooltip.textContent = text;
+      tooltip.hidden = false;
+      const rect = el.getBoundingClientRect();
+      const tip = tooltip.getBoundingClientRect();
+      // Tooltips must never cover the sticky bar. Treat its bottom edge as the ceiling.
+      const header = document.querySelector('header');
+      const ceiling = header ? header.getBoundingClientRect().bottom : 0;
+      const below = el.getAttribute('data-tooltip-pos') === 'bottom';
+      let top = below ? rect.bottom + 8 : rect.top - tip.height - 8;
+      if (!below && top < ceiling + 4) top = rect.bottom + 8;   // no room above: flip down
+      if (below && top + tip.height > window.innerHeight - 8) top = rect.top - tip.height - 8;
+      let left = rect.left + rect.width / 2 - tip.width / 2;
+      left = Math.max(8, Math.min(left, window.innerWidth - tip.width - 8));
+      tooltip.style.top = top + 'px';
+      tooltip.style.left = left + 'px';
+    }
+
+    function hideTooltip() {
+      tooltipTarget = null;
+      tooltip.hidden = true;
+    }
+
+    document.addEventListener('mouseover', (e) => {
+      const el = e.target.closest && e.target.closest('[data-tooltip]');
+      if (el) showTooltip(el); else hideTooltip();
+    });
+    document.addEventListener('focusin', (e) => {
+      const el = e.target.closest && e.target.closest('[data-tooltip]');
+      if (el) showTooltip(el);
+    });
+    document.addEventListener('focusout', hideTooltip);
+    document.addEventListener('mouseout', (e) => {
+      if (tooltipTarget && !tooltipTarget.contains(e.relatedTarget)) hideTooltip();
+    });
+    // Reposition on scroll/resize so the tooltip tracks its button.
+    window.addEventListener('scroll', () => { if (tooltipTarget) showTooltip(tooltipTarget); }, true);
+    window.addEventListener('resize', () => { if (tooltipTarget) showTooltip(tooltipTarget); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideTooltip(); });
 
     // ====== DELETE SHARED FOLDER (internal common folders only) ======
     // Uses the Control Panel batch API: POST /api/batch/commit
@@ -470,6 +528,10 @@
         const realName = label === item.name ? '' : ` title="Folder name: ${escapeHtml(item.name)}"`;
         const canModify = path !== '/';
         const pending = pendingDeletes.has(fullPath);
+        const downloadBtn = isFolder ? '' : `
+                <button class="btn-icon download-item" data-path="${escapeHtml(fullPath)}" data-name="${escapeHtml(item.name)}" data-tooltip="Download" aria-label="Download ${escapeHtml(label)}"${pending ? ' disabled' : ''}>
+                  <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </button>`;
         return `
         <tr data-selected="false" data-deleting="${pending}" data-name="${escapeHtml(label)}" data-path="${escapeHtml(fullPath)}" data-type="${isFolder ? 'folder' : 'file'}" class="transition-colors odd:bg-white even:bg-neutral-50/60 hover:bg-blue-50 data-[selected=true]:bg-blue-50 data-[deleting=true]:opacity-45 data-[deleting=true]:[&_td]:pointer-events-none">
           <td class="border-b border-neutral-100 px-3 py-2.5"><input type="checkbox" class="row-check h-4 w-4 accent-blue-600" value="${escapeHtml(fullPath)}"${pending ? ' disabled' : ''} aria-label="Select ${escapeHtml(label)}"></td>
@@ -483,14 +545,17 @@
           <td class="border-b border-neutral-100 px-3 py-2.5 text-neutral-600">${formatDate(item.access_date)}</td>
           <td class="type border-b border-neutral-100 px-3 py-2.5 text-neutral-600">${pending ? 'Deleting…' : isFolder ? 'Folder' : fileType(item.name)}</td>
           <td class="border-b border-neutral-100 px-3 py-2.5">
-            ${canModify ? `
+            ${(downloadBtn || canModify) ? `
               <span class="flex gap-1.5">
+                ${downloadBtn}
+                ${canModify ? `
                 <button class="btn-icon" onclick="renameItem('${escapeHtml(fullPath)}', '${escapeHtml(label)}')" data-tooltip="Rename" aria-label="Rename ${escapeHtml(label)}"${pending ? ' disabled' : ''}>
                   <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.85 2.85 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
                 </button>
                 <button class="btn-icon btn-icon-danger" onclick="deleteItem('${escapeHtml(fullPath)}')" data-tooltip="Delete" aria-label="Delete ${escapeHtml(label)}"${pending ? ' disabled' : ''}>
                   <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                 </button>
+                ` : ''}
               </span>
             ` : '<span class="text-neutral-300">—</span>'}
           </td>
@@ -503,6 +568,17 @@
     function bindRowEvents() {
       fileList.querySelectorAll('.row-check').forEach(cb => {
         cb.addEventListener('change', updateSelection);
+      });
+      fileList.querySelectorAll('.download-item').forEach(btn => {
+        btn.addEventListener('click', () => downloadItem(btn.dataset.path, btn.dataset.name));
+      });
+      fileList.querySelectorAll('tr[data-type="folder"]').forEach(row => {
+        row.classList.add('cursor-pointer');
+        // Single click opens the folder. Interactive children keep their behavior.
+        row.addEventListener('click', (e) => {
+          if (e.target.closest('input, button, a, label, select, textarea')) return;
+          selectPath(row.dataset.path);
+        });
       });
       fileList.querySelectorAll('tr').forEach(row => {
         row.addEventListener('dblclick', (e) => {
@@ -542,6 +618,37 @@
       ).join('');
       breadcrumb.querySelectorAll('a').forEach(a =>
         a.addEventListener('click', (e) => { e.preventDefault(); selectPath(a.dataset.path); }));
+    }
+
+    // ====== DOWNLOAD ======
+    // The NAS serves the file at /life/v1/file with download=true.
+    // The proxy forwards our token as the authorization_code cookie.
+    async function downloadItem(path, name) {
+      try {
+        showToast('Downloading ' + name + '…');
+        const query = { root: 'local', path };
+        const res = await fetch(`${PROXY_URL}/life/v1/file?query=${encodeURIComponent(JSON.stringify(query))}&download=true`, {
+          headers: { 'Authorization': cookie ? `Bearer ${cookie}` : '' }
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error?.msg || data.error || 'NAS refused the download');
+        }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        showToast('Downloaded ' + name, 3000, 'success');
+      } catch (e) {
+        showToast('Download failed: ' + e.message, 8000, 'error');
+      }
     }
 
     // ====== ACTIONS ======
@@ -813,6 +920,53 @@
       const files = Array.from(fileInput.files);
       fileInput.value = '';
       if (!files.length) return;
+      uploadBtn.disabled = true;
+      try {
+        await uploadFiles(files);
+      } finally {
+        uploadBtn.disabled = false;
+        uploadStatus.textContent = '';
+      }
+    });
+
+    // ====== DRAG AND DROP UPLOAD ======
+    // Drop files anywhere on the window; they upload to the current folder.
+    // Folders dropped here are not supported yet (browsers expose them only
+    // through the entries API); they are ignored.
+    const dropOverlay = document.getElementById('dropOverlay');
+    const dropPath = document.getElementById('dropPath');
+    let dragDepth = 0;
+    function hasFiles(e) {
+      return Array.from((e.dataTransfer && e.dataTransfer.types) || []).includes('Files');
+    }
+    function hideDropOverlay() {
+      dragDepth = 0;
+      dropOverlay.classList.add('hidden');
+      dropOverlay.classList.remove('flex');
+    }
+    document.addEventListener('dragenter', (e) => {
+      if (!hasFiles(e)) return;
+      e.preventDefault();
+      dragDepth++;
+      if (dropOverlay.classList.contains('hidden')) {
+        dropPath.textContent = currentPath === '/' ? 'Open a share or folder first — nothing will upload at the root.' : 'Upload to ' + currentPath;
+        dropOverlay.classList.remove('hidden');
+        dropOverlay.classList.add('flex');
+      }
+    });
+    document.addEventListener('dragover', (e) => { if (hasFiles(e)) e.preventDefault(); });
+    document.addEventListener('dragleave', (e) => {
+      if (!hasFiles(e)) return;
+      dragDepth = Math.max(0, dragDepth - 1);
+      if (dragDepth === 0) hideDropOverlay();
+    });
+    document.addEventListener('drop', async (e) => {
+      if (!hasFiles(e)) return;
+      e.preventDefault();
+      hideDropOverlay();
+      const files = Array.from(e.dataTransfer.files);
+      if (!files.length) return;
+      if (currentPath === '/') { showToast('Open a share or folder before uploading.', 6000, 'error'); return; }
       uploadBtn.disabled = true;
       try {
         await uploadFiles(files);

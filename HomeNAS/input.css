@@ -2,24 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom tooltips. The native title attribute is a11y-adjacent but unreliable:
-   it hides on disabled buttons and has a long hover delay. Default: above. */
-[data-tooltip] { position: relative; }
-[data-tooltip]::after {
-  content: attr(data-tooltip);
-  position: absolute; bottom: calc(100% + 8px); left: 50%;
-  transform: translateX(-50%) translateY(2px);
-  z-index: 100; padding: 4px 8px; border-radius: 6px;
+/* Custom tooltips. One fixed-position element on <body>, positioned by JS.
+   This escapes the overflow clipping of the sidebar and table containers,
+   and z-index 9999 keeps it above modals (z-50) and every other layer. */
+#tooltip {
+  position: fixed; z-index: 9999;
+  padding: 4px 8px; border-radius: 6px;
   background: #262626; color: #fff; font-size: 11px; line-height: 1.4;
   white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,.25);
-  opacity: 0; visibility: hidden; pointer-events: none;
-  transition: opacity .12s ease, transform .12s ease;
+  pointer-events: none;
 }
-[data-tooltip]:hover::after, [data-tooltip]:focus-visible::after {
-  opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0);
-}
-/* Header bar sits at the top edge; above would clip off-screen. */
-[data-tooltip-pos="bottom"]::after { bottom: auto; top: calc(100% + 8px); }
 
 /* One rule cannot be expressed with utility classes: it depends on a class on <body>,
    which no descendant utility can reference. Everything else is Tailwind. */
