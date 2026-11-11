@@ -9,7 +9,34 @@
   <link rel="stylesheet" href="tailwind.css">
 </head>
 <body class="flex h-screen flex-col bg-neutral-100 text-sm text-neutral-900">
-  <header class="sticky top-0 z-10 flex items-center justify-between border-b border-neutral-200 bg-white px-4 py-3 shadow-sm">
+  <!-- Login view. Shown when signed out; the app shell stays hidden until then. -->
+  <div class="hidden flex h-screen items-center justify-center bg-neutral-100 p-4" id="loginView">
+    <form class="w-full max-w-sm rounded-2xl border border-neutral-200 bg-white p-6 shadow-xl" id="loginForm">
+      <div class="mb-6 flex items-center gap-3">
+        <svg class="h-9 w-9 shrink-0 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6.5" y1="12" x2="6.5" y2="12.01"/><line x1="11" y1="12" x2="11.01" y2="12"/><line x1="15.5" y1="12" x2="15.5" y2="12.01"/></svg>
+        <div>
+          <h1 class="text-lg font-semibold tracking-tight text-neutral-800">HomeNAS</h1>
+          <p class="text-xs text-neutral-500">Sign in to your NAS</p>
+        </div>
+      </div>
+      <label class="mb-1 block text-xs font-medium text-neutral-600" for="loginUsername">Username</label>
+      <input type="text" id="loginUsername" class="mb-3 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" required>
+      <label class="mb-1 block text-xs font-medium text-neutral-600" for="loginPassword">Password</label>
+      <div class="relative mb-3">
+        <input type="password" id="loginPassword" class="w-full rounded-lg border border-neutral-300 py-2 pl-3 pr-10 text-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" autocomplete="current-password" required>
+        <button type="button" id="toggleLoginPassword" class="absolute inset-y-0 right-0 flex items-center rounded-r-lg px-3 text-neutral-400 transition-colors hover:text-neutral-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600" aria-pressed="false" aria-label="Show password" data-tooltip="Show password">
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <label class="mb-4 flex cursor-pointer select-none items-center gap-2 text-xs text-neutral-600">
+        <input type="checkbox" id="loginKeepSignedIn" class="h-4 w-4 accent-blue-600">
+        Keep me signed in on this computer
+      </label>
+      <p class="mb-3 hidden rounded-lg bg-red-50 px-3 py-2 text-xs leading-relaxed text-red-700" id="loginError" role="alert"></p>
+      <button type="submit" class="btn btn-primary w-full justify-center" id="loginSubmit">Sign in</button>
+    </form>
+  </div>
+  <header class="app-shell sticky top-0 z-10 hidden flex items-center justify-between border-b border-neutral-200 bg-white px-4 py-3 shadow-sm">
     <div class="flex items-center gap-2">
       <button class="icon-btn" id="sidebarToggle" aria-controls="sidebar" aria-expanded="true" data-tooltip="Hide sidebar" data-tooltip-pos="bottom" aria-label="Hide sidebar">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
@@ -17,9 +44,13 @@
       <svg class="h-6 w-6 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6.5" y1="12" x2="6.5" y2="12.01"/><line x1="11" y1="12" x2="11" y2="12.01"/></svg>
       <h1 class="text-lg font-semibold tracking-tight text-neutral-800">HomeNAS</h1>
     </div>
-    <span class="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-600 ring-1 ring-inset ring-neutral-200" id="userBadge">admin</span>
+    <div class="flex items-center gap-2">
+      <button class="icon-btn" id="signOutBtn" data-tooltip="Sign out" data-tooltip-pos="bottom" aria-label="Sign out"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v8"/><path d="M6.3 6.3a8 8 0 1 0 11.4 0"/></svg></button>
+      <button class="icon-btn" id="changePasswordBtn" data-tooltip="Change password" data-tooltip-pos="bottom" aria-label="Change password"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></button>
+      <span class="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-600 ring-1 ring-inset ring-neutral-200" id="userBadge">admin</span>
+    </div>
   </header>
-  <main class="flex flex-1 overflow-hidden">
+  <main class="app-shell hidden flex flex-1 overflow-hidden">
     <aside id="sidebar" class="w-[280px] shrink-0 overflow-y-auto overflow-x-hidden border-r border-neutral-200 bg-white p-2 transition-[width,padding] duration-200 ease-in-out">
       <p class="px-2 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-widest text-neutral-400">Shares</p>
       <ul class="min-w-[260px]" id="folderTree"></ul>
@@ -74,6 +105,26 @@
   <div class="toast hidden" id="toast" role="status"></div>
   <div id="tooltip" role="tooltip" hidden></div>
 
+  <div class="fixed inset-0 z-50 flex hidden items-center justify-center bg-black/40 p-4 backdrop-blur-[2px]" id="changePasswordModal" role="dialog" aria-modal="true" aria-labelledby="changePasswordTitle">
+    <div class="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl ring-1 ring-black/5">
+      <h3 class="mb-1 text-base font-semibold text-neutral-800" id="changePasswordTitle">Change admin password</h3>
+      <p class="mb-4 text-xs leading-relaxed text-neutral-500">NAS password for “admin”. 8–32 characters; must include upper- and lowercase letters and a digit. Allowed symbols: ! @ # $ % ^ &amp; * ( ) _ + - = / .</p>
+      <label class="mb-1 block text-xs font-medium text-neutral-600" for="currentPasswordInput">Current password</label>
+      <input type="password" id="currentPasswordInput" class="mb-3 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" autocomplete="current-password" autocapitalize="off" spellcheck="false">
+      <label class="mb-1 block text-xs font-medium text-neutral-600" for="newPasswordInput">New password</label>
+      <input type="password" id="newPasswordInput" class="mb-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" autocomplete="new-password" autocapitalize="off" spellcheck="false">
+      <p class="mb-3 hidden text-xs leading-relaxed text-red-600" id="newPasswordError"></p>
+      <label class="mb-1 block text-xs font-medium text-neutral-600" for="confirmPasswordInput">Confirm new password</label>
+      <input type="password" id="confirmPasswordInput" class="mb-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" autocomplete="new-password" autocapitalize="off" spellcheck="false">
+      <p class="mb-3 hidden text-xs leading-relaxed text-red-600" id="confirmPasswordError"></p>
+      <p class="hidden text-xs leading-relaxed text-red-600" id="changePasswordError"></p>
+      <div class="mt-4 flex justify-end gap-2">
+        <button class="btn" id="changePasswordCancel">Cancel</button>
+        <button class="btn btn-primary" id="changePasswordConfirm" disabled>Change</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Drop target for file upload. pointer-events:none so document-level drag handlers keep working. -->
   <div id="dropOverlay" class="pointer-events-none fixed inset-0 z-40 hidden items-center justify-center bg-blue-600/10 backdrop-blur-[1px]" aria-hidden="true">
     <div class="rounded-2xl border-2 border-dashed border-blue-500 bg-white/95 px-10 py-8 text-center shadow-xl">
@@ -101,13 +152,14 @@
   </div>
 
   <script>
-    // ====== CONFIG - EDIT THESE ======
+    // ====== CONFIG ======
+    // No credentials live in this file. Sign in on the login screen.
+    // Token is kept in memory by default; "Keep me signed in" stores it in this browser only.
     const PROXY_URL = 'http://localhost:3001';  // proxy -> NAS
-    const DEFAULT_USER = 'admin';
-    const DEFAULT_PASS = 'Cliffchew88456788';
 
     // ====== STATE ======
     let cookie = '';
+    let currentUser = '';
     let currentPath = '/home';
     let selection = new Set();
     let pendingDeletes = new Set();
@@ -211,8 +263,27 @@
       shareDeleteConfirm.disabled = !shareDeleteTarget || shareDeleteInput.value !== shareDeleteTarget.display;
     });
 
+    async function renameShareDisplayName(id, display, newDisplay) {
+      const res = await authFetch(`${PROXY_URL}/batch/commit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': cookie ? `Bearer ${cookie}` : ''
+        },
+        body: JSON.stringify({ des: [['folder', 'set_display_name', [], { folder_name: id, display_name: newDisplay }]], blocking: true })
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json().catch(() => ({}));
+      if (data.result === false) throw new Error(data.error || 'NAS refused the rename');
+      const item = Array.isArray(data.data) ? data.data[0] : null;
+      if (item && item.result === false) {
+        const err = item.err || {};
+        throw new Error(err.msg || err.id || 'NAS refused the rename');
+      }
+    }
+
     async function deleteShareFolder(id, display) {
-      const res = await fetch(`${PROXY_URL}/batch/commit`, {
+      const res = await authFetch(`${PROXY_URL}/batch/commit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -277,10 +348,72 @@
       setSidebarCollapsed(!document.body.classList.contains('sidebar-collapsed'));
     });
 
-    // ====== API ======
+    // ====== AUTH ======
+    // One wrapper: any 401 from the NAS ends the session (token expired/invalid).
+    // 403 is an application error (e.g. not permitted) and does NOT end the session.
+    class AuthExpired extends Error {}
+    async function authFetch(url, options = {}) {
+      const res = await fetch(url, options); // raw fetch — this IS the wrapper
+      if (res.status === 401) {
+        endSession();
+        showLogin('Session expired. Please sign in again.');
+        throw new AuthExpired('Session expired');
+      }
+      return res;
+    }
+
+    async function authenticate(user, pass) {
+      const res = await fetch(`${PROXY_URL}/auth/auth`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: user, password: pass })
+      }); // raw fetch — must not trigger the session-expiry redirect
+      const data = await res.json().catch(() => null);
+      const token = data && data.data && data.data.access_token;
+      if (!res.ok || !token) {
+        const msg = data && (data.error?.msg || data.error);
+        throw new Error(msg || 'Wrong username or password.');
+      }
+      return token;
+    }
+
+    const userBadge = document.getElementById('userBadge');
+    const loginView = document.getElementById('loginView');
+    const loginForm = document.getElementById('loginForm');
+    const loginUsername = document.getElementById('loginUsername');
+    const loginPassword = document.getElementById('loginPassword');
+    const loginKeepSignedIn = document.getElementById('loginKeepSignedIn');
+    const loginError = document.getElementById('loginError');
+    const loginSubmit = document.getElementById('loginSubmit');
+
+    function showLogin(msg) {
+      document.querySelectorAll('.app-shell').forEach(el => el.classList.add('hidden'));
+      loginView.classList.remove('hidden');
+      loginError.textContent = msg || '';
+      loginError.classList.toggle('hidden', !msg);
+      loginUsername.focus();
+    }
+    function showApp() {
+      loginView.classList.add('hidden');
+      document.querySelectorAll('.app-shell').forEach(el => el.classList.remove('hidden'));
+    }
+    function endSession() {
+      cookie = '';
+      currentUser = '';
+      localStorage.removeItem('homenas.session');
+    }
+    function startSession(user, token, remember) {
+      cookie = token;
+      currentUser = user;
+      userBadge.textContent = user === 'admin' ? user + ' (admin)' : user;
+      if (remember) localStorage.setItem('homenas.session', JSON.stringify({ user, token }));
+      else localStorage.removeItem('homenas.session');
+      showApp();
+    }
+
     async function api(module, method, params = {}) {
       console.log('API call:', module, method, params);
-      const res = await fetch(`${PROXY_URL}/${module}/${method}`, {
+      const res = await authFetch(`${PROXY_URL}/${module}/${method}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -297,18 +430,6 @@
       if (data.error) throw new Error(data.error.msg || data.error);
       if (data.result === false) throw new Error(data.error?.msg || 'Request failed');
       return data.data;
-    }
-
-    async function login() {
-      try {
-        const data = await api('auth', 'auth', { username: DEFAULT_USER, password: DEFAULT_PASS });
-        cookie = data.access_token;
-        document.getElementById('userBadge').textContent = DEFAULT_USER + ' (admin)';
-        return true;
-      } catch (e) {
-        showToast('Login failed: ' + e.message, 8000, 'error');
-        return false;
-      }
     }
 
     // ====== FILE SYSTEM (life API) ======
@@ -330,7 +451,7 @@
               filter: [{ key: 'subtype', equal: false, value: 'hidden' }]
             }
           };
-          const res = await fetch(`${PROXY_URL}/life/v1/folder?query=${encodeURIComponent(JSON.stringify(query))}`, {
+          const res = await authFetch(`${PROXY_URL}/life/v1/folder?query=${encodeURIComponent(JSON.stringify(query))}`, {
             headers: { 'Authorization': cookie ? `Bearer ${cookie}` : '' }
           });
           if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -451,6 +572,7 @@
       // Delete belongs to top-level internal shares only (their own row, not subfolders).
       const canDeleteShare = type === 'internal' && container === folderTree && id;
       const trashSvg = '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
+      const pencilSvg = '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.85 2.85 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>';
       li.innerHTML = `
         <div class="flex items-center gap-0.5">
           <button data-path="${escapeHtml(path)}" data-active="false" aria-expanded="false" class="${TREE_BUTTON_CLASS} min-w-0 flex-1">
@@ -458,6 +580,7 @@
             <span class="shrink-0">${svgTreeIcon(type)}</span>
             ${escapeHtml(name)}
           </button>
+          ${canDeleteShare ? `<button class="tree-edit-share icon-btn shrink-0 p-1.5 text-neutral-400 hover:bg-blue-50 hover:text-blue-600" data-tooltip="Rename display name of ${escapeHtml(name)}" aria-label="Rename display name of ${escapeHtml(name)}" data-id="${escapeHtml(id)}" data-display="${escapeHtml(name)}">${pencilSvg}</button>` : ''}
           ${canDeleteShare ? `<button class="tree-delete-share icon-btn shrink-0 p-1.5 text-neutral-400 hover:bg-red-50 hover:text-red-600" data-tooltip="Delete shared folder ${escapeHtml(name)}" aria-label="Delete shared folder ${escapeHtml(name)}" data-id="${escapeHtml(id)}" data-display="${escapeHtml(name)}">${trashSvg}</button>` : ''}
         </div>
         <ul class="ml-4 hidden border-l border-neutral-100 pl-2"></ul>
@@ -620,6 +743,133 @@
         a.addEventListener('click', (e) => { e.preventDefault(); selectPath(a.dataset.path); }));
     }
 
+    // ====== SIGN IN / OUT ======
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      loginError.classList.add('hidden');
+      const user = loginUsername.value.trim();
+      const pass = loginPassword.value;
+      const remember = loginKeepSignedIn.checked;
+      if (!user || !pass) return;
+      loginSubmit.disabled = true;
+      try {
+        const token = await authenticate(user, pass);
+        loginPassword.value = '';
+        startSession(user, token, remember);
+        try { await loadTree(); } catch (err) { showToast('Could not load folders: ' + err.message, 8000, 'error'); }
+        loadFiles('/home');
+      } catch (err) {
+        loginError.textContent = err.message;
+        loginError.classList.remove('hidden');
+      } finally {
+        loginSubmit.disabled = false;
+      }
+    });
+
+    // Show/hide the login password.
+    const toggleLoginPassword = document.getElementById('toggleLoginPassword');
+    toggleLoginPassword.addEventListener('click', () => {
+      const showing = loginPassword.type === 'text';
+      loginPassword.type = showing ? 'password' : 'text';
+      toggleLoginPassword.setAttribute('aria-pressed', String(!showing));
+      toggleLoginPassword.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+      toggleLoginPassword.dataset.tooltip = showing ? 'Show password' : 'Hide password';
+      loginPassword.focus();
+    });
+
+    document.getElementById('signOutBtn').addEventListener('click', () => {
+      endSession();
+      showLogin('Signed out.');
+    });
+
+    // ====== CHANGE PASSWORD ======
+    // NAS rule (from the Control Panel UI): 8–32 chars, charset [A-Za-z0-9!@#$%^&*()_+\-=/ .],
+    // must contain an uppercase letter, a lowercase letter and a digit.
+    const NAS_PASSWORD_RE = /(?=^[a-zA-Z0-9!@#$%^&*()_+\-=/\\.]{8,32}$)((?=.*\d))(?=.*[A-Z])(?=.*[a-z]).*$/;
+    const changePasswordModal = document.getElementById('changePasswordModal');
+    const currentPasswordInput = document.getElementById('currentPasswordInput');
+    const newPasswordInput = document.getElementById('newPasswordInput');
+    const confirmPasswordInput = document.getElementById('confirmPasswordInput');
+    const newPasswordError = document.getElementById('newPasswordError');
+    const confirmPasswordError = document.getElementById('confirmPasswordError');
+    const changePasswordError = document.getElementById('changePasswordError');
+    const changePasswordConfirm = document.getElementById('changePasswordConfirm');
+
+    function newPasswordProblem(pw) {
+      if (!pw) return '';
+      return NAS_PASSWORD_RE.test(pw) ? '' : 'Needs 8–32 characters, uppercase and lowercase letters, and a digit.';
+    }
+    function validateChangePassword() {
+      const problem = newPasswordProblem(newPasswordInput.value);
+      newPasswordError.textContent = problem;
+      newPasswordError.classList.toggle('hidden', !problem);
+      const mismatch = confirmPasswordInput.value !== newPasswordInput.value;
+      confirmPasswordError.textContent = mismatch ? 'Passwords do not match.' : '';
+      confirmPasswordError.classList.toggle('hidden', !mismatch);
+      changePasswordConfirm.disabled =
+        !currentPasswordInput.value ||
+        !!problem ||
+        !confirmPasswordInput.value ||
+        mismatch;
+    }
+    [currentPasswordInput, newPasswordInput, confirmPasswordInput].forEach(el => el.addEventListener('input', validateChangePassword));
+
+    function openChangePasswordModal() {
+      currentPasswordInput.value = '';
+      newPasswordInput.value = '';
+      confirmPasswordInput.value = '';
+      [newPasswordError, confirmPasswordError, changePasswordError].forEach(el => el.classList.add('hidden'));
+      changePasswordConfirm.disabled = true;
+      changePasswordModal.classList.remove('hidden');
+      currentPasswordInput.focus();
+    }
+    function closeChangePasswordModal() { changePasswordModal.classList.add('hidden'); }
+
+    async function changeAdminPassword() {
+      changePasswordConfirm.disabled = true;
+      changePasswordError.classList.add('hidden');
+      const current = currentPasswordInput.value;
+      const next = newPasswordInput.value;
+      try {
+        // Step 1: verify the current password. Read-only call, changes nothing.
+        const verifyRes = await fetch(`${PROXY_URL}/auth/auth`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: currentUser, password: current })
+        });
+        const verifyData = await verifyRes.json().catch(() => ({}));
+        const gotToken = verifyData && verifyData.data && verifyData.data.access_token;
+        if (!verifyRes.ok || verifyData.result === false || !gotToken) {
+          throw new Error('Current password is incorrect.');
+        }
+        // Step 2: change the password. This invalidates all sessions.
+        const res = await authFetch(`${PROXY_URL}/user/modify_user`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': cookie ? `Bearer ${cookie}` : ''
+          },
+          body: JSON.stringify({ username: currentUser, option: { password: next } })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.result === false) {
+          throw new Error(data.error || data.message || ('HTTP ' + res.status));
+        }
+        localStorage.removeItem('homenas.adminPass'); // obsolete copy, if any
+        endSession();
+        closeChangePasswordModal();
+        showLogin('Password changed. Sign in with the new password.');
+      } catch (e) {
+        changePasswordError.textContent = 'Change failed: ' + e.message;
+        changePasswordError.classList.remove('hidden');
+        changePasswordConfirm.disabled = false;
+      }
+    }
+
+    document.getElementById('changePasswordBtn').addEventListener('click', openChangePasswordModal);
+    document.getElementById('changePasswordCancel').addEventListener('click', closeChangePasswordModal);
+    changePasswordConfirm.addEventListener('click', changeAdminPassword);
+
     // ====== DOWNLOAD ======
     // The NAS serves the file at /life/v1/file with download=true.
     // The proxy forwards our token as the authorization_code cookie.
@@ -627,7 +877,7 @@
       try {
         showToast('Downloading ' + name + '…');
         const query = { root: 'local', path };
-        const res = await fetch(`${PROXY_URL}/life/v1/file?query=${encodeURIComponent(JSON.stringify(query))}&download=true`, {
+        const res = await authFetch(`${PROXY_URL}/life/v1/file?query=${encodeURIComponent(JSON.stringify(query))}&download=true`, {
           headers: { 'Authorization': cookie ? `Bearer ${cookie}` : '' }
         });
         if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -652,8 +902,26 @@
     }
 
     // ====== ACTIONS ======
-    // Delegated handler for the sidebar delete-share buttons.
+    // Delegated handler for the sidebar share buttons (rename / delete).
     folderTree.addEventListener('click', (e) => {
+      const editBtn = e.target.closest('.tree-edit-share');
+      if (editBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        openModal('Display name for ' + editBtn.dataset.display, editBtn.dataset.display, async (newName) => {
+          const name = newName.trim();
+          if (name === editBtn.dataset.display) return;
+          try {
+            showToast('Renaming ' + editBtn.dataset.display + '…');
+            await renameShareDisplayName(editBtn.dataset.id, editBtn.dataset.display, name);
+            await loadTree();
+            showToast('Renamed to ' + name, 3000, 'success');
+          } catch (err) {
+            showToast('Rename failed: ' + err.message, 8000, 'error');
+          }
+        }, 'Save');
+        return;
+      }
       const btn = e.target.closest('.tree-delete-share');
       if (!btn) return;
       e.preventDefault();
@@ -686,7 +954,7 @@
     }
 
     async function createFolder(path, name) {
-      const res = await fetch(`${PROXY_URL}/life/v1/folder`, {
+      const res = await authFetch(`${PROXY_URL}/life/v1/folder`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -705,7 +973,7 @@
     async function renamePath(path, name) {
       const target = joinPath(parentOf(path), name);
       if (target === path) return;
-      const res = await fetch(`${PROXY_URL}/life/v1/folder`, {
+      const res = await authFetch(`${PROXY_URL}/life/v1/folder`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -757,7 +1025,7 @@
 
     // ====== DELETE ======
     async function deletePaths(paths) {
-      const res = await fetch(`${PROXY_URL}/life/v1/folderex`, {
+      const res = await authFetch(`${PROXY_URL}/life/v1/folderex`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -872,7 +1140,7 @@
       // The NAS reads the file from the field named after the file itself.
       form.append(file.name, file, file.name);
 
-      const res = await fetch(`${PROXY_URL}/life/v1/file/upload`, {
+      const res = await authFetch(`${PROXY_URL}/life/v1/file/upload`, {
         method: 'POST',
         headers: { 'Authorization': cookie ? `Bearer ${cookie}` : '' },
         body: form
@@ -1011,6 +1279,7 @@
     document.addEventListener('keydown', (e) => {
       if (e.key !== 'Escape') return;
       if (!shareDeleteModal.classList.contains('hidden')) { closeShareDeleteModal(); return; }
+      if (!changePasswordModal.classList.contains('hidden')) { closeChangePasswordModal(); return; }
       if (!modal.classList.contains('hidden')) { modal.classList.add('hidden'); modalResolve = null; }
     });
     document.getElementById('modalConfirm').addEventListener('click', async () => {
@@ -1086,14 +1355,27 @@
 
     // ====== INIT ======
     (async () => {
-      const ok = await login();
-      if (!ok) return;
+      localStorage.removeItem('homenas.adminPass'); // obsolete key, if any
+      // Resume a remembered session if it is still valid.
       try {
-        await loadTree();
+        const raw = localStorage.getItem('homenas.session');
+        if (raw) {
+          const { user, token } = JSON.parse(raw);
+          cookie = token;
+          currentUser = user;
+          await fsList('/'); // throws when the token is dead or the NAS is down
+          userBadge.textContent = user === 'admin' ? user + ' (admin)' : user;
+          showApp();
+          try { await loadTree(); } catch (e) { showToast('Could not load folders: ' + e.message, 8000, 'error'); }
+          loadFiles('/home');
+          return;
+        }
       } catch (e) {
-        showToast('Could not load folders: ' + e.message, 8000, 'error');
+        endSession();
+        showLogin('Session expired. Please sign in again.');
+        return;
       }
-      loadFiles('/home');
+      showLogin('');
     })();
   </script>
 </body>

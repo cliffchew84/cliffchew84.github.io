@@ -73,9 +73,10 @@ Legend: ⬜ Planned | 🚧 In Progress | 🔮 Future | ✅ Done
 ### 5.1 Phase 1 — Core (MVP)
 
 #### 5.1.1 Authentication
-- ⬜ Login page (username + password)
-- ✅ Access token kept in memory only
-- ⬜ Auto-logout when the token expires
+- ✅ Login page (username + password)
+- ✅ Access token kept in memory by default; optional “Keep me signed in on this computer” stores it in this browser only
+- ✅ Auto-logout when the token expires (any 401 ends the session)
+- ✅ Change the admin password from within the app (NAS API verified live)
 
 #### 5.1.2 Dashboard
 - ⬜ One view for all main areas: Storage, RAID, Health, Shares, SMART, Thermal
@@ -93,7 +94,7 @@ Legend: ⬜ Planned | 🚧 In Progress | 🔮 Future | ✅ Done
 - ✅ Bulk delete (multiple files)
 
 #### 5.1.4 Share Management
-- ⬜ List, edit display name
+- ✅ List, edit display name (pencil action on internal shares; API verified live — the file-browser flow itself needs a click-through test)
 
 #### 5.1.5 Health Monitoring (admin only)
 - ⬜ Thermal status: CPU temperature, disk thermal state, shutdown thresholds
