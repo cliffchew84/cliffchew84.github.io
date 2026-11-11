@@ -91,7 +91,6 @@ Legend: ⬜ Planned | 🚧 In Progress | 🔮 Future | ✅ Done
 - ⬜ Drag-and-drop upload (multi-file)
 - ✅ Multi-select (checkboxes)
 - ✅ Bulk delete (multiple files)
-- ⬜ Bulk download as one archive (ZIP) — not an easy MVP item; requires a reliable NAS or server-side ZIP path
 
 #### 5.1.4 Share Management
 - ⬜ List, edit display name
@@ -139,6 +138,7 @@ Legend: ⬜ Planned | 🚧 In Progress | 🔮 Future | ✅ Done
 - *Note:* because storage shares stream full files, true video seeking needs a streaming layer added later
 
 #### 5.3.7 Large Transfer Progress
+- Bulk download as one ZIP archive — moved from Phase 1; requires a reliable NAS or server-side ZIP path
 - Bulk ZIP job progress and queue state when the NAS exposes a job-status API
 - Large upload progress, including percent, bytes transferred, estimated time remaining, cancel, retry, and one aggregate view for a multi-file queue
 
