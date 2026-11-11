@@ -5,112 +5,91 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%232563eb' d='M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8z'/%3E%3C/svg%3E">
   <title>HomeNAS File Browser</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg: #f5f5f5; --surface: #fff; --text: #1a1a1a; --muted: #666;
-      --primary: #2563eb; --primary-h: #1d4ed8; --border: #e5e5e5;
-      --error: #dc2626; --error-bg: #fef2f2; --radius: 8px;
-      --shadow: 0 1px 3px rgba(0,0,0,.1);
-    }
-    body { font: 14px/1.5 system-ui, sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; }
-    header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
-    header h1 { font-size: 1.1rem; font-weight: 600; }
-    .user { font-size: .85rem; color: var(--muted); background: var(--bg); padding: 4px 10px; border-radius: 999px; }
-    main { flex: 1; display: flex; overflow: hidden; }
-    aside { width: 280px; border-right: 1px solid var(--border); background: var(--surface); overflow: auto; padding: 8px; flex-shrink: 0; }
-    .tree { list-style: none; }
-    .tree li { margin: 2px 0; }
-    .tree button { width: 100%; text-align: left; padding: 6px 10px; border: none; background: none; border-radius: 4px; cursor: pointer; font: inherit; color: var(--text); display: flex; align-items: center; gap: 6px; }
-    .tree button:hover { background: var(--bg); }
-    .tree button.active { background: var(--primary); color: white; }
-    .tree .children { margin-left: 16px; display: none; }
-    .tree .open > .children { display: block; }
-    .tree .folder { font-weight: 500; }
-    .tree .tree-group { margin: 12px 0 4px; padding: 0 10px; font-size: .68rem; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
-    .tree .tree-group:first-child { margin-top: 4px; }
-    .tree .caret { display: inline-block; width: 10px; font-size: .65rem; color: var(--muted); transition: transform .15s; }
-    .tree .open > button .caret { transform: rotate(90deg); }
-    .tree button:disabled { color: var(--muted); cursor: default; }
-    .tree button:disabled:hover { background: none; }
-    section { flex: 1; padding: 16px; overflow: auto; }
-    .breadcrumb { display: flex; gap: 4px; margin-bottom: 16px; font-size: .85rem; color: var(--muted); flex-wrap: wrap; }
-    .breadcrumb a { color: var(--primary); text-decoration: none; }
-    .breadcrumb a:hover { text-decoration: underline; }
-    .breadcrumb .sep { color: var(--muted); }
-    .toolbar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-    .btn { padding: 8px 14px; border: 1px solid var(--border); background: var(--surface); border-radius: var(--radius); cursor: pointer; font: inherit; display: inline-flex; align-items: center; gap: 6px; }
-    .btn:hover { background: var(--bg); }
-    .btn.primary { background: var(--primary); border-color: var(--primary); color: white; }
-    .btn.primary:hover { background: var(--primary-h); }
-    .btn:disabled { opacity: .5; cursor: not-allowed; }
-    table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
-    th { background: var(--bg); font-weight: 600; font-size: .8rem; text-transform: uppercase; color: var(--muted); }
-    tr:hover { background: var(--bg); }
-    tr.selected { background: #eff6ff; }
-    tr.deleting { opacity: .45; }
-    tr.deleting td { pointer-events: none; }
-    .name { display: flex; align-items: center; gap: 8px; }
-    .icon { width: 18px; height: 18px; flex-shrink: 0; }
-    .actions button { margin-left: 4px; padding: 4px 8px; font-size: .75rem; }
-    .empty { text-align: center; padding: 40px; color: var(--muted); }
-    .modal { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: flex; align-items: center; justify-content: center; z-index: 100; }
-    .modal.hidden { display: none; }
-    .modal-content { background: var(--surface); padding: 24px; border-radius: var(--radius); min-width: 320px; box-shadow: var(--shadow); }
-    .modal-content h3 { margin-bottom: 16px; }
-    .modal-content input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; font: inherit; }
-    .modal-footer { display: flex; justify-content: flex-end; gap: 8px; }
-    .alert { position: fixed; bottom: 20px; right: 20px; padding: 12px 16px; border-radius: var(--radius); background: var(--error-bg); color: var(--error); border: 1px solid #fecaca; z-index: 200; animation: slide .2s; }
-    .alert.hidden { display: none; }
-    @keyframes slide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .upload-input { display: none; }
-  </style>
+  <!-- Tailwind. Rebuild with: npm run build:css -->
+  <link rel="stylesheet" href="tailwind.css">
 </head>
-<body>
-  <header>
-    <h1>HomeNAS</h1>
-    <span class="user" id="userBadge">admin</span>
+<body class="flex h-screen flex-col bg-neutral-100 text-sm text-neutral-900">
+  <header class="sticky top-0 z-10 flex items-center justify-between border-b border-neutral-200 bg-white px-4 py-3 shadow-sm">
+    <div class="flex items-center gap-2">
+      <button class="icon-btn" id="sidebarToggle" aria-controls="sidebar" aria-expanded="true" data-tooltip="Hide sidebar" data-tooltip-pos="bottom" aria-label="Hide sidebar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
+      </button>
+      <svg class="h-6 w-6 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6.5" y1="12" x2="6.5" y2="12.01"/><line x1="11" y1="12" x2="11" y2="12.01"/></svg>
+      <h1 class="text-lg font-semibold tracking-tight text-neutral-800">HomeNAS</h1>
+    </div>
+    <span class="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-600 ring-1 ring-inset ring-neutral-200" id="userBadge">admin</span>
   </header>
-  <main>
-    <aside>
-      <ul class="tree" id="folderTree"></ul>
+  <main class="flex flex-1 overflow-hidden">
+    <aside id="sidebar" class="w-[280px] shrink-0 overflow-y-auto overflow-x-hidden border-r border-neutral-200 bg-white p-2 transition-[width,padding] duration-200 ease-in-out">
+      <p class="px-2 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-widest text-neutral-400">Shares</p>
+      <ul class="min-w-[260px]" id="folderTree"></ul>
     </aside>
-    <section>
-      <nav class="breadcrumb" id="breadcrumb"></nav>
-      <div class="toolbar">
-        <button class="btn primary" id="uploadBtn">Upload</button>
-        <input type="file" class="upload-input" id="fileInput" multiple>
-        <button class="btn" id="newFolderBtn">New Folder</button>
-        <button class="btn" id="deleteSelectedBtn" disabled>Delete Selected</button>
+    <section class="min-w-0 flex-1 overflow-auto p-4">
+      <div class="mb-4 flex flex-wrap items-center gap-2">
+        <button class="btn-icon btn-icon-primary" id="uploadBtn" data-tooltip="Upload" aria-label="Upload">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </button>
+        <span class="text-xs tabular-nums text-neutral-500" id="uploadStatus" role="status"></span>
+        <input type="file" class="hidden" id="fileInput" multiple>
+        <button class="btn-icon" id="newFolderBtn" data-tooltip="New Folder" aria-label="New Folder">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="10" x2="12" y2="14"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+        </button>
+        <button class="btn-icon" id="deleteSelectedBtn" disabled data-tooltip="Delete Selected" aria-label="Delete Selected">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
+        <span class="mx-1 h-5 w-px bg-neutral-200" aria-hidden="true"></span>
+        <nav class="flex flex-wrap items-center gap-1.5 text-sm text-neutral-500" id="breadcrumb" aria-label="Breadcrumb"></nav>
+        <button class="icon-btn ml-auto" id="refreshBtn" data-tooltip="Refresh" data-tooltip-pos="bottom" aria-label="Refresh">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        </button>
       </div>
-      <table id="fileTable">
-        <thead>
-          <tr>
-            <th style="width: 40px;"><input type="checkbox" id="selectAll"></th>
-            <th>Name</th>
-            <th style="width: 120px;">Size</th>
-            <th style="width: 160px;">Modified</th>
-            <th style="width: 100px;">Type</th>
-            <th style="width: 170px;">Actions</th>
-          </tr>
-        </thead>
-        <tbody id="fileList"></tbody>
-      </table>
+      <div class="overflow-x-auto rounded-xl border border-neutral-200 bg-white shadow-sm">
+        <table class="w-full border-collapse" id="fileTable">
+          <thead>
+            <tr>
+              <th class="w-10 border-b border-neutral-200 bg-neutral-50 px-3 py-2.5 text-left"><input type="checkbox" id="selectAll" class="h-4 w-4 accent-blue-600" data-tooltip="Select all" aria-label="Select all"></th>
+              <th class="border-b border-neutral-200 bg-neutral-50 px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Name</th>
+              <th class="w-28 border-b border-neutral-200 bg-neutral-50 px-3 py-2.5 text-right text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Size</th>
+              <th class="w-44 border-b border-neutral-200 bg-neutral-50 px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Modified</th>
+              <th class="w-24 border-b border-neutral-200 bg-neutral-50 px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Type</th>
+              <th class="w-44 border-b border-neutral-200 bg-neutral-50 px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="fileList"></tbody>
+        </table>
+      </div>
     </section>
   </main>
 
-  <div class="modal hidden" id="modal">
-    <div class="modal-content">
-      <h3 id="modalTitle"></h3>
-      <input type="text" id="modalInput" placeholder="Folder name">
-      <div class="modal-footer">
+  <div class="fixed inset-0 z-50 flex hidden items-center justify-center bg-black/40 p-4 backdrop-blur-[2px]" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl ring-1 ring-black/5">
+      <h3 class="mb-4 text-base font-semibold text-neutral-800" id="modalTitle"></h3>
+      <input type="text" class="mb-4 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" id="modalInput" placeholder="Folder name">
+      <div class="flex justify-end gap-2">
         <button class="btn" id="modalCancel">Cancel</button>
-        <button class="btn primary" id="modalConfirm">OK</button>
+        <button class="btn btn-primary" id="modalConfirm">OK</button>
       </div>
     </div>
   </div>
-  <div class="alert hidden" id="toast"></div>
+  <div class="toast hidden" id="toast" role="status"></div>
+
+  <div class="fixed inset-0 z-50 flex hidden items-center justify-center bg-black/40 p-4 backdrop-blur-[2px]" id="shareDeleteModal" role="dialog" aria-modal="true" aria-labelledby="shareDeleteTitle">
+    <div class="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl ring-1 ring-black/5">
+      <div class="mb-3 flex items-center gap-2 text-red-600">
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        <h3 class="text-base font-semibold" id="shareDeleteTitle">Delete shared folder</h3>
+      </div>
+      <p class="text-sm text-neutral-700">Delete <strong id="shareDeleteName" class="font-semibold"></strong>?</p>
+      <p class="mt-2 text-xs leading-relaxed text-neutral-500">This removes the SMB share <strong>and destroys all data in it</strong>. This cannot be undone.</p>
+      <label class="mt-4 block text-xs font-medium text-neutral-600" for="shareDeleteInput">Type <span id="shareDeletePromptName" class="font-semibold text-neutral-800"></span> to confirm</label>
+      <input id="shareDeleteInput" type="text" class="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm transition-colors focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-100" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+      <p class="mt-1 hidden text-xs text-red-600" id="shareDeleteError"></p>
+      <div class="mt-4 flex justify-end gap-2">
+        <button class="btn" id="shareDeleteCancel">Cancel</button>
+        <button class="btn btn-danger-solid" id="shareDeleteConfirm" disabled>Delete</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     // ====== CONFIG - EDIT THESE ======
@@ -135,6 +114,110 @@
     const modalTitle = document.getElementById('modalTitle');
     const modalInput = document.getElementById('modalInput');
     const toast = document.getElementById('toast');
+
+    // ====== PRESS FEEDBACK ======
+    // Short vibration on phones that support it. No-op on desktop.
+    document.addEventListener('pointerdown', (e) => {
+      const btn = e.target.closest && e.target.closest('button');
+      if (btn && !btn.disabled && typeof navigator.vibrate === 'function') navigator.vibrate(10);
+    });
+
+    // ====== DELETE SHARED FOLDER (internal common folders only) ======
+    // Uses the Control Panel batch API: POST /api/batch/commit
+    // des entry: ["folder", "delete", [], { folder_name: <internal name> }]
+    const shareDeleteModal = document.getElementById('shareDeleteModal');
+    const shareDeleteInput = document.getElementById('shareDeleteInput');
+    const shareDeleteConfirm = document.getElementById('shareDeleteConfirm');
+    const shareDeleteError = document.getElementById('shareDeleteError');
+    const shareDeleteName = document.getElementById('shareDeleteName');
+    const shareDeletePromptName = document.getElementById('shareDeletePromptName');
+    let shareDeleteTarget = null;
+
+    function openShareDeleteModal(id, display) {
+      shareDeleteTarget = { id, display };
+      shareDeleteName.textContent = display;
+      shareDeletePromptName.textContent = display;
+      shareDeleteInput.value = '';
+      shareDeleteConfirm.disabled = true;
+      shareDeleteError.classList.add('hidden');
+      shareDeleteModal.classList.remove('hidden');
+      shareDeleteInput.focus();
+    }
+
+    function closeShareDeleteModal() {
+      shareDeleteModal.classList.add('hidden');
+      shareDeleteTarget = null;
+    }
+
+    shareDeleteInput.addEventListener('input', () => {
+      shareDeleteConfirm.disabled = !shareDeleteTarget || shareDeleteInput.value !== shareDeleteTarget.display;
+    });
+
+    async function deleteShareFolder(id, display) {
+      const res = await fetch(`${PROXY_URL}/batch/commit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': cookie ? `Bearer ${cookie}` : ''
+        },
+        body: JSON.stringify({ des: [['folder', 'delete', [], { folder_name: id }]], blocking: true })
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json().catch(() => ({}));
+      if (data.result === false) throw new Error(data.error || 'NAS refused the delete');
+      // Item-level result: array of { result, data | error }
+      const item = Array.isArray(data.data) ? data.data[0] : null;
+      if (item && item.result === false) {
+        const err = item.err || {};
+        throw new Error(err.msg || err.id || 'NAS refused the delete');
+      }
+    }
+
+    document.getElementById('shareDeleteCancel').addEventListener('click', closeShareDeleteModal);
+    shareDeleteConfirm.addEventListener('click', async () => {
+      if (!shareDeleteTarget) return;
+      const { id, display } = shareDeleteTarget;
+      shareDeleteConfirm.disabled = true;
+      shareDeleteError.classList.add('hidden');
+      try {
+        await deleteShareFolder(id, display);
+        closeShareDeleteModal();
+        showToast(`Deleted shared folder ${display}`, 4000, 'success');
+        // Leave the deleted folder view, if we are inside it.
+        if (currentPath === '/' + id || currentPath.startsWith('/' + id + '/')) {
+          selectPath('/home');
+        }
+        loadTree().catch(() => {});
+      } catch (e) {
+        shareDeleteError.textContent = 'Delete failed: ' + e.message;
+        shareDeleteError.classList.remove('hidden');
+        shareDeleteConfirm.disabled = false;
+      }
+    });
+
+    // ====== SIDEBAR TOGGLE ======
+    // The panel icon button hides the sidebar and shows it again.
+    // The state is kept in localStorage. This is a display preference, not a secret.
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    function setSidebarCollapsed(collapsed) {
+      document.body.classList.toggle('sidebar-collapsed', collapsed);
+      sidebarToggle.setAttribute('aria-expanded', String(!collapsed));
+      sidebarToggle.setAttribute('data-tooltip', collapsed ? 'Show sidebar' : 'Hide sidebar');
+      sidebarToggle.setAttribute('aria-label', sidebarToggle.getAttribute('data-tooltip'));
+      try {
+        localStorage.setItem('homenas.sidebar.collapsed', collapsed ? '1' : '0');
+      } catch (e) {
+        // localStorage can be unavailable. The toggle still works.
+      }
+    }
+    try {
+      setSidebarCollapsed(localStorage.getItem('homenas.sidebar.collapsed') === '1');
+    } catch (e) {
+      // keep the sidebar visible
+    }
+    sidebarToggle.addEventListener('click', () => {
+      setSidebarCollapsed(!document.body.classList.contains('sidebar-collapsed'));
+    });
 
     // ====== API ======
     async function api(module, method, params = {}) {
@@ -165,32 +248,43 @@
         document.getElementById('userBadge').textContent = DEFAULT_USER + ' (admin)';
         return true;
       } catch (e) {
-        showToast('Login failed: ' + e.message);
+        showToast('Login failed: ' + e.message, 8000, 'error');
         return false;
       }
     }
 
     // ====== FILE SYSTEM (life API) ======
     // /life/v1/folder returns both folders and files with size and date.
-    async function fsList(path) {
-      const query = {
-        root: 'local',
-        path,
-        option: {
-          offset: 0,
-          limit: 500,
-          order: 'name',
-          reverse: false,
-          filter: [{ key: 'subtype', equal: false, value: 'hidden' }]
+    // The NAS can be slow to answer the first request after an idle period,
+    // so retry transient failures with a short wait.
+    async function fsList(path, attempts = 3) {
+      let lastError = null;
+      for (let i = 0; i < attempts; i++) {
+        try {
+          const query = {
+            root: 'local',
+            path,
+            option: {
+              offset: 0,
+              limit: 500,
+              order: 'name',
+              reverse: false,
+              filter: [{ key: 'subtype', equal: false, value: 'hidden' }]
+            }
+          };
+          const res = await fetch(`${PROXY_URL}/life/v1/folder?query=${encodeURIComponent(JSON.stringify(query))}`, {
+            headers: { 'Authorization': cookie ? `Bearer ${cookie}` : '' }
+          });
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          const data = await res.json();
+          if (!data.result) throw new Error(data.error?.msg || data.error || 'Request failed');
+          return data.data.items || [];
+        } catch (e) {
+          lastError = e;
+          if (i < attempts - 1) await new Promise(resolve => setTimeout(resolve, 700));
         }
-      };
-      const res = await fetch(`${PROXY_URL}/life/v1/folder?query=${encodeURIComponent(JSON.stringify(query))}`, {
-        headers: { 'Authorization': cookie ? `Bearer ${cookie}` : '' }
-      });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const data = await res.json();
-      if (!data.result) throw new Error(data.error?.msg || data.error || 'Request failed');
-      return data.data.items || [];
+      }
+      throw lastError;
     }
 
     // SMB exposes shares by display name, so match Finder.
@@ -215,13 +309,61 @@
       return itemLabel(a).localeCompare(itemLabel(b), undefined, { sensitivity: 'base' });
     }
 
+    // Group collapse state. Display preference only (localStorage).
+    let collapsedGroups = {};
+    try { collapsedGroups = JSON.parse(localStorage.getItem('homenas.collapsedGroups') || '{}') || {}; } catch (e) { collapsedGroups = {}; }
+    // Migrate the old Shared folders hide flag.
+    try {
+      if (localStorage.getItem('homenas.hideSharedFolders') === '1') {
+        collapsedGroups['Shared folders'] = true;
+        localStorage.setItem('homenas.collapsedGroups', JSON.stringify(collapsedGroups));
+        localStorage.removeItem('homenas.hideSharedFolders');
+      }
+    } catch (e) { /* keep defaults */ }
+
+    function isGroupCollapsed(label) { return collapsedGroups[label] === true; }
+
+    function toggleGroup(label) {
+      collapsedGroups[label] = !isGroupCollapsed(label);
+      try { localStorage.setItem('homenas.collapsedGroups', JSON.stringify(collapsedGroups)); } catch (e) { /* ignore */ }
+      loadTree().catch(() => {});
+    }
+
+    const GROUP_HEADER_CLASS = 'group flex w-full items-center gap-1.5 rounded-md px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600';
+
     function addTreeGroup(label, items) {
-      if (!items.length) return;
+      // The Shared folders panel is always shown, even when empty.
+      if (!items.length && label !== 'Shared folders') return;
       const header = document.createElement('li');
-      header.className = 'tree-group';
-      header.textContent = label;
+      header.className = 'mt-3 mb-1 first:mt-1';
+      if (items.length === 0) {
+        const heading = document.createElement('div');
+        heading.className = 'px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-neutral-400';
+        heading.textContent = label;
+        header.appendChild(heading);
+        folderTree.appendChild(header);
+        const empty = document.createElement('li');
+        empty.className = 'my-0.5';
+        empty.innerHTML = `<button class="${TREE_BUTTON_CLASS}" disabled>No shared folders</button>`;
+        folderTree.appendChild(empty);
+        return;
+      }
+      const collapsed = isGroupCollapsed(label);
+      const toggle = document.createElement('button');
+      toggle.className = GROUP_HEADER_CLASS;
+      toggle.setAttribute('aria-expanded', String(!collapsed));
+      toggle.setAttribute('data-tooltip', collapsed ? `Show ${label}` : `Hide ${label}`);
+      toggle.setAttribute('aria-label', `${collapsed ? 'Show' : 'Hide'} ${label}`);
+      toggle.innerHTML = `
+        <span class="tree-caret inline-block w-2.5 shrink-0 text-[9px] text-neutral-400 transition-transform duration-150 group-aria-[expanded=true]:rotate-90">▸</span>
+        <span>${escapeHtml(label)}</span>
+        <span class="ml-auto rounded-full bg-neutral-100 px-1.5 py-0.5 text-[9px] font-semibold normal-case tracking-normal text-neutral-500">${items.length}</span>
+      `;
+      toggle.addEventListener('click', () => toggleGroup(label));
+      header.appendChild(toggle);
       folderTree.appendChild(header);
-      items.sort(byLabel).forEach(item => addTreeNode(itemLabel(item), item.path, folderTree));
+      if (collapsed) return; // group collapsed
+      items.sort(byLabel).forEach(item => addTreeNode(itemLabel(item), item.path, folderTree, shareType(item), item.name));
     }
 
     // ====== TREE (share folders) ======
@@ -238,43 +380,55 @@
       });
 
       addTreeGroup('Other', folders.filter(item => !grouped.has(item)));
+      // Keep the highlight on the folder that is open.
+      folderTree.querySelectorAll('button[data-path]').forEach(b => { b.dataset.active = String(b.dataset.path === currentPath); });
     }
 
-    function addTreeNode(name, path, container) {
+    // Saffron-colored folder icons, so shares stand out from the white sidebar.
+    const TREE_BUTTON_CLASS = 'group flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-left text-[13px] font-medium text-neutral-700 transition hover:bg-neutral-200 active:scale-[.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 data-[active=true]:bg-blue-600 data-[active=true]:text-white [&[data-active=true]_.tree-caret]:text-blue-200 disabled:cursor-default disabled:text-neutral-400 disabled:hover:bg-transparent';
+
+    function addTreeNode(name, path, container, type, id) {
       const li = document.createElement('li');
-      li.className = 'folder';
+      li.className = 'my-0.5';
+      // Delete belongs to top-level internal shares only (their own row, not subfolders).
+      const canDeleteShare = type === 'internal' && container === folderTree && id;
+      const trashSvg = '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
       li.innerHTML = `
-        <button data-path="${escapeHtml(path)}" aria-expanded="false">
-          <span class="caret">▸</span>
-          <span class="icon">${svgFolder()}</span>
-          ${escapeHtml(name)}
-        </button>
-        <ul class="children"></ul>
+        <div class="flex items-center gap-0.5">
+          <button data-path="${escapeHtml(path)}" data-active="false" aria-expanded="false" class="${TREE_BUTTON_CLASS} min-w-0 flex-1">
+            <span class="tree-caret inline-block w-2.5 shrink-0 text-[10px] text-neutral-400 transition-transform duration-150 group-aria-[expanded=true]:rotate-90">▸</span>
+            <span class="shrink-0">${svgTreeIcon(type)}</span>
+            ${escapeHtml(name)}
+          </button>
+          ${canDeleteShare ? `<button class="tree-delete-share icon-btn shrink-0 p-1.5 text-neutral-400 hover:bg-red-50 hover:text-red-600" data-tooltip="Delete shared folder ${escapeHtml(name)}" aria-label="Delete shared folder ${escapeHtml(name)}" data-id="${escapeHtml(id)}" data-display="${escapeHtml(name)}">${trashSvg}</button>` : ''}
+        </div>
+        <ul class="ml-4 hidden border-l border-neutral-100 pl-2"></ul>
       `;
       const btn = li.querySelector('button');
-      const childrenUl = li.querySelector('.children');
+      const childrenUl = li.querySelector('ul');
       let loaded = false;
 
       btn.addEventListener('click', async () => {
-        const isOpen = li.classList.toggle('open');
+        const isOpen = btn.getAttribute('aria-expanded') !== 'true';
         btn.setAttribute('aria-expanded', String(isOpen));
+        childrenUl.classList.toggle('hidden', !isOpen);
         selectPath(path);
 
         if (!isOpen || loaded) return;
         loaded = true;
-        childrenUl.innerHTML = '<li><button disabled>Loading…</button></li>';
+        childrenUl.innerHTML = `<li class="my-0.5"><button class="${TREE_BUTTON_CLASS}" disabled>Loading…</button></li>`;
         try {
           const items = await fsList(path);
           const names = items.filter(item => item.type === 'folder' && !item.name.startsWith('.'));
           childrenUl.innerHTML = '';
           if (!names.length) {
-            childrenUl.innerHTML = '<li><button disabled>No subfolders</button></li>';
+            childrenUl.innerHTML = `<li class="my-0.5"><button class="${TREE_BUTTON_CLASS}" disabled>No subfolders</button></li>`;
             return;
           }
-          names.forEach(item => addTreeNode(itemLabel(item), item.path || `${path}/${item.name}`, childrenUl));
+          names.forEach(item => addTreeNode(itemLabel(item), item.path || `${path}/${item.name}`, childrenUl, shareType(item)));
         } catch (e) {
           loaded = false; // allow a retry on the next click
-          childrenUl.innerHTML = '<li><button disabled>Error</button></li>';
+          childrenUl.innerHTML = `<li class="my-0.5"><button class="${TREE_BUTTON_CLASS}" disabled>Error</button></li>`;
         }
       });
       container.appendChild(li);
@@ -286,19 +440,27 @@
       updateBreadcrumb(path);
       selection.clear();
       selectAll.checked = false;
-      fileList.innerHTML = '<tr><td colspan="6" class="empty">Loading…</td></tr>';
+      selectAll.disabled = true;
+      fileList.innerHTML = '<tr><td colspan="6" class="px-6 py-16 text-center text-sm text-neutral-400"><span class="animate-pulse">Loading…</span></td></tr>';
       try {
         const items = await fsList(path);
         renderFiles(items, path);
       } catch (e) {
-        fileList.innerHTML = '<tr><td colspan="6" class="empty">Error: ' + escapeHtml(e.message) + '</td></tr>';
+        fileList.innerHTML = '<tr><td colspan="6" class="px-6 py-16 text-center text-sm text-red-600">Error: ' + escapeHtml(e.message) + '</td></tr>';
       }
     }
 
     function renderFiles(items, path) {
       const visible = items.filter(item => !item.name.startsWith('.'));
+      selectAll.disabled = !visible.length;
       if (!visible.length) {
-        fileList.innerHTML = '<tr><td colspan="6" class="empty">Empty folder</td></tr>';
+        fileList.innerHTML = `<tr>
+          <td colspan="6" class="px-6 py-16 text-center">
+            <svg class="mx-auto mb-3 h-10 w-10 text-neutral-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            <p class="text-sm font-medium text-neutral-500">This folder is empty</p>
+            <p class="mt-1 text-xs text-neutral-400">Upload a file or create a folder to get started.</p>
+          </td>
+        </tr>`;
         return;
       }
       fileList.innerHTML = visible.map(item => {
@@ -309,20 +471,28 @@
         const canModify = path !== '/';
         const pending = pendingDeletes.has(fullPath);
         return `
-        <tr${pending ? ' class="deleting"' : ''} data-name="${escapeHtml(label)}" data-path="${escapeHtml(fullPath)}" data-type="${isFolder ? 'folder' : 'file'}">
-          <td><input type="checkbox" class="row-check" value="${escapeHtml(fullPath)}"${pending ? ' disabled' : ''}></td>
-          <td class="name"${realName}>
-            <span class="icon">${isFolder ? svgFolder() : svgFile(item.name)}</span>
-            ${escapeHtml(label)}
+        <tr data-selected="false" data-deleting="${pending}" data-name="${escapeHtml(label)}" data-path="${escapeHtml(fullPath)}" data-type="${isFolder ? 'folder' : 'file'}" class="transition-colors odd:bg-white even:bg-neutral-50/60 hover:bg-blue-50 data-[selected=true]:bg-blue-50 data-[deleting=true]:opacity-45 data-[deleting=true]:[&_td]:pointer-events-none">
+          <td class="border-b border-neutral-100 px-3 py-2.5"><input type="checkbox" class="row-check h-4 w-4 accent-blue-600" value="${escapeHtml(fullPath)}"${pending ? ' disabled' : ''} aria-label="Select ${escapeHtml(label)}"></td>
+          <td class="border-b border-neutral-100 px-3 py-2.5"${realName}>
+            <span class="flex items-center gap-2 font-medium text-neutral-800">
+              <span class="shrink-0">${isFolder ? svgFolder() : svgFile(item.name)}</span>
+              ${escapeHtml(label)}
+            </span>
           </td>
-          <td>${isFolder ? '—' : formatSize(item.size)}</td>
-          <td>${formatDate(item.access_date)}</td>
-          <td class="type">${pending ? 'Deleting…' : isFolder ? 'Folder' : fileType(item.name)}</td>
-          <td class="actions">
+          <td class="border-b border-neutral-100 px-3 py-2.5 text-right tabular-nums text-neutral-600">${isFolder ? '—' : formatSize(item.size)}</td>
+          <td class="border-b border-neutral-100 px-3 py-2.5 text-neutral-600">${formatDate(item.access_date)}</td>
+          <td class="type border-b border-neutral-100 px-3 py-2.5 text-neutral-600">${pending ? 'Deleting…' : isFolder ? 'Folder' : fileType(item.name)}</td>
+          <td class="border-b border-neutral-100 px-3 py-2.5">
             ${canModify ? `
-              <button class="btn" onclick="renameItem('${escapeHtml(fullPath)}', '${escapeHtml(label)}')"${pending ? ' disabled' : ''}>Rename</button>
-              <button class="btn" onclick="deleteItem('${escapeHtml(fullPath)}')"${pending ? ' disabled' : ''}>Delete</button>
-            ` : '—'}
+              <span class="flex gap-1.5">
+                <button class="btn-icon" onclick="renameItem('${escapeHtml(fullPath)}', '${escapeHtml(label)}')" data-tooltip="Rename" aria-label="Rename ${escapeHtml(label)}"${pending ? ' disabled' : ''}>
+                  <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.85 2.85 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                </button>
+                <button class="btn-icon btn-icon-danger" onclick="deleteItem('${escapeHtml(fullPath)}')" data-tooltip="Delete" aria-label="Delete ${escapeHtml(label)}"${pending ? ' disabled' : ''}>
+                  <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
+              </span>
+            ` : '<span class="text-neutral-300">—</span>'}
           </td>
         </tr>
       `;
@@ -349,7 +519,7 @@
       selectAll.checked = selection.size > 0 && selection.size === fileList.querySelectorAll('.row-check').length;
       document.getElementById('deleteSelectedBtn').disabled = selection.size === 0;
       fileList.querySelectorAll('tr').forEach(row => {
-        row.classList.toggle('selected', selection.has(row.dataset.path));
+        row.dataset.selected = String(selection.has(row.dataset.path));
       });
     }
 
@@ -368,17 +538,31 @@
         crumbs.push({ label: part, path: acc });
       });
       breadcrumb.innerHTML = crumbs.map((c, i) =>
-        `${i ? '<span class="sep">/</span>' : ''}<a data-path="${escapeHtml(c.path)}">${escapeHtml(c.label)}</a>`
+        `${i ? '<span class="text-neutral-300" aria-hidden="true">›</span>' : ''}<a class="rounded px-0.5 text-blue-600 hover:text-blue-800 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600" href="#" data-path="${escapeHtml(c.path)}">${escapeHtml(c.label)}</a>`
       ).join('');
       breadcrumb.querySelectorAll('a').forEach(a =>
-        a.addEventListener('click', () => selectPath(a.dataset.path)));
+        a.addEventListener('click', (e) => { e.preventDefault(); selectPath(a.dataset.path); }));
     }
 
     // ====== ACTIONS ======
+    // Delegated handler for the sidebar delete-share buttons.
+    folderTree.addEventListener('click', (e) => {
+      const btn = e.target.closest('.tree-delete-share');
+      if (!btn) return;
+      e.preventDefault();
+      e.stopPropagation();
+      openShareDeleteModal(btn.dataset.id, btn.dataset.display);
+    });
+
     function selectPath(path) {
-      folderTree.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.path === path));
+      folderTree.querySelectorAll('button[data-path]').forEach(b => { b.dataset.active = String(b.dataset.path === path); });
       loadFiles(path);
     }
+
+    document.getElementById('refreshBtn').addEventListener('click', () => {
+      loadFiles(currentPath);
+      loadTree().catch(() => {});
+    });
 
     // ====== CREATE / RENAME ======
     function validName(name) {
@@ -437,7 +621,6 @@
       } catch (e) {
         // keep the current tree if it cannot reload
       }
-      folderTree.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.path === currentPath));
       // The NAS may apply the change just after the response.
       setTimeout(() => {
         if (currentPath === path) loadFiles(path);
@@ -446,23 +629,23 @@
 
     window.renameItem = (path, name) => {
       if (currentPath === '/') {
-        showToast('Open a share or folder first.', 6000);
+        showToast('Open a share or folder first.', 6000, 'error');
         return;
       }
       openModal('Rename', name, async (newName) => {
         if (!validName(newName)) {
-          showToast('Invalid name. Do not use "/" or dots only.');
+          showToast('Invalid name. Do not use "/" or dots only.', 5000, 'error');
           return;
         }
         try {
           showToast('Renaming…');
           await renamePath(path, newName);
           await refreshViews(currentPath);
-          showToast(`Renamed to ${newName}`);
+          showToast(`Renamed to ${newName}`, 3000, 'success');
         } catch (e) {
-          showToast('Rename failed: ' + e.message, 8000);
+          showToast('Rename failed: ' + e.message, 8000, 'error');
         }
-      });
+      }, 'Rename');
     };
 
     // ====== DELETE ======
@@ -486,7 +669,7 @@
     function markDeleting(paths) {
       fileList.querySelectorAll('tr').forEach(row => {
         if (!paths.includes(row.dataset.path)) return;
-        row.classList.add('deleting');
+        row.dataset.deleting = 'true';
         const typeCell = row.querySelector('.type');
         if (typeCell) typeCell.textContent = 'Deleting…';
         const check = row.querySelector('.row-check');
@@ -518,10 +701,8 @@
         .some(row => paths.includes(row.dataset.path) && row.dataset.type === 'folder');
 
       paths.forEach(p => pendingDeletes.add(p));
-      markDeleting(paths);
-      selection.clear();
+      markDeleting(paths);      selection.clear();
       document.getElementById('deleteSelectedBtn').disabled = true;
-
       try {
         await deletePaths(paths);
       } catch (e) {
@@ -536,14 +717,13 @@
       if (currentPath === path) await loadFiles(path);
       if (hadFolder) {
         loadTree().catch(() => {});
-        folderTree.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.path === currentPath));
       }
       return gone;
     }
 
     window.deleteItem = async (path) => {
       if (currentPath === '/') {
-        showToast('Open a share or folder first.', 6000);
+        showToast('Open a share or folder first.', 6000, 'error');
         return;
       }
       const name = path.split('/').pop();
@@ -551,9 +731,9 @@
       try {
         showToast('Deleting ' + name + '…', 60000);
         const gone = await deleteAndRefresh([path]);
-        showToast(gone ? `Deleted ${name}` : `Delete of ${name} is still running on the NAS.`, gone ? 3000 : 8000);
+        showToast(gone ? `Deleted ${name}` : `Delete of ${name} is still running on the NAS.`, gone ? 3000 : 8000, gone ? 'success' : 'info');
       } catch (e) {
-        showToast('Delete failed: ' + e.message, 8000);
+        showToast('Delete failed: ' + e.message, 8000, 'error');
       }
     };
 
@@ -563,14 +743,15 @@
       try {
         showToast('Deleting ' + paths.length + ' item(s)…', 60000);
         const gone = await deleteAndRefresh(paths);
-        showToast(gone ? `Deleted ${paths.length} item(s)` : `Delete is still running on the NAS.`, gone ? 3000 : 8000);
+        showToast(gone ? `Deleted ${paths.length} item(s)` : `Delete is still running on the NAS.`, gone ? 3000 : 8000, gone ? 'success' : 'info');
       } catch (e) {
-        showToast('Delete failed: ' + e.message, 8000);
+        showToast('Delete failed: ' + e.message, 8000, 'error');
       }
     });
 
     // ====== UPLOAD ======
     const uploadBtn = document.getElementById('uploadBtn');
+    const uploadStatus = document.getElementById('uploadStatus');
 
     async function uploadOne(file, path) {
       const form = new FormData();
@@ -596,14 +777,14 @@
 
     async function uploadFiles(files) {
       if (currentPath === '/') {
-        showToast('Open a share or folder before uploading.', 6000);
+        showToast('Open a share or folder before uploading.', 6000, 'error');
         return 0;
       }
       const targetPath = currentPath;
       const failed = [];
       let done = 0;
       for (let i = 0; i < files.length; i++) {
-        uploadBtn.textContent = `Uploading ${i + 1}/${files.length}…`;
+        uploadStatus.textContent = `${i + 1} of ${files.length}…`;
         try {
           await uploadOne(files[i], targetPath);
           done++;
@@ -618,11 +799,11 @@
       }, 1200);
 
       if (failed.length && done) {
-        showToast(`Uploaded ${done} of ${files.length} to ${targetPath}. Failed: ${failed[0]}`, 8000);
+        showToast(`Uploaded ${done} of ${files.length} to ${targetPath}. Failed: ${failed[0]}`, 8000, 'error');
       } else if (failed.length) {
-        showToast(`Upload failed: ${failed[0]}`, 8000);
+        showToast(`Upload failed: ${failed[0]}`, 8000, 'error');
       } else {
-        showToast(`Uploaded ${done} file(s) to ${targetPath}`);
+        showToast(`Uploaded ${done} file(s) to ${targetPath}`, 3000, 'success');
       }
       return done;
     }
@@ -637,41 +818,47 @@
         await uploadFiles(files);
       } finally {
         uploadBtn.disabled = false;
-        uploadBtn.textContent = 'Upload';
+        uploadStatus.textContent = '';
       }
     });
 
     // ====== NEW FOLDER ======
     document.getElementById('newFolderBtn').addEventListener('click', () => {
       if (currentPath === '/') {
-        showToast('Open a share or folder first.', 6000);
+        showToast('Open a share or folder first.', 6000, 'error');
         return;
       }
       openModal('New Folder', '', async (name) => {
         if (!validName(name)) {
-          showToast('Invalid name. Do not use "/" or dots only.');
+          showToast('Invalid name. Do not use "/" or dots only.', 5000, 'error');
           return;
         }
         try {
           showToast('Creating ' + name + '…');
           await createFolder(currentPath, name);
           await refreshViews(currentPath);
-          showToast(`Created ${name}`);
+          showToast(`Created ${name}`, 3000, 'success');
         } catch (e) {
-          showToast('Create failed: ' + e.message, 8000);
+          showToast('Create failed: ' + e.message, 8000, 'error');
         }
-      });
+      }, 'Create');
     });
 
     // ====== MODAL ======
-    function openModal(title, value, onConfirm) {
+    function openModal(title, value, onConfirm, confirmLabel = 'OK') {
       modalTitle.textContent = title;
       modalInput.value = value;
+      document.getElementById('modalConfirm').textContent = confirmLabel;
       modal.classList.remove('hidden');
       modalInput.focus();
       modalResolve = onConfirm;
     }
     document.getElementById('modalCancel').addEventListener('click', () => { modal.classList.add('hidden'); modalResolve = null; });
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      if (!shareDeleteModal.classList.contains('hidden')) { closeShareDeleteModal(); return; }
+      if (!modal.classList.contains('hidden')) { modal.classList.add('hidden'); modalResolve = null; }
+    });
     document.getElementById('modalConfirm').addEventListener('click', async () => {
       const val = modalInput.value.trim();
       if (!val) return;
@@ -681,8 +868,16 @@
     });
 
     // ====== TOAST ======
-    function showToast(msg, ms = 3000) {
+    const TOAST_VARIANTS = {
+      info: 'bg-neutral-900',
+      success: 'bg-emerald-600',
+      error: 'bg-red-600'
+    };
+
+    function showToast(msg, ms = 3000, type = 'info') {
       toast.textContent = msg;
+      Object.values(TOAST_VARIANTS).forEach(cls => toast.classList.remove(cls));
+      toast.classList.add(TOAST_VARIANTS[type] || TOAST_VARIANTS.info);
       toast.classList.remove('hidden');
       clearTimeout(showToast.timer);
       showToast.timer = setTimeout(() => toast.classList.add('hidden'), ms);
@@ -716,16 +911,23 @@
       const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
       return String(s).replace(/[&<>"']/g, c => map[c]);
     }
-    function svgFolder() { return '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>'; }
+    function svgFolder() { return '<svg class="h-[18px] w-[18px] shrink-0 text-amber-500" viewBox="0 0 24 24" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>'; }
+    function svgTreeIcon(type) {
+      if (type === 'home' || type === 'vphome') return '<svg class="h-[18px] w-[18px] shrink-0 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>';
+      if (type === 'homes') return '<svg class="h-[18px] w-[18px] shrink-0 text-violet-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
+      return svgFolder();
+    }
     function svgFile(name) {
       const ext = name.split('.').pop().toLowerCase();
       const img = ['jpg','jpeg','png','gif','webp','svg'].includes(ext);
       const vid = ['mp4','webm','mov','mkv'].includes(ext);
       const pdf = ext === 'pdf';
-      if (img) return '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M4 14h16M4 10h16"/></svg>';
-      if (vid) return '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="2" y="3" width="20" height="14" rx="2"/></svg>';
-      if (pdf) return '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
-      return '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+      const fileIcon = (cls, inner) => `<svg class="h-[18px] w-[18px] shrink-0 ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
+      const page = '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>';
+      if (img) return fileIcon('text-emerald-600', '<rect x="2" y="3" width="20" height="14" rx="2"/><circle cx="7.5" cy="7.5" r="1"/><path d="M21 14l-5-5L5 17"/>');
+      if (vid) return fileIcon('text-violet-500', '<polygon points="23 7 16 12 23 17 23 7"/><rect x="2" y="3" width="20" height="14" rx="2"/>');
+      if (pdf) return fileIcon('text-red-500', page);
+      return fileIcon('text-neutral-400', page);
     }
 
     // ====== INIT ======
@@ -735,7 +937,7 @@
       try {
         await loadTree();
       } catch (e) {
-        showToast('Could not load folders: ' + e.message);
+        showToast('Could not load folders: ' + e.message, 8000, 'error');
       }
       loadFiles('/home');
     })();
