@@ -104,9 +104,9 @@ Legend: ⬜ Planned | 🚧 In Progress | 🔮 Future | ✅ Done
 ### 5.2 Phase 2 — Admin and Maintenance
 
 #### 5.2.1 Recycle Bin Browser
-- Browse deleted items by share
-- Restore individual files or folders
-- Purge selected items permanently
+- ✅ Browse deleted items by share (verified in the UI 2026-11-12)
+- ✅ Restore individual files or folders (restore round-trip verified live)
+- ✅ Purge selected items permanently (per item and Empty bin with typed confirmation)
 
 ### 5.3 Phase 3 — Quality of Life
 
@@ -128,10 +128,10 @@ Legend: ⬜ Planned | 🚧 In Progress | 🔮 Future | ✅ Done
 - App keeps working after brief disconnects while uploading
 
 #### 5.3.5 Photo Preview
-- Image preview modal for JPEG, PNG, WebP, GIF
-- “Preview” button appears for supported image types
-- Previews operate through the storage-share paths (not copied to your browser)
-- Deferred: a thumbnail service produces small JPEG previews on demand
+- 🚧 Preview modal (built 2026-11-12, unverified in the UI): image preview for JPEG, PNG, WebP, GIF; text preview for code/config/log files (whole file, first 512 KB with notice); PDF preview via the browser’s native viewer; CSV/TSV as a table (first 200 rows, first 60 columns, first row shown as header)
+- “Preview” via the file-type icon (icon-as-trigger), not a separate button
+- Previews operate through the storage-share paths (in-memory only, never written to disk)
+- Deferred: a thumbnail service produces small JPEG previews on demand; video preview stays deferred (5.3.6)
 
 #### 5.3.6 Video Preview — Deferred, not deleted
 - Video preview modal for MP4, WebM playback
@@ -201,9 +201,9 @@ Access retained from phones and laptops on the home private network. Goals: HTTP
 - **Issue**: Login as chewfamily works at the NAS level, but the app is untested with that account. Admin-only actions fail with NAS error toasts — expected.
 - **Status**: ⏸ Known limitation — resolve with a chewfamily test session
 
-### App deletes are permanent
-- **Issue**: Deleting from HomeNAS uses the NAS HTTP API and **bypasses the recycle bin**. SMB/Finder deletes go to `@SmbRecyclebin` (mirrored folder tree); app deletes do not.
-- **Status**: ⏸ Known limitation — Phase 2 adds a Recycle Bin browser; a "move to bin" delete path could come after
+### App deletes go to the recycle bin
+- **Issue**: Deleting from HomeNAS used the NAS delete API (`folderex action=delete`), which was permanent and bypassed the bin. Now deletes in the UI **move the item(s) into the share's `@SmbRecyclebin`** (original folder tree mirrored) instead of deleting — same layout as SMB deletes. Collision → automatic timestamp rename. Share with no bin → asks per session: create bin / delete permanently / cancel. Empty mirror shells persist in the bin (same as SMB). `result:true` is not trusted — the source folder is re-listed to confirm the move.
+- **Status**: ✅ Fixed 2026-11-12 — Purge/Empty bin in the Recycle Bin browser remain the permanent paths
 
 ---
 

@@ -8,9 +8,9 @@
   <!-- Tailwind. Rebuild with: npm run build:css -->
   <link rel="stylesheet" href="tailwind.css">
 </head>
-<body class="flex h-screen flex-col bg-neutral-100 text-sm text-neutral-900">
+<body class="app-bg flex h-screen flex-col text-sm text-neutral-900">
   <!-- Login view. Shown when signed out; the app shell stays hidden until then. -->
-  <div class="hidden flex h-screen items-center justify-center bg-neutral-100 p-4" id="loginView">
+  <div class="app-bg hidden h-screen items-center justify-center p-4" id="loginView">
     <form class="w-full max-w-sm rounded-2xl border border-neutral-200 bg-white p-6 shadow-xl" id="loginForm">
       <div class="mb-6 flex items-center gap-3">
         <svg class="h-9 w-9 shrink-0 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6.5" y1="12" x2="6.5" y2="12.01"/><line x1="11" y1="12" x2="11.01" y2="12"/><line x1="15.5" y1="12" x2="15.5" y2="12.01"/></svg>
@@ -80,12 +80,12 @@
         <table class="w-full border-collapse" id="fileTable">
           <thead>
             <tr>
-              <th class="w-10 border-b border-neutral-200 bg-neutral-50 px-3 py-2.5 text-left"><input type="checkbox" id="selectAll" class="h-4 w-4 accent-blue-600" data-tooltip="Select all" aria-label="Select all"></th>
-              <th class="border-b border-neutral-200 bg-neutral-50 px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Name</th>
-              <th class="w-28 border-b border-neutral-200 bg-neutral-50 px-3 py-2.5 text-right text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Size</th>
-              <th class="w-44 border-b border-neutral-200 bg-neutral-50 px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Modified</th>
-              <th class="w-24 border-b border-neutral-200 bg-neutral-50 px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Type</th>
-              <th class="w-44 border-b border-neutral-200 bg-neutral-50 px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Actions</th>
+              <th class="w-10 border-b border-neutral-200 bg-neutral-50 px-3 py-2 text-left"><input type="checkbox" id="selectAll" class="h-4 w-4 accent-blue-600" data-tooltip="Select all" aria-label="Select all"></th>
+              <th class="border-b border-neutral-200 bg-neutral-50 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Name</th>
+              <th class="w-28 border-b border-neutral-200 bg-neutral-50 px-3 py-2 text-right text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Size</th>
+              <th class="w-44 border-b border-neutral-200 bg-neutral-50 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Modified</th>
+              <th class="w-24 border-b border-neutral-200 bg-neutral-50 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Type</th>
+              <th class="w-44 border-b border-neutral-200 bg-neutral-50 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Actions</th>
             </tr>
           </thead>
           <tbody id="fileList"></tbody>
@@ -105,6 +105,29 @@
     </div>
   </div>
   <div class="toast hidden" id="toast" role="status"></div>
+  <div class="fixed inset-0 z-50 flex hidden items-center justify-center bg-black/50 p-4 backdrop-blur-[2px]" id="transferModal" role="dialog" aria-modal="true" aria-labelledby="transferTitleText">
+    <div class="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5">
+      <div class="flex items-center gap-4 border-b border-neutral-100 px-6 py-4">
+        <span id="transferTitleIcon" class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-white"></span>
+        <div class="min-w-0 flex-1">
+          <p class="text-base font-semibold leading-snug text-neutral-900" id="transferTitleText">Transfers in progress</p>
+          <p class="mt-0.5 text-xs leading-snug text-neutral-500" id="transferSubtitle">Please keep this tab open.</p>
+        </div>
+      </div>
+      <div class="hidden border-b border-neutral-100 bg-neutral-50 px-6 py-3" id="transferAggregate">
+        <div class="flex items-baseline justify-between gap-3">
+          <p class="text-[11px] font-medium uppercase tracking-wider text-neutral-500">Overall</p>
+          <p class="text-xs tabular-nums text-neutral-600" id="transferAggregateMeta"></p>
+        </div>
+        <div class="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-neutral-200"><div class="h-full rounded-full bg-blue-600 transition-[width] duration-200" id="transferAggregateBar" style="width:0%"></div></div>
+      </div>
+      <ul class="max-h-96 divide-y divide-neutral-100 overflow-y-auto" id="transferList"></ul>
+      <div class="flex items-center justify-end gap-4 border-t border-neutral-100 px-6 py-4">
+        <p class="mr-auto text-xs leading-relaxed text-neutral-500" id="transferFooterNote">Closing or reloading this tab stops the transfers.</p>
+        <button class="btn btn-primary hidden shrink-0" id="transferCloseBtn">Close</button>
+      </div>
+    </div>
+  </div>
   <div id="tooltip" role="tooltip" hidden></div>
 
   <div class="fixed inset-0 z-50 flex hidden items-center justify-center bg-black/40 p-4 backdrop-blur-[2px]" id="changePasswordModal" role="dialog" aria-modal="true" aria-labelledby="changePasswordTitle">
@@ -156,6 +179,18 @@
     </div>
   </div>
 
+  <div class="fixed inset-0 z-50 flex hidden items-center justify-center bg-black/40 p-4 backdrop-blur-[2px]" id="binChoiceModal" role="dialog" aria-modal="true" aria-labelledby="binChoiceTitle">
+    <div class="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl ring-1 ring-black/5">
+      <h3 class="mb-2 text-base font-semibold text-neutral-800" id="binChoiceTitle">Create a recycle bin for this share?</h3>
+      <p class="text-sm leading-relaxed text-neutral-600"><span id="binChoiceShare" class="font-semibold text-neutral-800"></span> has no recycle bin yet. Where should the deleted item(s) go?</p>
+      <div class="mt-4 flex flex-col gap-2">
+        <button class="btn btn-primary justify-center" id="binChoiceCreate">Create bin, then delete</button>
+        <button class="btn justify-center" id="binChoicePermanent">Delete permanently</button>
+        <button class="btn justify-center" id="binChoiceCancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <div class="fixed inset-0 z-50 flex hidden items-center justify-center bg-black/40 p-4 backdrop-blur-[2px]" id="purgeConfirmModal" role="dialog" aria-modal="true" aria-labelledby="purgeConfirmTitle">
     <div class="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl ring-1 ring-black/5">
       <h3 class="mb-2 text-base font-semibold text-neutral-800" id="purgeConfirmTitle">Delete permanently?</h3>
@@ -176,6 +211,26 @@
       <div class="mt-4 flex justify-end gap-2">
         <button class="btn" id="emptyBinCancel">Cancel</button>
         <button class="btn btn-danger-solid" id="emptyBinOk" disabled>Empty bin</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="fixed inset-0 z-50 flex hidden items-center justify-center bg-neutral-950/85 p-4" id="imagePreviewModal" role="dialog" aria-modal="true" aria-labelledby="imagePreviewName">
+    <div class="flex h-full max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-xl bg-neutral-900 shadow-2xl ring-1 ring-white/10">
+      <div class="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-4 py-2.5">
+        <p class="min-w-0 truncate text-sm font-medium text-neutral-100" id="imagePreviewName"></p>
+        <div class="flex shrink-0 items-center gap-3">
+          <span class="hidden rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-medium text-amber-300 ring-1 ring-inset ring-amber-500/30" id="previewTruncation"></span>
+          <span class="text-[11px] tabular-nums text-neutral-400" id="imagePreviewMeta"></span>
+          <button class="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-300 transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400" id="imagePreviewCloseBtn" aria-label="Close preview" data-tooltip="Close" data-tooltip-pos="bottom"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </div>
+      </div>
+      <div class="flex min-h-0 flex-1 items-center justify-center p-4">
+        <p class="text-sm text-neutral-400" id="imagePreviewStatus">Loading…</p>
+        <img class="hidden max-h-full max-w-full rounded object-contain" id="imagePreviewImg" alt="">
+        <pre class="hidden h-full w-full self-stretch overflow-auto whitespace-pre-wrap break-all rounded border border-neutral-200 bg-white p-3 font-mono text-[12px] leading-5 text-neutral-800" id="textPreviewView"></pre>
+        <div class="hidden h-full w-full self-stretch overflow-auto rounded border border-neutral-200 bg-white p-3" id="csvPreviewView"></div>
+        <iframe class="hidden h-full w-full self-stretch rounded bg-white" id="pdfPreviewFrame" title="PDF preview"></iframe>
       </div>
     </div>
   </div>
@@ -256,7 +311,7 @@
       const header = document.querySelector('header');
       const ceiling = header ? header.getBoundingClientRect().bottom : 0;
       const below = el.getAttribute('data-tooltip-pos') === 'bottom';
-      let top = below ? rect.bottom + 8 : rect.top - tip.height - 8;
+      let top = below ? rect.bottom + 12 : rect.top - tip.height - 12;
       if (!below && top < ceiling + 4) top = rect.bottom + 8;   // no room above: flip down
       if (below && top + tip.height > window.innerHeight - 8) top = rect.top - tip.height - 8;
       let left = rect.left + rect.width / 2 - tip.width / 2;
@@ -443,7 +498,8 @@
 
     function showLogin(msg) {
       document.querySelectorAll('.app-shell').forEach(el => el.classList.add('hidden'));
-      [healthModal, changePasswordModal, shareDeleteModal, modal, recycleModal, purgeConfirmModal, emptyBinModal].forEach(el => el && el.classList.add('hidden'));
+      [healthModal, changePasswordModal, shareDeleteModal, modal, recycleModal, purgeConfirmModal, emptyBinModal, imagePreviewModal, transferModal, binChoiceModal].forEach(el => el && el.classList.add('hidden'));
+      closePreview(); // hides too, and revokes the blob URL
       toast.classList.add('hidden');
       loginView.classList.remove('hidden');
       loginError.textContent = msg || '';
@@ -657,7 +713,7 @@
         childrenUl.innerHTML = `<li class="my-0.5"><button class="${TREE_BUTTON_CLASS}" disabled>Loading…</button></li>`;
         try {
           const items = await fsList(path);
-          const names = items.filter(item => item.type === 'folder' && !item.name.startsWith('.'));
+          const names = items.filter(item => item.type === 'folder' && !item.name.startsWith('.') && item.name !== '@SmbRecyclebin');
           childrenUl.innerHTML = '';
           if (!names.length) {
             childrenUl.innerHTML = `<li class="my-0.5"><button class="${TREE_BUTTON_CLASS}" disabled>No subfolders</button></li>`;
@@ -689,7 +745,7 @@
     }
 
     function renderFiles(items, path) {
-      const visible = items.filter(item => !item.name.startsWith('.'));
+      const visible = items.filter(item => !item.name.startsWith('.') && item.name !== '@SmbRecyclebin');
       selectAll.disabled = !visible.length;
       if (!visible.length) {
         fileList.innerHTML = `<tr>
@@ -708,23 +764,31 @@
         const realName = label === item.name ? '' : ` title="Folder name: ${escapeHtml(item.name)}"`;
         const canModify = path !== '/';
         const pending = pendingDeletes.has(fullPath);
+        const previewable = !isFolder && previewKind(item.name) !== null;
+        const previewKindAttr = previewable ? previewKind(item.name) : '';
         const downloadBtn = isFolder ? '' : `
                 <button class="btn-icon download-item" data-path="${escapeHtml(fullPath)}" data-name="${escapeHtml(item.name)}" data-tooltip="Download" aria-label="Download ${escapeHtml(label)}"${pending ? ' disabled' : ''}>
                   <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 </button>`;
         return `
-        <tr data-selected="false" data-deleting="${pending}" data-name="${escapeHtml(label)}" data-path="${escapeHtml(fullPath)}" data-type="${isFolder ? 'folder' : 'file'}" class="transition-colors odd:bg-white even:bg-neutral-50/60 hover:bg-blue-50 data-[selected=true]:bg-blue-50 data-[deleting=true]:opacity-45 data-[deleting=true]:[&_td]:pointer-events-none">
-          <td class="border-b border-neutral-100 px-3 py-2.5"><input type="checkbox" class="row-check h-4 w-4 accent-blue-600" value="${escapeHtml(fullPath)}"${pending ? ' disabled' : ''} aria-label="Select ${escapeHtml(label)}"></td>
-          <td class="border-b border-neutral-100 px-3 py-2.5"${realName}>
+        <tr data-selected="false" data-deleting="${pending}" data-name="${escapeHtml(label)}" data-path="${escapeHtml(fullPath)}" data-type="${isFolder ? 'folder' : 'file'}" class="transition-colors odd:bg-white even:bg-neutral-50/60 hover:bg-blue-50/70 data-[selected=true]:bg-blue-50 data-[deleting=true]:opacity-45 data-[deleting=true]:[&_td]:pointer-events-none">
+          <td class="border-b border-neutral-100 px-3 py-2"><input type="checkbox" class="row-check h-4 w-4 accent-blue-600" value="${escapeHtml(fullPath)}"${pending ? ' disabled' : ''} aria-label="Select ${escapeHtml(label)}"></td>
+          <td class="border-b border-neutral-100 px-3 py-2"${realName}>
             <span class="flex items-center gap-2 font-medium text-neutral-800">
-              <span class="shrink-0">${isFolder ? svgFolder() : svgFile(item.name)}</span>
-              ${escapeHtml(label)}
+              <span class="shrink-0">${isFolder ? svgFolder() : previewable
+                ? `<button class="preview-item block cursor-pointer rounded-md transition-opacity hover:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500" data-path="${escapeHtml(fullPath)}" data-name="${escapeHtml(item.name)}" data-size="${escapeHtml(String(item.size ?? ''))}" data-kind="${previewKindAttr}" aria-label="Preview ${escapeHtml(label)}">${svgFile(item.name)}</button>`
+                : svgFile(item.name)}</span>
+              ${previewable
+                ? `<button class="preview-item cursor-pointer rounded text-left transition-colors hover:text-blue-700 hover:underline underline-offset-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500" data-path="${escapeHtml(fullPath)}" data-name="${escapeHtml(item.name)}" data-size="${escapeHtml(String(item.size ?? ''))}" data-kind="${previewKindAttr}" data-tooltip="Preview" aria-label="Preview ${escapeHtml(label)}">${escapeHtml(label)}</button>`
+                : isFolder
+                  ? escapeHtml(label)
+                  : `<span class="rounded" data-tooltip="File format preview not supported">${escapeHtml(label)}</span>`}
             </span>
           </td>
-          <td class="border-b border-neutral-100 px-3 py-2.5 text-right tabular-nums text-neutral-600">${isFolder ? '—' : formatSize(item.size)}</td>
-          <td class="border-b border-neutral-100 px-3 py-2.5 text-neutral-600">${formatDate(item.access_date)}</td>
-          <td class="type border-b border-neutral-100 px-3 py-2.5 text-neutral-600">${pending ? 'Deleting…' : isFolder ? 'Folder' : fileType(item.name)}</td>
-          <td class="border-b border-neutral-100 px-3 py-2.5">
+          <td class="border-b border-neutral-100 px-3 py-2 text-right tabular-nums text-neutral-600">${isFolder ? '—' : formatSize(item.size)}</td>
+          <td class="border-b border-neutral-100 px-3 py-2 text-neutral-600">${formatDate(item.access_date)}</td>
+          <td class="type border-b border-neutral-100 px-3 py-2 text-neutral-600">${pending ? 'Deleting…' : isFolder ? 'Folder' : fileType(item.name)}</td>
+          <td class="border-b border-neutral-100 px-3 py-2">
             ${(downloadBtn || canModify) ? `
               <span class="flex gap-1.5">
                 ${downloadBtn}
@@ -751,6 +815,9 @@
       });
       fileList.querySelectorAll('.download-item').forEach(btn => {
         btn.addEventListener('click', () => downloadItem(btn.dataset.path, btn.dataset.name));
+      });
+      fileList.querySelectorAll('.preview-item').forEach(btn => {
+        btn.addEventListener('click', () => openPreview(btn.dataset.path, btn.dataset.name, btn.dataset.size, btn.dataset.kind));
       });
       fileList.querySelectorAll('tr[data-type="folder"]').forEach(row => {
         row.classList.add('cursor-pointer');
@@ -934,13 +1001,15 @@
     emptyBinOk.addEventListener('click', async () => {
       if (!recycleItems.length) { emptyBinModal.classList.add('hidden'); return; }
       const paths = recycleItems.map(it => it.path);
+      const count = paths.length;
       emptyBinModal.classList.add('hidden');
+      // Show the purge in the blocking transfers modal, like any other long operation.
+      const id = startTransfer(`Empty recycle bin — ${recycleShare} (${count} item${count === 1 ? '' : 's'})`, 'delete');
       try {
-        showToast('Emptying ' + recycleShare + ' bin…');
         await deletePaths(paths);
-        showToast('Bin emptied', 3000, 'success');
+        finishTransfer(id, true);
       } catch (e) {
-        showToast('Empty bin failed (some items may remain): ' + e.message, 8000, 'error');
+        finishTransfer(id, false, e.message);
       }
       await loadRecycleBin();
     });
@@ -951,6 +1020,308 @@
     document.getElementById('recycleBinBtn').addEventListener('click', () => { binModal.classList.remove('hidden'); loadRecycleBin(); });
     document.getElementById('recycleCloseBtn').addEventListener('click', () => binModal.classList.add('hidden'));
     binModal.addEventListener('click', (e) => { if (e.target === binModal) binModal.classList.add('hidden'); });
+
+    // ====== PREVIEW (image / PDF / text / CSV) ======
+    // Fetches the original file through the same /life/v1/file path as Download,
+    // then shows it in memory only: blob URL for image/PDF, raw text for the rest.
+    // Nothing is written to disk; blob URLs are revoked on close. The thumbnail
+    // service stays deferred per the PRD.
+    const imagePreviewModal = document.getElementById('imagePreviewModal');
+    const imagePreviewImg = document.getElementById('imagePreviewImg');
+    const imagePreviewStatus = document.getElementById('imagePreviewStatus');
+    const imagePreviewName = document.getElementById('imagePreviewName');
+    const imagePreviewMeta = document.getElementById('imagePreviewMeta');
+    const textPreviewView = document.getElementById('textPreviewView');
+    const csvPreviewView = document.getElementById('csvPreviewView');
+    const pdfPreviewFrame = document.getElementById('pdfPreviewFrame');
+    const previewTruncation = document.getElementById('previewTruncation');
+    let imagePreviewUrl = null;
+
+    function closePreview() {
+      imagePreviewModal.classList.add('hidden');
+      [imagePreviewImg, textPreviewView, csvPreviewView, pdfPreviewFrame, previewTruncation].forEach(el => el.classList.add('hidden'));
+      imagePreviewImg.removeAttribute('src');
+      pdfPreviewFrame.removeAttribute('srcdoc');
+      pdfPreviewFrame.src = 'about:blank';
+      textPreviewView.textContent = '';
+      csvPreviewView.innerHTML = '';
+      imagePreviewStatus.classList.remove('hidden');
+      imagePreviewStatus.textContent = 'Loading…';
+      if (imagePreviewUrl) { URL.revokeObjectURL(imagePreviewUrl); imagePreviewUrl = null; }
+    }
+
+    function showPreviewView(el) {
+      [imagePreviewImg, textPreviewView, csvPreviewView, pdfPreviewFrame].forEach(v => v.classList.add('hidden'));
+      imagePreviewStatus.classList.add('hidden');
+      el.classList.remove('hidden');
+    }
+
+    // Minimal delimited-text parser: handles quoted fields, escaped quotes, CRLF.
+    function parseDelimited(text, delim) {
+      const rows = [];
+      let row = [], field = '', inQuotes = false;
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        if (inQuotes) {
+          if (ch === '"') {
+            if (text[i + 1] === '"') { field += '"'; i++; } else inQuotes = false;
+          } else field += ch;
+        } else if (ch === '"') inQuotes = true;
+        else if (ch === delim) { row.push(field); field = ''; }
+        else if (ch === '\n' || ch === '\r') {
+          if (ch === '\r' && text[i + 1] === '\n') i++;
+          row.push(field); field = '';
+          if (row.length > 1 || row[0] !== '') rows.push(row);
+          row = [];
+        } else field += ch;
+      }
+      if (field !== '' || row.length) { row.push(field); rows.push(row); }
+      return rows;
+    }
+
+    function renderCsvPreview(text, delim) {
+      const rows = parseDelimited(text, delim);
+      if (!rows.length) {
+        csvPreviewView.innerHTML = '<p class="p-6 text-center text-sm text-neutral-500">This file is empty.</p>';
+        previewTruncation.textContent = '';
+        previewTruncation.classList.add('hidden');
+        showPreviewView(csvPreviewView);
+        return;
+      }
+      const colCount = rows.reduce((m, r) => Math.max(m, r.length), 0);
+      const cappedCols = Math.min(colCount, PREVIEW_CSV_COL_CAP);
+      const totalRows = rows.length;
+      const visible = rows.slice(0, PREVIEW_CSV_ROW_CAP);
+      const notes = [];
+      if (totalRows > PREVIEW_CSV_ROW_CAP) notes.push('first ' + PREVIEW_CSV_ROW_CAP + ' of ' + totalRows + ' rows');
+      if (colCount > PREVIEW_CSV_COL_CAP) notes.push('first ' + PREVIEW_CSV_COL_CAP + ' of ' + colCount + ' columns');
+      if (notes.length) { previewTruncation.textContent = 'Showing ' + notes.join('; '); previewTruncation.classList.remove('hidden'); }
+      else { previewTruncation.textContent = ''; previewTruncation.classList.add('hidden'); }
+      const cell = (v, tag) => `<${tag} class="max-w-[240px] truncate border border-neutral-200 px-2 py-1 text-left align-top text-[11px] leading-4 ${tag === 'th' ? 'font-semibold text-neutral-900 bg-neutral-50' : 'text-neutral-700'}" title="${escapeHtml(v)}">${escapeHtml(v)}</${tag}>`;
+      const head = visible[0].slice(0, cappedCols).map(v => cell(v, 'th')).join('');
+      const body = visible.slice(1).map(r => '<tr>' + Array.from({ length: cappedCols }, (_, i) => cell(r[i] ?? '', 'td')).join('') + '</tr>').join('');
+      csvPreviewView.innerHTML = `<p class="mb-2 text-[10px] uppercase tracking-wider text-neutral-500">First row shown as header</p>` +
+        `<table class="w-full border-collapse"><thead class="sticky top-0 bg-neutral-50"><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
+      showPreviewView(csvPreviewView);
+    }
+
+    async function openPreview(path, name, size, kind) {
+      closePreview(); // resets every view to Loading; also revokes any previous URL
+      imagePreviewModal.classList.remove('hidden');
+      imagePreviewName.textContent = name;
+      imagePreviewMeta.textContent = size === '' || size === undefined ? '' : formatSize(size);
+      try {
+        const query = { root: 'local', path };
+        const res = await authFetch(`${PROXY_URL}/life/v1/file?query=${encodeURIComponent(JSON.stringify(query))}&download=true`, {
+          headers: { 'Authorization': cookie ? `Bearer ${cookie}` : '' }
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error?.msg || data.error || 'NAS refused the file');
+        }
+        const blob = await res.blob();
+        if (kind === 'image' || kind === 'pdf') {
+          imagePreviewUrl = URL.createObjectURL(blob);
+          if (kind === 'image') {
+            imagePreviewImg.onload = () => showPreviewView(imagePreviewImg);
+            imagePreviewImg.onerror = () => { imagePreviewStatus.textContent = 'Could not display this image.'; imagePreviewStatus.classList.remove('hidden'); };
+            imagePreviewImg.src = imagePreviewUrl;
+          } else {
+            pdfPreviewFrame.src = imagePreviewUrl;
+            showPreviewView(pdfPreviewFrame);
+          }
+          return;
+        }
+        // Text-like kinds: show the whole file up to the cap.
+        const truncated = blob.size > PREVIEW_TEXT_CAP;
+        const text = await (truncated ? blob.slice(0, PREVIEW_TEXT_CAP) : blob).text();
+        if (kind === 'csv' || kind === 'tsv') {
+          renderCsvPreview(text, kind === 'tsv' ? '\t' : ',');
+          if (truncated) { previewTruncation.textContent = (previewTruncation.textContent ? previewTruncation.textContent + '; ' : '') + 'first 512 KB of file'; previewTruncation.classList.remove('hidden'); }
+          return;
+        }
+        if (truncated) { previewTruncation.textContent = 'Showing first 512 KB'; previewTruncation.classList.remove('hidden'); }
+        textPreviewView.textContent = text.length ? text : '(empty file)';
+        showPreviewView(textPreviewView);
+      } catch (e) {
+        imagePreviewStatus.textContent = 'Preview failed: ' + e.message;
+        imagePreviewStatus.classList.remove('hidden');
+        showToast('Preview failed: ' + e.message, 8000, 'error');
+      }
+    }
+
+    document.getElementById('imagePreviewCloseBtn').addEventListener('click', closePreview);
+    imagePreviewModal.addEventListener('click', (e) => { if (e.target === imagePreviewModal) closePreview(); });
+
+    // ====== TRANSFERS ======
+    // XHR instead of fetch: only XHR reports upload/download progress.
+    // Cancel = xhr.abort(). While any transfer is active, beforeunload asks the
+    // browser to confirm before the tab is closed or reloaded (this also fires on
+    // hard refresh and browser close — the platform does not distinguish them).
+    // The modal is blocking while transfers run and stays open until the user closes it.
+    const transferModal = document.getElementById('transferModal');
+    const transferList = document.getElementById('transferList');
+    const transferCloseBtn = document.getElementById('transferCloseBtn');
+    const transfers = new Map();
+    let transferSeq = 0;
+
+    function hasActiveTransfers() {
+      for (const t of transfers.values()) if (t.state === 'active') return true;
+      return false;
+    }
+
+    function formatEta(sec) {
+      if (!Number.isFinite(sec) || sec < 0) return '';
+      if (sec < 60) return '~' + Math.max(1, Math.round(sec)) + 's';
+      const m = Math.floor(sec / 60), s = Math.round(sec % 60);
+      return '~' + m + 'm ' + s + 's';
+    }
+
+    function startTransfer(name, kind) {
+      const id = String(++transferSeq);
+      transfers.set(id, { id, name, kind, loaded: 0, total: 0, rate: 0, lastAt: 0, lastLoaded: 0, state: 'active', xhr: null, message: '' });
+      renderTransferModal();
+      return id;
+    }
+
+    function updateTransfer(id, loaded, total) {
+      const t = transfers.get(id);
+      if (!t || t.state !== 'active') return;
+      const now = performance.now();
+      if (t.lastAt) {
+        const dt = (now - t.lastAt) / 1000;
+        const dl = loaded - t.lastLoaded;
+        if (dt > 0.05 && dl >= 0) {
+          const inst = dl / dt;
+          t.rate = t.rate > 0 ? 0.7 * t.rate + 0.3 * inst : inst;
+        }
+      }
+      t.lastAt = now; t.lastLoaded = loaded; t.loaded = loaded; t.total = total;
+      renderTransferModal();
+    }
+
+    function finishTransfer(id, ok, message) {
+      const t = transfers.get(id);
+      if (!t) return;
+      t.state = ok ? 'done' : 'error';
+      t.message = message || '';
+      t.loaded = ok && t.total > 0 ? t.total : t.loaded;
+      renderTransferModal();
+    }
+
+    function closeTransferModal() {
+      transfers.clear();
+      renderTransferModal();
+    }
+
+    function transferTile(t) {
+      if (t.state === 'done') return 'bg-emerald-50 text-emerald-600';
+      if (t.state === 'error') return 'bg-red-50 text-red-500';
+      if (t.kind === 'delete') return 'bg-red-50 text-red-600';
+      return t.kind === 'upload' ? 'bg-blue-50 text-blue-600' : 'bg-violet-50 text-violet-600';
+    }
+
+    function transferIcon(t) {
+      if (t.state === 'done') return '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 10"/></svg>';
+      if (t.state === 'error') return '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+      if (t.kind === 'delete') return '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
+      return t.kind === 'upload'
+        ? '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>'
+        : '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+    }
+
+    function renderTransferModal() {
+      const items = Array.from(transfers.values());
+      transferModal.classList.toggle('hidden', items.length === 0);
+      const active = hasActiveTransfers();
+      const errors = items.some(t => t.state === 'error');
+      const allUploads = items.length > 0 && items.every(t => t.kind === 'upload');
+      const allDeletes = items.length > 0 && items.every(t => t.kind === 'delete');
+
+      const titleIcon = document.getElementById('transferTitleIcon');
+      titleIcon.innerHTML = active
+        ? (allDeletes
+          ? '<svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>'
+          : '<svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>')
+        : errors
+          ? '<svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg>'
+          : '<svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 10"/></svg>';
+      titleIcon.className = 'flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-white ' +
+        (active ? (allDeletes ? 'bg-red-500' : 'bg-blue-600') : errors ? 'bg-amber-500' : 'bg-emerald-500');
+
+      document.getElementById('transferTitleText').textContent =
+        active ? (allDeletes ? 'Emptying the recycle bin' : 'Transfers in progress')
+          : errors ? (allDeletes ? 'Empty bin finished with errors' : 'Transfers finished with errors')
+            : allDeletes ? 'Bin emptied' : 'Transfers complete';
+      document.getElementById('transferSubtitle').textContent =
+        active ? 'Please keep this tab open.'
+          : errors ? (allDeletes ? 'Some items could not be deleted. Review the list below.' : 'Some files failed. Review the list below, then close.')
+            : allDeletes ? 'Everything was permanently deleted. You can safely close this tab.'
+              : allUploads ? 'The files are fully uploaded. You can safely close this tab.'
+                : 'The files are fully downloaded. You can safely close this tab.';
+      document.getElementById('transferFooterNote').classList.toggle('hidden', !active);
+      transferCloseBtn.classList.toggle('hidden', active || items.length === 0);
+
+      // Aggregate bar across all transfers with a known size (queue-level progress).
+      const sized = items.filter(t => t.total > 0);
+      const agg = document.getElementById('transferAggregate');
+      if (sized.length > 1) {
+        const tl = sized.reduce((s, t) => s + t.loaded, 0);
+        const tt = sized.reduce((s, t) => s + t.total, 0);
+        agg.classList.remove('hidden');
+        document.getElementById('transferAggregateBar').style.width = Math.min(100, (100 * tl) / tt).toFixed(1) + '%';
+        document.getElementById('transferAggregateMeta').textContent = `${formatSize(tl)} of ${formatSize(tt)} · ${Math.floor((100 * tl) / tt)}%`;
+      } else {
+        agg.classList.add('hidden');
+      }
+
+      transferList.innerHTML = items.map(t => {
+        const pct = t.total > 0 ? Math.min(100, (100 * t.loaded) / t.total) : (t.state !== 'active' ? 100 : null);
+        const barColor = t.state === 'done' ? 'bg-emerald-500' : t.state === 'error' ? 'bg-red-400' : 'bg-blue-600';
+        const bar = pct === null
+          ? `<div class="h-full w-2/5 animate-pulse rounded-full ${barColor}"></div>`
+          : `<div class="h-full rounded-full transition-[width] duration-200 ${barColor}" style="width:${pct.toFixed(1)}%"></div>`;
+        let meta, pctText;
+        if (t.state === 'done') { meta = t.kind === 'delete' ? 'Done' : 'Done · ' + (t.total > 0 ? formatSize(t.total) : formatSize(t.loaded)); pctText = ''; }
+        else if (t.state === 'error') { meta = 'Failed' + (t.message ? ': ' + t.message : ''); pctText = ''; }
+        else {
+          if (t.kind === 'delete') { meta = 'Deleting items…'; pctText = ''; }
+          else {
+            const bytes = t.total > 0 ? formatSize(t.loaded) + ' of ' + formatSize(t.total) : formatSize(t.loaded) + ' so far';
+            const eta = t.rate > 0 && t.total > t.loaded ? ' · ' + formatEta((t.total - t.loaded) / t.rate) + ' left' : '';
+            meta = bytes + eta;
+            pctText = pct === null ? '…' : ' · ' + Math.floor(pct) + '%';
+          }
+        }
+        const cancel = t.state === 'active'
+          ? `<button class="shrink-0 text-xs font-semibold text-red-600 transition-colors hover:text-red-800 hover:underline" data-cancel="${t.id}" aria-label="Cancel ${escapeHtml(t.name)}">Cancel</button>`
+          : '';
+        return `<li class="flex items-center gap-3 px-6 py-4">
+          <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${transferTile(t)}">${transferIcon(t)}</span>
+          <div class="min-w-0 flex-1">
+            <p class="truncate text-sm font-medium text-neutral-800" title="${escapeHtml(t.name)}">${escapeHtml(t.name)}</p>
+            <div class="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-neutral-100">${bar}</div>
+            <p class="mt-1 flex items-center justify-between gap-3 text-xs tabular-nums text-neutral-500"><span class="truncate">${escapeHtml(meta)}</span>${pctText ? `<span class="shrink-0 font-semibold text-neutral-700">${escapeHtml(pctText.replace(' · ', ''))}</span>` : ''}</p>
+          </div>
+          ${cancel}
+        </li>`;
+      }).join('');
+    }
+
+    transferList.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-cancel]');
+      if (!btn) return;
+      const t = transfers.get(btn.dataset.cancel);
+      if (t && t.xhr) { try { t.xhr.abort(); } catch (_) {} }
+    });
+    transferCloseBtn.addEventListener('click', closeTransferModal);
+    transferModal.addEventListener('click', (e) => { if (e.target === transferModal && !hasActiveTransfers()) closeTransferModal(); });
+
+    window.addEventListener('beforeunload', (e) => {
+      if (hasActiveTransfers()) { e.preventDefault(); e.returnValue = ''; }
+    });
 
     // ====== SIGN IN / OUT ======
     loginForm.addEventListener('submit', async (e) => {
@@ -1288,30 +1659,58 @@
     // ====== DOWNLOAD ======
     // The NAS serves the file at /life/v1/file with download=true.
     // The proxy forwards our token as the authorization_code cookie.
+    // XHR instead of fetch so large files report progress and can be cancelled.
     async function downloadItem(path, name) {
       try {
         showToast('Downloading ' + name + '…');
+        const id = startTransfer(name, 'download');
         const query = { root: 'local', path };
-        const res = await authFetch(`${PROXY_URL}/life/v1/file?query=${encodeURIComponent(JSON.stringify(query))}&download=true`, {
-          headers: { 'Authorization': cookie ? `Bearer ${cookie}` : '' }
-        });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const contentType = res.headers.get('content-type') || '';
-        if (contentType.includes('application/json')) {
-          const data = await res.json().catch(() => ({}));
-          throw new Error(data.error?.msg || data.error || 'NAS refused the download');
+        let url;
+        try {
+          url = await new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', `${PROXY_URL}/life/v1/file?query=${encodeURIComponent(JSON.stringify(query))}&download=true`);
+            xhr.setRequestHeader('Authorization', cookie ? `Bearer ${cookie}` : '');
+            xhr.responseType = 'blob';
+            xhr.addEventListener('progress', (e) => {
+              updateTransfer(id, e.loaded, e.lengthComputable ? e.total : 0);
+            });
+            xhr.addEventListener('load', () => {
+              const status = xhr.status;
+              if (status === 401) { endSession(); showLogin('Session expired. Please sign in again.'); reject(new AuthExpired('Session expired')); return; }
+              const contentType = xhr.getResponseHeader('content-type') || '';
+              if (contentType.includes('application/json')) {
+                xhr.response.text().then(text => {
+                  let msg = 'NAS refused the download';
+                  try { const data = JSON.parse(text); msg = data.error?.msg || data.error || msg; } catch (_) {}
+                  reject(new Error(msg));
+                });
+                return;
+              }
+              if (status < 200 || status >= 300) { reject(new Error('HTTP ' + status)); return; }
+              resolve(URL.createObjectURL(xhr.response));
+            });
+            xhr.addEventListener('error', () => reject(new Error('Network error')));
+            xhr.addEventListener('abort', () => reject(new Error('Cancelled by user')));
+            transfers.get(id).xhr = xhr;
+            xhr.send();
+          });
+          finishTransfer(id, true);
+        } catch (e) {
+          finishTransfer(id, false, e.message === 'Cancelled by user' ? 'cancelled' : e.message);
+          throw e;
         }
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
         a.download = name;
         document.body.appendChild(a);
         a.click();
         a.remove();
-        URL.revokeObjectURL(url);
+        // Give the browser a minute to start reading the blob before revoking it.
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
         showToast('Downloaded ' + name, 3000, 'success');
       } catch (e) {
+        if (e instanceof AuthExpired) return; // login screen is already shown
         showToast('Download failed: ' + e.message, 8000, 'error');
       }
     }
@@ -1438,6 +1837,142 @@
       }, 'Rename');
     };
 
+    // ====== MOVE TO RECYCLE BIN ======
+    // Deletes now move items into the share's @SmbRecyclebin (where one exists or
+    // the user asks for one), mirroring the original folder tree — same layout SMB
+    // uses. One level of mkdir per missing level; name collisions in the bin get a
+    // timestamp suffix. The NAS can answer result:true with a silent no-op, so the
+    // file is re-listed afterwards to confirm it actually moved.
+    const binChoiceModal = document.getElementById('binChoiceModal');
+    const binChoiceShareEl = document.getElementById('binChoiceShare');
+    let binChoiceByShare = {}; // per-session choice per share: 'bin' | 'permanent'
+    let binChoiceResolve = null;
+
+    function askBinChoice(share) {
+      return new Promise(resolve => {
+        binChoiceShareEl.textContent = share;
+        binChoiceModal.classList.remove('hidden');
+        binChoiceResolve = resolve;
+      });
+    }
+    function settleBinChoice(value) {
+      binChoiceModal.classList.add('hidden');
+      if (binChoiceResolve) { binChoiceResolve(value); binChoiceResolve = null; }
+    }
+    document.getElementById('binChoiceCreate').addEventListener('click', () => settleBinChoice('create'));
+    document.getElementById('binChoicePermanent').addEventListener('click', () => settleBinChoice('permanent'));
+    document.getElementById('binChoiceCancel').addEventListener('click', () => settleBinChoice('cancel'));
+    binChoiceModal.addEventListener('click', (e) => { if (e.target === binChoiceModal) settleBinChoice('cancel'); });
+
+    const shareOf = (path) => path.split('/')[1];
+
+    function binTargetOf(sourcePath, share) {
+      return '/' + share + '/@SmbRecyclebin' + sourcePath.slice(share.length + 1);
+    }
+
+    function TIMESTAMP_SUFFIX() {
+      const d = new Date();
+      const p = n => String(n).padStart(2, '0');
+      return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
+    }
+
+    function splitName(name) {
+      const dot = name.lastIndexOf('.');
+      if (dot <= 0) return { base: name, ext: '' };
+      return { base: name.slice(0, dot), ext: name.slice(dot) };
+    }
+
+    // One mkdir per missing level, from the bin root down to 'dir'.
+    async function mkdirp(dir) {
+      const parts = dir.split('/').filter(Boolean);
+      let current = '';
+      for (const part of parts) {
+        current += '/' + part;
+        try {
+          await createFolder(parentOf(current), part);
+        } catch (_) {
+          // tolerate "already exists" — the move check afterwards is the source of truth
+          try { await fsList(current, 1); } catch (e) { throw new Error('Could not create ' + current + ' (' + e.message + ')'); }
+        }
+      }
+    }
+
+    // If 'targetPath' already exists in the bin, suffix the base name with a timestamp.
+    async function resolveCollision(targetPath) {
+      const dir = parentOf(targetPath);
+      let existing = [];
+      try { existing = await fsList(dir, 1); } catch (_) { return { targetPath, renamedTo: null }; }
+      const names = new Set(existing.map(it => it.name));
+      const name = targetPath.split('/').pop();
+      if (!names.has(name)) return { targetPath, renamedTo: null };
+      const { base, ext } = splitName(name);
+      const stamped = `${dir}/${base}.${TIMESTAMP_SUFFIX()}${ext}`;
+      return { targetPath: stamped, renamedTo: stamped.split('/').pop() };
+    }
+
+    // 'bin' | 'create' | 'permanent' | 'cancel' — remembered per share for this session.
+    async function binModeForShare(share) {
+      if (binChoiceByShare[share]) return binChoiceByShare[share];
+      try {
+        await fsList('/' + share + '/@SmbRecyclebin', 1);
+        binChoiceByShare[share] = 'bin';
+        return 'bin';
+      } catch (_) {
+        const choice = await askBinChoice(share);
+        binChoiceByShare[share] = choice === 'permanent' ? 'permanent' : choice === 'create' ? 'create' : '';
+        if (choice === 'cancel') return 'cancel';
+        return choice; // 'create' (bin will be made on demand) or 'permanent'
+      }
+    }
+
+    async function moveOneToBin(sourcePath, share) {
+      const name = sourcePath.split('/').pop();
+      const mode = await binModeForShare(share);
+      if (mode === 'cancel') return { status: 'cancelled' };
+      if (mode === 'permanent') {
+        await deletePaths([sourcePath]);
+        return { status: 'permanent', name };
+      }
+      const target = binTargetOf(sourcePath, share);
+      const targetDir = parentOf(target);
+      if (mode === 'create') {
+        // Hard-fail (never fall back to permanent delete silently) if the bin cannot be made.
+        try {
+          await createFolder('/' + share, '@SmbRecyclebin');
+          try { await fsList('/' + share + '/@SmbRecyclebin', 1); }
+          catch (_) { throw new Error('the recycle bin could not be created for ' + share + ' — the file was NOT deleted'); }
+        } catch (e) {
+          binChoiceByShare[share] = ''; // choice not remembered — ask again next delete
+          throw e;
+        }
+      }
+      try {
+        await mkdirp(targetDir);
+      } catch (e) {
+        binChoiceByShare[share] = ''; // let the user choose again
+        throw e;
+      }
+      const { targetPath, renamedTo } = await resolveCollision(target);
+      const res = await authFetch(`${PROXY_URL}/life/v1/folder`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': cookie ? `Bearer ${cookie}` : '' },
+        body: JSON.stringify({ action: 'move', items: [{ source: { root: 'local', path: sourcePath }, target: { root: 'local', path: targetPath } }] })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.result === false) throw new Error(data.error || ('HTTP ' + res.status));
+      // result:true is not proof — re-list the source folder and require the item gone.
+      let gone = false;
+      for (let i = 0; i < 6; i++) {
+        try {
+          const items = await fsList(parentOf(sourcePath), 1);
+          if (!items.some(it => (it.path || parentOf(sourcePath) + '/' + it.name) === sourcePath)) { gone = true; break; }
+        } catch (_) {}
+        await new Promise(r => setTimeout(r, 700));
+      }
+      if (!gone) throw new Error('the NAS did not move the file — it was NOT deleted');
+      return { status: 'bin', name, renamedTo };
+    }
+
     // ====== DELETE ======
     async function deletePaths(paths) {
       const res = await authFetch(`${PROXY_URL}/life/v1/folderex`, {
@@ -1493,22 +2028,33 @@
       paths.forEach(p => pendingDeletes.add(p));
       markDeleting(paths);      selection.clear();
       document.getElementById('deleteSelectedBtn').disabled = true;
-      try {
-        await deletePaths(paths);
-      } catch (e) {
-        paths.forEach(p => pendingDeletes.delete(p));
-        if (currentPath === path) await loadFiles(path);
-        throw e;
+      const share = paths.length ? shareOf(paths[0]) : '';
+      const summary = { moved: [], permanent: [], failed: [], cancelled: 0, renamed: [] };
+      for (const p of paths) {
+        try {
+          const r = await moveOneToBin(p, share);
+          if (r.status === 'bin') summary.moved.push(p);
+          else if (r.status === 'permanent') summary.permanent.push(p);
+          else summary.cancelled += 1;
+          if (r.renamedTo) summary.renamed.push({ from: p.split('/').pop(), to: r.renamedTo });
+        } catch (e) {
+          summary.failed.push({ path: p, message: e.message });
+        }
       }
 
-      const gone = await waitUntilGone(path, paths);
+      const handled = summary.moved.concat(summary.permanent);
       paths.forEach(p => pendingDeletes.delete(p));
+      if (handled.length) {
+        summary.gone = await waitUntilGone(path, handled);
+      } else {
+        summary.gone = false;
+      }
 
       if (currentPath === path) await loadFiles(path);
       if (hadFolder) {
         loadTree().catch(() => {});
       }
-      return gone;
+      return summary;
     }
 
     window.deleteItem = async (path) => {
@@ -1520,8 +2066,12 @@
       if (!confirm(`Delete "${name}"?`)) return;
       try {
         showToast('Deleting ' + name + '…', 60000);
-        const gone = await deleteAndRefresh([path]);
-        showToast(gone ? `Deleted ${name}` : `Delete of ${name} is still running on the NAS.`, gone ? 3000 : 8000, gone ? 'success' : 'info');
+        const summary = await deleteAndRefresh([path]);
+        if (summary.failed.length) { showToast('Delete failed: ' + summary.failed[0].message, 8000, 'error'); return; }
+        if (summary.cancelled) { showToast('Nothing was deleted.', 3000); return; }
+        if (summary.permanent.length) { showToast('Deleted permanently: ' + name, 5000, 'success'); return; }
+        if (summary.renamed.length) { showToast('Name already in bin — saved as ' + summary.renamed[0].to, 8000, 'info'); }
+        showToast(summary.gone ? 'Moved to recycle bin: ' + name : 'Move to bin is still running on the NAS.', summary.gone ? 3000 : 8000, summary.gone ? 'success' : 'info');
       } catch (e) {
         showToast('Delete failed: ' + e.message, 8000, 'error');
       }
@@ -1532,8 +2082,32 @@
       if (!paths.length || !confirm(`Delete ${paths.length} item(s)?`)) return;
       try {
         showToast('Deleting ' + paths.length + ' item(s)…', 60000);
-        const gone = await deleteAndRefresh(paths);
-        showToast(gone ? `Deleted ${paths.length} item(s)` : `Delete is still running on the NAS.`, gone ? 3000 : 8000, gone ? 'success' : 'info');
+        const summary = await deleteAndRefresh(paths);
+        if (summary.failed.length) {
+          const done = summary.moved.length + summary.permanent.length;
+          showToast(done
+            ? `Deleted ${done} item(s); ${summary.failed.length} failed (${summary.failed[0].message})`
+            : `Delete failed: ${summary.failed[0].message}`, 9000, 'error');
+          return;
+        }
+        if (summary.cancelled) { showToast('Nothing was deleted.', 3000); return; }
+        const items = summary.moved.concat(summary.permanent);
+        const names = items.map(p => p.split('/').pop());
+        const shown = [];
+        let len = 0;
+        for (const n of names) {
+          if (shown.length >= 2 || len + n.length > 64) break;
+          shown.push(n); len += n.length + 2;
+        }
+        const rest = names.length - shown.length;
+        const nameSummary = shown.join(', ') + (rest > 0 ? ` (+${rest} more)` : '');
+        const mode = summary.permanent.length && summary.moved.length
+          ? `${summary.moved.length} to bin, ${summary.permanent.length} permanently`
+          : summary.permanent.length ? 'permanently' : 'to recycle bin';
+        showToast(`Deleted (${mode}): ${nameSummary}`, 6000, 'success');
+        if (summary.renamed.length) {
+          showToast('Renamed to avoid a bin collision: ' + summary.renamed.map(r => `${r.from} → ${r.to}`).join(', '), 8000, 'info');
+        }
       } catch (e) {
         showToast('Delete failed: ' + e.message, 8000, 'error');
       }
@@ -1555,14 +2129,34 @@
       // The NAS reads the file from the field named after the file itself.
       form.append(file.name, file, file.name);
 
-      const res = await authFetch(`${PROXY_URL}/life/v1/file/upload`, {
-        method: 'POST',
-        headers: { 'Authorization': cookie ? `Bearer ${cookie}` : '' },
-        body: form
-      });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const data = await res.json().catch(() => ({}));
-      if (data.result === false) throw new Error(data.error || 'Upload failed');
+      const id = startTransfer(file.name, 'upload');
+      try {
+        await new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open('POST', `${PROXY_URL}/life/v1/file/upload`);
+          xhr.setRequestHeader('Authorization', cookie ? `Bearer ${cookie}` : '');
+          xhr.upload.addEventListener('progress', (e) => {
+            updateTransfer(id, e.loaded, e.lengthComputable ? e.total : 0);
+          });
+          xhr.addEventListener('load', () => {
+            const status = xhr.status;
+            let data = {};
+            try { data = JSON.parse(xhr.responseText || '{}'); } catch (_) {}
+            if (status === 401) { endSession(); showLogin('Session expired. Please sign in again.'); reject(new AuthExpired('Session expired')); return; }
+            if (status < 200 || status >= 300) { reject(new Error('HTTP ' + status)); return; }
+            if (data.result === false) { reject(new Error(data.error || 'Upload failed')); return; }
+            resolve();
+          });
+          xhr.addEventListener('error', () => reject(new Error('Network error')));
+          xhr.addEventListener('abort', () => reject(new Error('Cancelled by user')));
+          transfers.get(id).xhr = xhr;
+          xhr.send(form);
+        });
+        finishTransfer(id, true);
+      } catch (e) {
+        finishTransfer(id, false, e.message === 'Cancelled by user' ? 'cancelled' : e.message);
+        throw e;
+      }
     }
 
     async function uploadFiles(files) {
@@ -1579,14 +2173,21 @@
           await uploadOne(files[i], targetPath);
           done++;
         } catch (e) {
+          if (e.message === 'Cancelled by user' || e instanceof AuthExpired) {
+            failed.push(`${files[i].name}: ${e instanceof AuthExpired ? 'session expired' : 'cancelled'}`);
+            break; // stop the queue on cancel or when the session is dead
+          }
           failed.push(`${files[i].name}: ${e.message}`);
         }
       }
-      await loadFiles(targetPath);
-      // The NAS may index the new file just after the response.
-      setTimeout(() => {
-        if (currentPath === targetPath) loadFiles(targetPath);
-      }, 1200);
+      const sessionDead = failed.some(f => f.includes('session expired'));
+      if (!sessionDead) {
+        await loadFiles(targetPath);
+        // The NAS may index the new file just after the response.
+        setTimeout(() => {
+          if (currentPath === targetPath) loadFiles(targetPath);
+        }, 1200);
+      }
 
       if (failed.length && done) {
         showToast(`Uploaded ${done} of ${files.length} to ${targetPath}. Failed: ${failed[0]}`, 8000, 'error');
@@ -1693,13 +2294,16 @@
     document.getElementById('modalCancel').addEventListener('click', () => { modal.classList.add('hidden'); modalResolve = null; });
     document.addEventListener('keydown', (e) => {
       if (e.key !== 'Escape') return;
+      if (!binChoiceModal.classList.contains('hidden')) { settleBinChoice('cancel'); return; }
       if (!shareDeleteModal.classList.contains('hidden')) { closeShareDeleteModal(); return; }
       if (!changePasswordModal.classList.contains('hidden')) { closeChangePasswordModal(); return; }
       if (!modal.classList.contains('hidden')) { modal.classList.add('hidden'); modalResolve = null; }
       if (!healthModal.classList.contains('hidden')) { healthModal.classList.add('hidden'); }
       if (!recycleModal.classList.contains('hidden')) { recycleModal.classList.add('hidden'); return; }
       if (!purgeConfirmModal.classList.contains('hidden')) { purgeConfirmModal.classList.add('hidden'); return; }
-      if (!emptyBinModal.classList.contains('hidden')) { emptyBinModal.classList.add('hidden'); }
+      if (!emptyBinModal.classList.contains('hidden')) { emptyBinModal.classList.add('hidden'); return; }
+      if (!imagePreviewModal.classList.contains('hidden')) { closePreview(); return; }
+      if (!transferModal.classList.contains('hidden') && !hasActiveTransfers()) { closeTransferModal(); return; }
     });
     document.getElementById('modalConfirm').addEventListener('click', async () => {
       const val = modalInput.value.trim();
@@ -1741,6 +2345,30 @@
       const date = new Date(iso);
       if (Number.isNaN(date.getTime())) return '—';
       return date.toLocaleString();
+    }
+
+    // Phase 3 (5.3.5): preview is offered for these file kinds only.
+    const PREVIEWABLE_IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+    const PDF_PREVIEW_EXTS = ['pdf'];
+    const TSV_PREVIEW_EXTS = ['tsv'];
+    const CSV_PREVIEW_EXTS = ['csv'];
+    const TEXT_PREVIEW_EXTS = ['txt', 'md', 'markdown', 'json', 'geojson', 'yaml', 'yml', 'xml', 'html', 'htm', 'css', 'js', 'mjs', 'ts', 'tsx', 'jsx', 'py', 'rb', 'sh', 'bash', 'zsh', 'ini', 'cfg', 'conf', 'log', 'env', 'sql', 'toml', 'c', 'h', 'cc', 'cpp', 'hpp', 'java', 'go', 'rs', 'php', 'pl', 'lua', 'r', 'swift', 'kt', 'cs', 'm', 'mm', 'properties', 'bat', 'ps1', 'awk', 'gradle', 'cmake', 'command', 'tool', 'shell', 'ash', 'ksh', 'csh', 'tcsh', 'zshrc', 'bashrc'];
+    const TEXT_PREVIEW_NAMES = ['makefile', 'dockerfile', 'readme', 'license', 'changelog', 'authors', 'notice', 'profile'];
+    const PREVIEW_TEXT_CAP = 512 * 1024; // 512 KB
+    const PREVIEW_CSV_ROW_CAP = 200;
+    const PREVIEW_CSV_COL_CAP = 60;
+
+    // Returns 'image' | 'pdf' | 'csv' | 'tsv' | 'text' | null
+    function previewKind(name) {
+      const dot = name.lastIndexOf('.');
+      const ext = dot >= 0 ? name.slice(dot + 1).toLowerCase() : '';
+      if (PREVIEWABLE_IMAGE_EXTS.includes(ext)) return 'image';
+      if (PDF_PREVIEW_EXTS.includes(ext)) return 'pdf';
+      if (CSV_PREVIEW_EXTS.includes(ext)) return 'csv';
+      if (TSV_PREVIEW_EXTS.includes(ext)) return 'tsv';
+      if (TEXT_PREVIEW_EXTS.includes(ext)) return 'text';
+      if (dot < 0 && TEXT_PREVIEW_NAMES.includes(name.toLowerCase())) return 'text';
+      return null;
     }
 
     function fileType(name) {

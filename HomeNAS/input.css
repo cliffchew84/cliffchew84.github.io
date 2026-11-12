@@ -49,5 +49,8 @@ body.sidebar-collapsed #sidebar {
   }
   .toast {
     @apply fixed bottom-6 left-1/2 z-50 -translate-x-1/2 animate-toast-in rounded-lg px-4 py-2.5 text-sm font-medium text-white shadow-lg ring-1 ring-black/10;
+    max-width: min(90vw, 42rem);
+    overflow-wrap: anywhere;
+    text-align: center;
   }
 }
