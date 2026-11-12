@@ -18,6 +18,7 @@
     const breadcrumb = document.getElementById('breadcrumb');
     const fileList = document.getElementById('fileList');
     const selectAll = document.getElementById('selectAll');
+    const zipSelectedBtn = document.getElementById('zipSelectedBtn');
     const fileInput = document.getElementById('fileInput');
     const modal = document.getElementById('modal');
     const modalTitle = document.getElementById('modalTitle');
@@ -288,10 +289,17 @@
         document.getElementById(id).classList.toggle('hidden', !isAdmin);
       });
     }
+    function setSessionCookie(token) {
+      try {
+        document.cookie = 'homenas_session=' + encodeURIComponent(token) + '; SameSite=Strict; path=/';
+      } catch (e) { /* hidden-form downloads will fail without this; showApp still works */ }
+    }
+
     function endSession() {
       cookie = '';
       currentUser = '';
       localStorage.removeItem('homenas.session');
+      try { document.cookie = 'homenas_session=; Max-Age=0; path=/'; } catch (e) { /* ignore */ }
     }
     function startSession(user, token, remember) {
       cookie = token;
@@ -299,6 +307,7 @@
       userBadge.textContent = user === 'admin' ? user + ' (admin)' : user;
       if (remember) localStorage.setItem('homenas.session', JSON.stringify({ user, token }));
       else localStorage.removeItem('homenas.session');
+      setSessionCookie(token);
       showApp();
     }
 
@@ -822,6 +831,7 @@
       document.getElementById('deleteSelectedBtn').disabled = selection.size === 0;
       document.getElementById('moveSelectedBtn').disabled = selection.size === 0;
       document.getElementById('copySelectedBtn').disabled = selection.size === 0;
+      zipSelectedBtn.disabled = selection.size === 0;
       fileList.querySelectorAll('tr').forEach(row => {
         row.dataset.selected = String(selection.has(row.dataset.path));
       });
@@ -1396,12 +1406,16 @@
     // Cancel = xhr.abort(). While any transfer is active, beforeunload asks the
     // browser to confirm before the tab is closed or reloaded (this also fires on
     // hard refresh and browser close — the platform does not distinguish them).
-    // The modal is blocking while transfers run and stays open until the user closes it.
+    // The modal can be dismissed while transfers run; closing it never aborts them.
     const transferModal = document.getElementById('transferModal');
     const transferList = document.getElementById('transferList');
     const transferCloseBtn = document.getElementById('transferCloseBtn');
     const transfers = new Map();
     let transferSeq = 0;
+    // Set while a hidden-form ZIP download is in flight (no JS progress is possible).
+    let pendingZip = 0;
+    // True while the user has dismissed the modal but transfers still run.
+    let transferModalDismissed = false;
 
     function hasActiveTransfers() {
       for (const t of transfers.values()) if (t.state === 'active') return true;
@@ -1418,8 +1432,9 @@
     function startTransfer(name, kind, payload) {
       const id = String(++transferSeq);
       transfers.set(id, { id, name, kind, loaded: 0, total: 0, rate: 0, lastAt: 0, lastLoaded: 0, state: 'active', xhr: null, message: '', payload: payload || null });
+      transferModalDismissed = false;
       renderTransferModal();
-      return id;
+      return id; // callers attach the xhr to this row — never drop this
     }
 
     function updateTransfer(id, loaded, total) {
@@ -1441,6 +1456,7 @@
     function finishTransfer(id, ok, message) {
       const t = transfers.get(id);
       if (!t) return;
+      if (t.stallWatch) { clearInterval(t.stallWatch); t.stallWatch = null; }
       t.state = ok ? 'done' : 'error';
       t.message = message || '';
       t.loaded = ok && t.total > 0 ? t.total : t.loaded;
@@ -1448,23 +1464,26 @@
     }
 
     async function retryUpload(t) {
-      const { file, path } = t.payload;
+      const { file, path, name } = t.payload;
       transfers.delete(t.id); // drop the failed row; the retry registers a fresh one
       renderTransferModal();
       try {
-        await uploadOne(file, path);
+        await uploadOne(file, path, name);
         if (currentPath === path) {
           await loadFiles(path);
           setTimeout(() => { if (currentPath === path) loadFiles(path); }, 1200);
         }
-        showToast('Uploaded ' + file.name, 3000, 'success');
+        showToast('Uploaded ' + (name || file.name), 3000, 'success');
       } catch (e) {
         showToast('Retry failed: ' + e.message, 8000, 'error');
       }
     }
 
+    // Dismissing the modal must not destroy rows that are still running: the XHR
+    // handlers look them up by id. Only finished rows are dropped.
     function closeTransferModal() {
-      transfers.clear();
+      for (const [id, t] of transfers) if (t.state !== 'active') transfers.delete(id);
+      transferModalDismissed = hasActiveTransfers();
       renderTransferModal();
     }
 
@@ -1486,7 +1505,8 @@
 
     function renderTransferModal() {
       const items = Array.from(transfers.values());
-      transferModal.classList.toggle('hidden', items.length === 0);
+      const show = items.length > 0 && !(transferModalDismissed && hasActiveTransfers());
+      transferModal.classList.toggle('hidden', !show);
       const active = hasActiveTransfers();
       const errors = items.some(t => t.state === 'error');
       const allUploads = items.length > 0 && items.every(t => t.kind === 'upload');
@@ -1514,7 +1534,7 @@
               : allUploads ? 'The files are fully uploaded. You can safely close this tab.'
                 : 'The files are fully downloaded. You can safely close this tab.';
       document.getElementById('transferFooterNote').classList.toggle('hidden', !active);
-      transferCloseBtn.classList.toggle('hidden', active || items.length === 0);
+      transferCloseBtn.classList.toggle('hidden', items.length === 0);
 
       // Aggregate bar across all transfers with a known size (queue-level progress).
       const sized = items.filter(t => t.total > 0);
@@ -1581,7 +1601,7 @@
     transferModal.addEventListener('click', (e) => { if (e.target === transferModal && !hasActiveTransfers()) closeTransferModal(); });
 
     window.addEventListener('beforeunload', (e) => {
-      if (hasActiveTransfers()) { e.preventDefault(); e.returnValue = ''; }
+      if (hasActiveTransfers() || pendingZip > 0) { e.preventDefault(); e.returnValue = ''; }
     });
 
     // ====== SIGN IN / OUT ======
@@ -2058,7 +2078,8 @@
             });
             xhr.addEventListener('error', () => reject(new Error('Network error')));
             xhr.addEventListener('abort', () => reject(new Error('Cancelled by user')));
-            transfers.get(id).xhr = xhr;
+            const row = transfers.get(id);
+            if (row) row.xhr = xhr;
             xhr.send();
           });
           finishTransfer(id, true);
@@ -2079,6 +2100,142 @@
         if (e instanceof AuthExpired) return; // login screen is already shown
         showToast('Download failed: ' + e.message, 8000, 'error');
       }
+    }
+
+    // ====== ZIP DOWNLOAD ======
+    // The NAS builds a ZIP on behalf of the web UI itself at /life/v1/file/zip.
+    // We reuse it. The hidden form POST returns an attachment; the browser saves
+    // it to Downloads without navigating, so the app keeps working meanwhile.
+    const ZIP_SIZE_CAP = 1024 * 1024 * 1024; // 1 GB — matches the NAS 2 GB RAM budget
+    const ZIP_WALK_LIMIT = 300;              // listing calls — never walk the whole NAS for a cap check
+
+    function zipTooBig() {
+      const e = new Error('too-big');
+      e.tooBig = true;
+      return e;
+    }
+
+    // Type of a path, from the rendered row. Returns null when unknown.
+    function itemTypeFor(path) {
+      const row = fileList.querySelector(`tr[data-path="${CSS.escape(path)}"]`);
+      return row ? row.dataset.type : null;
+    }
+
+    // Sum the sizes of the selected paths. Folder members are listed with the
+    // folder API; stops early rather than touch every file on the NAS.
+    async function selectionSizeBytes(paths) {
+      let bytes = 0;
+      let calls = 0;
+      const parentCache = new Map();
+      const stack = paths.map(path => ({ path }));
+      const tooBig = () => { throw zipTooBig(); };
+      while (stack.length) {
+        if (calls >= ZIP_WALK_LIMIT || bytes > ZIP_SIZE_CAP) tooBig();
+        const entry = stack.pop();
+        const path = entry.path;
+        const type = entry.type || itemTypeFor(path);
+        if (type === 'file') {
+          const parent = parentOf(path);
+          let items = parentCache.get(parent);
+          if (!items) {
+            calls++;
+            items = await fsList(parent);
+            parentCache.set(parent, items);
+          }
+          const it = items.find(i => (i.path || (parent === '/' ? '/' + i.name : `${parent}/${i.name}`)) === path);
+          bytes += Number((it && it.size) || 0);
+          continue;
+        }
+        // Treat anything without a known file type as a folder and list it.
+        calls++;
+        const items = await fsList(path);
+        for (const item of items) {
+          const full = item.path || (path === '/' ? '/' + item.name : `${path}/${item.name}`);
+          if (item.type === 'folder') {
+            if (item.name !== '@SmbRecyclebin') stack.push({ path: full });
+          } else {
+            bytes += Number(item.size || 0);
+            if (bytes > ZIP_SIZE_CAP) tooBig();
+          }
+        }
+      }
+      return bytes;
+    }
+
+    function zipNameFor(paths) {
+      const d = new Date();
+      const stamp = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}-${String(d.getHours()).padStart(2, '0')}${String(d.getMinutes()).padStart(2, '0')}`;
+      const safe = s => s.replace(/[^A-Za-z0-9._ -]+/g, '-').slice(0, 60).trim() || 'HomeNAS';
+      if (paths.length === 1 && itemTypeFor(paths[0]) === 'folder') {
+        const row = fileList.querySelector(`tr[data-path="${CSS.escape(paths[0])}"]`);
+        const name = row ? row.dataset.name : '';
+        if (name) return safe(name);
+      }
+      return 'HomeNAS-' + stamp;
+    }
+
+    function submitZipRequest(paths, name) {
+      pendingZip++;
+      showToast('Preparing ZIP download — keep this tab open.', 6000);
+      const form = document.createElement('form');
+      form.method = 'post';
+      form.action = `${PROXY_URL}/life/v1/file/zip`;
+      form.enctype = 'text/plain';
+      form.target = 'zipFrame';
+      form.style.display = 'none';
+      const quoted = paths.map(p => `"${p}"`).join(',');
+      // The NAS expects a raw pseudo-JSON payload; we replicate it exactly.
+      const hidden = document.createElement('input');
+      hidden.type = 'hidden';
+      hidden.name = "{ trash:'";
+      hidden.value = `' , root: 'local', name:'${name}',paths:[${quoted}] }`;
+      form.appendChild(hidden);
+      document.body.appendChild(form);
+      const frame = document.getElementById('zipFrame');
+      const onLoad = () => {
+        frame.removeEventListener('load', onLoad);
+        pendingZip = Math.max(0, pendingZip - 1);
+        zipSelectedBtn.disabled = selection.size === 0;
+        showToast('Download started — check your Downloads folder.', 6000, 'success');
+      };
+      frame.addEventListener('load', onLoad);
+      form.submit();
+      setTimeout(() => form.remove(), 4000);
+      // Safety reset if the frame never fires load (e.g. NAS unreachable).
+      setTimeout(() => { if (pendingZip > 0) { pendingZip--; zipSelectedBtn.disabled = selection.size === 0; } }, 30 * 60 * 1000);
+    }
+
+    async function downloadSelectedZip() {
+      const paths = [...selection];
+      if (!paths.length) return;
+      // Single file: a direct download is friendlier than a 1-file archive.
+      if (paths.length === 1 && itemTypeFor(paths[0]) === 'file') {
+        const row = fileList.querySelector(`tr[data-path="${CSS.escape(paths[0])}"]`);
+        const name = row ? (row.dataset.name || paths[0].split('/').pop()) : paths[0].split('/').pop();
+        downloadItem(paths[0], name);
+        return;
+      }
+      for (const p of paths) {
+        if (p.includes('"') || p.includes('\\')) {
+          showToast('A selected name contains a quote or backslash — download it individually.', 7000, 'error');
+          return;
+        }
+      }
+      showToast('Checking size…', 4000);
+      zipSelectedBtn.disabled = true;
+      try {
+        const bytes = await selectionSizeBytes(paths);
+        if (bytes > ZIP_SIZE_CAP) {
+          showToast('Selection is over 1 GB. Download a smaller portion.', 8000, 'error');
+          zipSelectedBtn.disabled = selection.size === 0;
+          return;
+        }
+      } catch (e) {
+        showToast('Could not check selection size. The NAS may be busy — try again.', 6000, 'error');
+        zipSelectedBtn.disabled = selection.size === 0;
+        return;
+      }
+      submitZipRequest(paths, zipNameFor(paths));
     }
 
     // ====== ACTIONS ======
@@ -2638,6 +2795,7 @@
 
     document.getElementById('moveSelectedBtn').addEventListener('click', () => openMoveCopy('move'));
     document.getElementById('copySelectedBtn').addEventListener('click', () => openMoveCopy('copy'));
+    document.getElementById('zipSelectedBtn').addEventListener('click', downloadSelectedZip);
     document.getElementById('moveCopyConfirm').addEventListener('click', executeMoveCopy);
     document.getElementById('moveCopyCloseBtn').addEventListener('click', closeMoveCopy);
     document.getElementById('moveCopyCancel').addEventListener('click', closeMoveCopy);
@@ -2647,25 +2805,39 @@
     const uploadBtn = document.getElementById('uploadBtn');
     const uploadStatus = document.getElementById('uploadStatus');
 
-    async function uploadOne(file, path) {
+    async function uploadOne(file, path, name) {
+      const finalName = name || file.name;
       const form = new FormData();
       form.append('application/json', JSON.stringify({
         root: 'local',
         path,
         mtime: new Date(file.lastModified || Date.now()).toISOString(),
         size: file.size,
-        filename: file.name
+        filename: finalName
       }));
       // The NAS reads the file from the field named after the file itself.
-      form.append(file.name, file, file.name);
+      form.append(finalName, file, finalName);
 
-      const id = startTransfer(file.name, 'upload', { file, path });
+      const id = startTransfer(finalName, 'upload', { file, path, name: finalName });
       try {
         await new Promise((resolve, reject) => {
           const xhr = new XMLHttpRequest();
           xhr.open('POST', `${PROXY_URL}/life/v1/file/upload`);
           xhr.setRequestHeader('Authorization', cookie ? `Bearer ${cookie}` : '');
+          let stalled = false;
+          let lastProgress = Date.now();
+          // Stall watchdog: if the NAS stops responding, abort after 45 s without progress.
+          const stallWatch = setInterval(() => {
+            if (Date.now() - lastProgress > 45000) {
+              stalled = true;
+              try { xhr.abort(); } catch (_) {}
+              clearInterval(stallWatch);
+            }
+          }, 5000);
+          const row = transfers.get(id);
+          if (row) row.stallWatch = stallWatch;
           xhr.upload.addEventListener('progress', (e) => {
+            lastProgress = Date.now();
             updateTransfer(id, e.loaded, e.lengthComputable ? e.total : 0);
           });
           xhr.addEventListener('load', () => {
@@ -2678,8 +2850,9 @@
             resolve();
           });
           xhr.addEventListener('error', () => reject(new Error('Network error')));
-          xhr.addEventListener('abort', () => reject(new Error('Cancelled by user')));
-          transfers.get(id).xhr = xhr;
+          xhr.addEventListener('abort', () => reject(stalled ? new Error('The NAS did not respond — try again') : new Error('Cancelled by user')));
+          const liveRow = transfers.get(id);
+          if (liveRow) liveRow.xhr = xhr;
           xhr.send(form);
         });
         finishTransfer(id, true);
@@ -2689,6 +2862,19 @@
       }
     }
 
+    // Never replace an existing file: pick "name (1).ext", "name (2).ext", and so on.
+    function uniqueName(name, taken) {
+      if (!taken.has(name)) return name;
+      const dot = name.lastIndexOf('.');
+      const base = dot > 0 ? name.slice(0, dot) : name;
+      const ext = dot > 0 ? name.slice(dot) : '';
+      for (let n = 1; n < 1000; n++) {
+        const candidate = `${base} (${n})${ext}`;
+        if (!taken.has(candidate)) return candidate;
+      }
+      return `${base} (${Date.now()})${ext}`;
+    }
+
     async function uploadFiles(files) {
       if (currentPath === '/') {
         showToast('Open a share or folder before uploading.', 6000, 'error');
@@ -2696,11 +2882,28 @@
       }
       const targetPath = currentPath;
       const failed = [];
+      const renamed = [];
       let done = 0;
+      // Existing names in the target folder, so an upload never replaces a file.
+      // The NAS listing can lag, so names taken in this batch are added by hand.
+      const taken = new Set();
+      let namesKnown = true;
+      try {
+        const existing = await fsList(targetPath);
+        for (const item of existing) if (item.name) taken.add(item.name);
+      } catch (e) {
+        namesKnown = false;
+      }
+      if (!namesKnown) {
+        showToast('Could not read the folder. An upload may replace a file with the same name.', 8000, 'error');
+      }
       for (let i = 0; i < files.length; i++) {
         uploadStatus.textContent = `${i + 1} of ${files.length}…`;
         try {
-          await uploadOne(files[i], targetPath);
+          const finalName = uniqueName(files[i].name, taken);
+          taken.add(finalName);
+          if (finalName !== files[i].name) renamed.push(`${files[i].name} → ${finalName}`);
+          await uploadOne(files[i], targetPath, finalName);
           done++;
         } catch (e) {
           if (e.message === 'Cancelled by user' || e instanceof AuthExpired) {
@@ -2728,7 +2931,10 @@
       } else if (failed.length) {
         showToast(`Upload failed: ${failed[0]}`, 8000, 'error');
       } else {
-        showToast(`Uploaded ${done} file(s) to ${targetPath}`, 3000, 'success');
+        const note = renamed.length
+          ? `. Renamed to avoid replacing: ${renamed[0]}` + (renamed.length > 1 ? ` (+${renamed.length - 1} more)` : '')
+          : '';
+        showToast(`Uploaded ${done} file(s) to ${targetPath}${note}`, renamed.length ? 8000 : 3000, 'success');
       }
       return done;
     }
@@ -2973,6 +3179,7 @@
           const { user, token } = JSON.parse(raw);
           cookie = token;
           currentUser = user;
+          setSessionCookie(token);
           await fsList('/'); // throws when the token is dead or the NAS is down
           userBadge.textContent = user === 'admin' ? user + ' (admin)' : user;
           showApp();
