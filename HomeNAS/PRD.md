@@ -201,6 +201,10 @@ Access retained from phones and laptops on the home private network. Goals: HTTP
 - **Issue**: Login as chewfamily works at the NAS level, but the app is untested with that account. Admin-only actions fail with NAS error toasts — expected.
 - **Status**: ⏸ Known limitation — resolve with a chewfamily test session
 
+### App deletes are permanent
+- **Issue**: Deleting from HomeNAS uses the NAS HTTP API and **bypasses the recycle bin**. SMB/Finder deletes go to `@SmbRecyclebin` (mirrored folder tree); app deletes do not.
+- **Status**: ⏸ Known limitation — Phase 2 adds a Recycle Bin browser; a "move to bin" delete path could come after
+
 ---
 
 ## 8. Success Criteria
