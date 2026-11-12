@@ -10,7 +10,7 @@
 </head>
 <body class="app-bg flex h-screen flex-col text-sm text-neutral-900">
   <!-- Login view. Shown when signed out; the app shell stays hidden until then. -->
-  <div class="app-bg hidden h-screen items-center justify-center p-4" id="loginView">
+  <div class="app-bg flex hidden h-screen items-center justify-center p-4" id="loginView">
     <form class="w-full max-w-sm rounded-2xl border border-neutral-200 bg-white p-6 shadow-xl" id="loginForm">
       <div class="mb-6 flex items-center gap-3">
         <svg class="h-9 w-9 shrink-0 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6.5" y1="12" x2="6.5" y2="12.01"/><line x1="11" y1="12" x2="11.01" y2="12"/><line x1="15.5" y1="12" x2="15.5" y2="12.01"/></svg>
@@ -36,7 +36,7 @@
       <button type="submit" class="btn btn-primary w-full justify-center" id="loginSubmit">Sign in</button>
     </form>
   </div>
-  <header class="app-shell sticky top-0 z-10 hidden flex items-center justify-between border-b border-neutral-200 bg-white px-4 py-3 shadow-sm">
+  <header class="app-shell app-header sticky top-0 z-10 hidden flex items-center justify-between border-b border-neutral-200 bg-white px-4 py-3">
     <div class="flex items-center gap-2">
       <button class="icon-btn" id="sidebarToggle" aria-controls="sidebar" aria-expanded="true" data-tooltip="Hide sidebar" data-tooltip-pos="bottom" aria-label="Hide sidebar">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
@@ -49,7 +49,7 @@
       <button class="icon-btn" id="healthBtn" data-tooltip="Health (admin)" data-tooltip-pos="bottom" aria-label="Health (admin)"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></button>
       <button class="icon-btn" id="signOutBtn" data-tooltip="Sign out" data-tooltip-pos="bottom" aria-label="Sign out"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v8"/><path d="M6.3 6.3a8 8 0 1 0 11.4 0"/></svg></button>
       <button class="icon-btn" id="changePasswordBtn" data-tooltip="Change password" data-tooltip-pos="bottom" aria-label="Change password"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></button>
-      <span class="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-600 ring-1 ring-inset ring-neutral-200" id="userBadge">admin</span>
+      <span class="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-800 ring-1 ring-inset ring-blue-200" id="userBadge">admin</span>
     </div>
   </header>
   <main class="app-shell hidden flex flex-1 overflow-hidden">
@@ -67,12 +67,28 @@
         <button class="btn-icon" id="newFolderBtn" data-tooltip="New Folder" aria-label="New Folder">
           <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="10" x2="12" y2="14"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
         </button>
+        <button class="btn-icon" id="moveSelectedBtn" disabled data-tooltip="Move Selected" aria-label="Move Selected">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M10 13h6M13.5 10.5 16 13l-2.5 2.5"/></svg>
+        </button>
+        <button class="btn-icon" id="copySelectedBtn" disabled data-tooltip="Copy Selected" aria-label="Copy Selected">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        </button>
         <button class="btn-icon" id="deleteSelectedBtn" disabled data-tooltip="Delete Selected" aria-label="Delete Selected">
           <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
         </button>
+        <button class="icon-btn" id="upLevelBtn" data-tooltip="Up one level" data-tooltip-pos="bottom" aria-label="Up one level"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 15v-4M9.5 12.5 12 10l2.5 2.5"/></svg></button>
         <span class="mx-1 h-5 w-px bg-neutral-200" aria-hidden="true"></span>
         <nav class="flex flex-wrap items-center gap-1.5 text-sm text-neutral-500" id="breadcrumb" aria-label="Breadcrumb"></nav>
-        <button class="icon-btn ml-auto" id="refreshBtn" data-tooltip="Refresh" data-tooltip-pos="bottom" aria-label="Refresh">
+        <form class="relative ml-auto flex items-center gap-1.5" id="searchForm" role="search" autocomplete="off">
+          <div class="relative flex items-center">
+            <svg class="pointer-events-none absolute left-2.5 h-4 w-4 text-neutral-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
+            <input class="h-9 w-40 rounded-lg border border-neutral-200 bg-white py-1.5 pl-8 pr-7 text-xs text-neutral-700 shadow-sm transition-colors placeholder:text-neutral-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-neutral-50 disabled:text-neutral-400" id="searchInput" type="text" placeholder="Search in home" autocomplete="off" spellcheck="false" aria-label="Search files in this share">
+            <button class="absolute right-1.5 flex h-6 w-6 items-center justify-center rounded-md text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-700 hidden" id="searchClear" aria-label="Clear search" type="button"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+          </div>
+          <button class="btn h-9 px-3 text-xs" id="searchSubmitBtn" type="submit" data-tooltip="Search (Enter)" data-tooltip-pos="bottom"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>Search</button>
+        </form>
+        <span class="text-[11px] tabular-nums text-neutral-500" id="searchStatus" role="status"></span>
+        <button class="icon-btn ml-1" id="refreshBtn" data-tooltip="Refresh" data-tooltip-pos="bottom" aria-label="Refresh">
           <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
         </button>
       </div>
@@ -81,10 +97,10 @@
           <thead>
             <tr>
               <th class="w-10 border-b border-neutral-200 bg-neutral-50 px-3 py-2 text-left"><input type="checkbox" id="selectAll" class="h-4 w-4 accent-blue-600" data-tooltip="Select all" aria-label="Select all"></th>
-              <th class="border-b border-neutral-200 bg-neutral-50 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Name</th>
-              <th class="w-28 border-b border-neutral-200 bg-neutral-50 px-3 py-2 text-right text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Size</th>
-              <th class="w-44 border-b border-neutral-200 bg-neutral-50 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Modified</th>
-              <th class="w-24 border-b border-neutral-200 bg-neutral-50 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Type</th>
+              <th class="border-b border-neutral-200 bg-neutral-50 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500"><button class="sort-header inline-flex items-center gap-1" data-sort="name" type="button" data-active="true" data-dir="asc" aria-label="Sort by name">Name <svg class="sort-arrow h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 15 12 9 18 15"/></svg></button></th>
+              <th class="w-28 border-b border-neutral-200 bg-neutral-50 px-3 py-2 text-right text-[11px] font-semibold uppercase tracking-wider text-neutral-500"><button class="sort-header inline-flex items-center gap-1" data-sort="size" type="button" data-active="false" data-dir="asc" aria-label="Sort by size">Size <svg class="sort-arrow h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 15 12 9 18 15"/></svg></button></th>
+              <th class="w-44 border-b border-neutral-200 bg-neutral-50 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500"><button class="sort-header inline-flex items-center gap-1" data-sort="access_date" type="button" data-active="false" data-dir="asc" aria-label="Sort by modified date">Modified <svg class="sort-arrow h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 15 12 9 18 15"/></svg></button></th>
+              <th class="w-24 border-b border-neutral-200 bg-neutral-50 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500"><button class="sort-header inline-flex items-center gap-1" data-sort="type" type="button" data-active="false" data-dir="asc" aria-label="Sort by type">Type <svg class="sort-arrow h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 15 12 9 18 15"/></svg></button></th>
               <th class="w-44 border-b border-neutral-200 bg-neutral-50 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Actions</th>
             </tr>
           </thead>
@@ -105,7 +121,7 @@
     </div>
   </div>
   <div class="toast hidden" id="toast" role="status"></div>
-  <div class="fixed inset-0 z-50 flex hidden items-center justify-center bg-black/50 p-4 backdrop-blur-[2px]" id="transferModal" role="dialog" aria-modal="true" aria-labelledby="transferTitleText">
+  <div class="fixed inset-0 z-[60] flex hidden items-center justify-center bg-black/50 p-4 backdrop-blur-[2px]" id="transferModal" role="dialog" aria-modal="true" aria-labelledby="transferTitleText">
     <div class="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5">
       <div class="flex items-center gap-4 border-b border-neutral-100 px-6 py-4">
         <span id="transferTitleIcon" class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-white"></span>
@@ -179,6 +195,26 @@
     </div>
   </div>
 
+  <div class="fixed inset-0 z-50 flex hidden items-center justify-center bg-black/40 p-4 backdrop-blur-[2px]" id="moveCopyModal" role="dialog" aria-modal="true" aria-labelledby="moveCopyTitle">
+    <div class="w-full max-w-md overflow-hidden rounded-xl bg-white shadow-2xl ring-1 ring-black/5">
+      <div class="flex items-center justify-between gap-3 border-b border-neutral-100 px-5 py-3">
+        <h3 class="text-base font-semibold text-neutral-800" id="moveCopyTitle">Move items</h3>
+        <button class="icon-btn" id="moveCopyCloseBtn" aria-label="Close" data-tooltip="Close"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="border-b border-neutral-100 px-5 py-2.5">
+        <nav class="flex flex-wrap items-center gap-1.5 text-xs text-neutral-500" id="moveCopyCrumbs" aria-label="Destination folder"></nav>
+      </div>
+      <ul class="max-h-56 min-h-32 divide-y divide-neutral-100 overflow-y-auto" id="moveCopyFolderList"></ul>
+      <div class="border-t border-neutral-100 px-5 py-3.5">
+        <p class="mb-3 text-[11px] leading-relaxed text-neutral-500"><span id="moveCopySummary" class="font-medium text-neutral-700">Choose the destination folder.</span></p>
+        <div class="flex justify-end gap-2">
+          <button class="btn" id="moveCopyCancel">Cancel</button>
+          <button class="btn btn-primary" id="moveCopyConfirm">Move here</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="fixed inset-0 z-50 flex hidden items-center justify-center bg-black/40 p-4 backdrop-blur-[2px]" id="binChoiceModal" role="dialog" aria-modal="true" aria-labelledby="binChoiceTitle">
     <div class="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl ring-1 ring-black/5">
       <h3 class="mb-2 text-base font-semibold text-neutral-800" id="binChoiceTitle">Create a recycle bin for this share?</h3>
@@ -231,6 +267,7 @@
         <pre class="hidden h-full w-full self-stretch overflow-auto whitespace-pre-wrap break-all rounded border border-neutral-200 bg-white p-3 font-mono text-[12px] leading-5 text-neutral-800" id="textPreviewView"></pre>
         <div class="hidden h-full w-full self-stretch overflow-auto rounded border border-neutral-200 bg-white p-3" id="csvPreviewView"></div>
         <iframe class="hidden h-full w-full self-stretch rounded bg-white" id="pdfPreviewFrame" title="PDF preview"></iframe>
+        <video class="hidden h-full w-full self-stretch rounded bg-black" id="videoPreviewPlayer" controls playsinline preload="auto"></video>
       </div>
     </div>
   </div>
@@ -498,7 +535,7 @@
 
     function showLogin(msg) {
       document.querySelectorAll('.app-shell').forEach(el => el.classList.add('hidden'));
-      [healthModal, changePasswordModal, shareDeleteModal, modal, recycleModal, purgeConfirmModal, emptyBinModal, imagePreviewModal, transferModal, binChoiceModal].forEach(el => el && el.classList.add('hidden'));
+      [healthModal, changePasswordModal, shareDeleteModal, modal, recycleModal, purgeConfirmModal, emptyBinModal, imagePreviewModal, transferModal, binChoiceModal, moveCopyModal].forEach(el => el && el.classList.add('hidden'));
       closePreview(); // hides too, and revokes the blob URL
       toast.classList.add('hidden');
       loginView.classList.remove('hidden');
@@ -713,7 +750,7 @@
         childrenUl.innerHTML = `<li class="my-0.5"><button class="${TREE_BUTTON_CLASS}" disabled>Loading…</button></li>`;
         try {
           const items = await fsList(path);
-          const names = items.filter(item => item.type === 'folder' && !item.name.startsWith('.') && item.name !== '@SmbRecyclebin');
+          const names = items.filter(item => item.type === 'folder' && !item.name.startsWith('.'));
           childrenUl.innerHTML = '';
           if (!names.length) {
             childrenUl.innerHTML = `<li class="my-0.5"><button class="${TREE_BUTTON_CLASS}" disabled>No subfolders</button></li>`;
@@ -732,46 +769,43 @@
     async function loadFiles(path) {
       currentPath = path;
       updateBreadcrumb(path);
+      updateSearchAvailability();
+      document.getElementById('upLevelBtn').disabled = path === '/';
       selection.clear();
       selectAll.checked = false;
       selectAll.disabled = true;
       fileList.innerHTML = '<tr><td colspan="6" class="px-6 py-16 text-center text-sm text-neutral-400"><span class="animate-pulse">Loading…</span></td></tr>';
       try {
         const items = await fsList(path);
+        currentItems = items;
         renderFiles(items, path);
       } catch (e) {
         fileList.innerHTML = '<tr><td colspan="6" class="px-6 py-16 text-center text-sm text-red-600">Error: ' + escapeHtml(e.message) + '</td></tr>';
       }
     }
 
-    function renderFiles(items, path) {
-      const visible = items.filter(item => !item.name.startsWith('.') && item.name !== '@SmbRecyclebin');
-      selectAll.disabled = !visible.length;
-      if (!visible.length) {
-        fileList.innerHTML = `<tr>
-          <td colspan="6" class="px-6 py-16 text-center">
-            <svg class="mx-auto mb-3 h-10 w-10 text-neutral-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-            <p class="text-sm font-medium text-neutral-500">This folder is empty</p>
-            <p class="mt-1 text-xs text-neutral-400">Upload a file or create a folder to get started.</p>
-          </td>
-        </tr>`;
-        return;
-      }
-      fileList.innerHTML = visible.map(item => {
+    function fileRow(item, path, opts = {}) {
         const fullPath = item.path || `${path === '/' ? '' : path}/${item.name}`;
         const isFolder = item.type === 'folder';
         const label = itemLabel(item);
         const realName = label === item.name ? '' : ` title="Folder name: ${escapeHtml(item.name)}"`;
         const canModify = path !== '/';
         const pending = pendingDeletes.has(fullPath);
+        // "Move up one level" is only meaningful when there is a folder above the current listing.
+        const canMoveUp = isFolder && !pending && path !== '/' && parentOf(path) !== '/';
         const previewable = !isFolder && previewKind(item.name) !== null;
         const previewKindAttr = previewable ? previewKind(item.name) : '';
-        const downloadBtn = isFolder ? '' : `
+        const typeCell = pending ? 'Deleting…' : (opts.typeCell ?? (isFolder ? 'Folder' : fileType(item.name)));
+      const upBtn = canMoveUp ? `
+                <button class="btn-icon move-up-item" data-path="${escapeHtml(fullPath)}" data-tooltip="Move up one folder" aria-label="Move ${escapeHtml(label)} up one folder"${pending ? ' disabled' : ''}>
+                  <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 15v-4M9.5 12.5 12 10l2.5 2.5"/></svg>
+                </button>` : '';
+      const downloadBtn = isFolder ? '' : `
                 <button class="btn-icon download-item" data-path="${escapeHtml(fullPath)}" data-name="${escapeHtml(item.name)}" data-tooltip="Download" aria-label="Download ${escapeHtml(label)}"${pending ? ' disabled' : ''}>
                   <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 </button>`;
         return `
-        <tr data-selected="false" data-deleting="${pending}" data-name="${escapeHtml(label)}" data-path="${escapeHtml(fullPath)}" data-type="${isFolder ? 'folder' : 'file'}" class="transition-colors odd:bg-white even:bg-neutral-50/60 hover:bg-blue-50/70 data-[selected=true]:bg-blue-50 data-[deleting=true]:opacity-45 data-[deleting=true]:[&_td]:pointer-events-none">
+        <tr draggable="${pending ? 'false' : 'true'}" data-selected="false" data-deleting="${pending}" data-name="${escapeHtml(label)}" data-path="${escapeHtml(fullPath)}" data-type="${isFolder ? 'folder' : 'file'}" class="transition-colors odd:bg-white even:bg-neutral-50/60 hover:bg-blue-50/70 data-[selected=true]:bg-blue-50 data-[deleting=true]:opacity-45 data-[deleting=true]:[&_td]:pointer-events-none">
           <td class="border-b border-neutral-100 px-3 py-2"><input type="checkbox" class="row-check h-4 w-4 accent-blue-600" value="${escapeHtml(fullPath)}"${pending ? ' disabled' : ''} aria-label="Select ${escapeHtml(label)}"></td>
           <td class="border-b border-neutral-100 px-3 py-2"${realName}>
             <span class="flex items-center gap-2 font-medium text-neutral-800">
@@ -787,12 +821,13 @@
           </td>
           <td class="border-b border-neutral-100 px-3 py-2 text-right tabular-nums text-neutral-600">${isFolder ? '—' : formatSize(item.size)}</td>
           <td class="border-b border-neutral-100 px-3 py-2 text-neutral-600">${formatDate(item.access_date)}</td>
-          <td class="type border-b border-neutral-100 px-3 py-2 text-neutral-600">${pending ? 'Deleting…' : isFolder ? 'Folder' : fileType(item.name)}</td>
+          <td class="type border-b border-neutral-100 px-3 py-2 text-neutral-600">${typeCell}</td>
           <td class="border-b border-neutral-100 px-3 py-2">
             ${(downloadBtn || canModify) ? `
               <span class="flex gap-1.5">
                 ${downloadBtn}
                 ${canModify ? `
+                ${upBtn}
                 <button class="btn-icon" onclick="renameItem('${escapeHtml(fullPath)}', '${escapeHtml(label)}')" data-tooltip="Rename" aria-label="Rename ${escapeHtml(label)}"${pending ? ' disabled' : ''}>
                   <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.85 2.85 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
                 </button>
@@ -805,7 +840,111 @@
           </td>
         </tr>
       `;
-      }).join('');
+    }
+    // ====== SORTING ======
+    const SORT_COLLATOR = new Intl.Collator(undefined, { sensitivity: 'base', numeric: true });
+    let sortKey = 'name';
+    let sortDir = 1; // 1 = ascending, -1 = descending
+    let currentItems = [];
+
+    const SORT_VAL = {
+      name: it => String((typeof itemLabel === 'function' ? itemLabel(it) : it.name) || it.name || '').toLowerCase(),
+      size: it => Number(it.size || 0),
+      access_date: it => String(it.access_date || ''),
+      type: it => String(it.type === 'folder' ? 'Folder' : (typeof fileType === 'function' ? fileType(it.name || '') : (it.name || '').split('.').pop())).toLowerCase()
+    };
+
+    function applySort(items) {
+      const val = SORT_VAL[sortKey];
+      const folders = items.filter(i => i.type === 'folder');
+      const files = items.filter(i => i.type !== 'folder');
+      const cmp = (a, b) => {
+        if (sortKey === 'size') return Number(val(a)) - Number(val(b));
+        const va = val(a), vb = val(b);
+        return typeof va === 'number' ? va - vb : SORT_COLLATOR.compare(String(va), String(vb));
+      };
+      folders.sort((a, b) => cmp(a, b) * sortDir);
+      files.sort((a, b) => cmp(a, b) * sortDir);
+      return folders.concat(files);
+    }
+
+    function updateSortHeaderUI() {
+      document.querySelectorAll('.sort-header').forEach(btn => {
+        const active = btn.dataset.sort === sortKey;
+        btn.dataset.active = String(active);
+        btn.dataset.dir = sortDir === -1 ? 'desc' : 'asc';
+        const th = btn.closest('th');
+        if (th) th.setAttribute('aria-sort', active ? (sortDir === -1 ? 'descending' : 'ascending') : 'none');
+      });
+    }
+
+    function rerenderCurrentView() {
+      updateSortHeaderUI();
+      if (searchState.active && searchState.results && searchInput.value.trim().length >= 2) {
+        renderSearchResults(applySort(searchState.results));
+      } else if (currentItems.length) {
+        renderFiles(currentItems, currentPath);
+      }
+    }
+
+    document.querySelectorAll('.sort-header').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.dataset.sort === sortKey) sortDir = -sortDir;
+        else { sortKey = btn.dataset.sort; sortDir = 1; }
+        rerenderCurrentView();
+      });
+    });
+
+    function renderFiles(items, path) {
+      updateSortHeaderUI();
+      const visible = items.filter(item => !item.name.startsWith('.'));
+      selectAll.disabled = !visible.length;
+      if (!visible.length) {
+        fileList.innerHTML = `<tr>
+          <td colspan="6" class="px-6 py-14 text-center">
+            <svg class="mx-auto mb-4 h-40 w-auto" viewBox="0 0 220 150" role="img" aria-label="Empty folder illustration">
+              <defs>
+                <linearGradient id="heroRing" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#eef2ff"/>
+                  <stop offset="1" stop-color="#e0e7ff"/>
+                </linearGradient>
+                <linearGradient id="heroBack" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#fde68a"/>
+                  <stop offset="1" stop-color="#fcd34d"/>
+                </linearGradient>
+                <linearGradient id="heroBody" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#fcd34d"/>
+                  <stop offset="1" stop-color="#f59e0b"/>
+                </linearGradient>
+                <linearGradient id="heroDoc" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0" stop-color="#ffffff"/>
+                  <stop offset="1" stop-color="#e8edf5"/>
+                </linearGradient>
+              </defs>
+              <circle cx="110" cy="78" r="64" fill="url(#heroRing)"/>
+              <rect x="62" y="30" width="52" height="38" rx="5" fill="url(#heroDoc)" stroke="#dbe2ee" stroke-width="1.5" transform="rotate(-9 88 49)"/>
+              <line x1="72" y1="44" x2="100" y2="40" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" transform="rotate(-9 88 49)"/>
+              <line x1="73" y1="53" x2="97" y2="49.4" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" transform="rotate(-9 88 49)"/>
+              <rect x="104" y="24" width="52" height="38" rx="5" fill="url(#heroDoc)" stroke="#dbe2ee" stroke-width="1.5" transform="rotate(10 130 43)"/>
+              <line x1="113" y1="37" x2="142" y2="42.3" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" transform="rotate(10 130 43)"/>
+              <line x1="112" y1="46" x2="138" y2="50.8" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" transform="rotate(10 130 43)"/>
+              <path d="M48 82a10 10 0 0 1 10-10h34l8-8h62a10 10 0 0 1 10 10v6H48z" fill="url(#heroBack)"/>
+              <path d="M48 78a8 8 0 0 1 8-8h108a8 8 0 0 1 8 8v30a9 9 0 0 1-9 9H57a9 9 0 0 1-9-9z" fill="url(#heroBody)"/>
+              <path d="M48 82h124v9a9 9 0 0 1-9 9H57a9 9 0 0 1-9-9z" fill="#d97706" opacity="0.35"/>
+              <g fill="#f59e0b" opacity="0.9">
+                <circle cx="184" cy="66" r="2.2"/>
+                <circle cx="32" cy="64" r="2.2"/>
+                <circle cx="196" cy="106" r="1.6"/>
+                <circle cx="24" cy="104" r="1.6"/>
+              </g>
+            </svg>
+            <p class="text-sm font-semibold text-neutral-600">This folder is empty</p>
+            <p class="mt-1.5 text-xs text-neutral-400">Upload a file or create a folder to get started.</p>
+          </td>
+        </tr>`;
+        return;
+      }
+      fileList.innerHTML = applySort(visible).map(item => fileRow(item, path)).join('');
       bindRowEvents();
     }
 
@@ -815,6 +954,9 @@
       });
       fileList.querySelectorAll('.download-item').forEach(btn => {
         btn.addEventListener('click', () => downloadItem(btn.dataset.path, btn.dataset.name));
+      });
+      fileList.querySelectorAll('.move-up-item').forEach(btn => {
+        btn.addEventListener('click', () => moveFolderUp(btn.dataset.path));
       });
       fileList.querySelectorAll('.preview-item').forEach(btn => {
         btn.addEventListener('click', () => openPreview(btn.dataset.path, btn.dataset.name, btn.dataset.size, btn.dataset.kind));
@@ -841,6 +983,8 @@
       fileList.querySelectorAll('.row-check:checked').forEach(cb => selection.add(cb.value));
       selectAll.checked = selection.size > 0 && selection.size === fileList.querySelectorAll('.row-check').length;
       document.getElementById('deleteSelectedBtn').disabled = selection.size === 0;
+      document.getElementById('moveSelectedBtn').disabled = selection.size === 0;
+      document.getElementById('copySelectedBtn').disabled = selection.size === 0;
       fileList.querySelectorAll('tr').forEach(row => {
         row.dataset.selected = String(selection.has(row.dataset.path));
       });
@@ -850,6 +994,236 @@
       fileList.querySelectorAll('.row-check').forEach(cb => cb.checked = selectAll.checked);
       updateSelection();
     });
+
+    // ====== DRAG AND DROP MOVE ======
+    // Drop checked rows (or a single unselected row) onto a folder row in the list,
+    // or onto a folder node in the sidebar tree, to MOVE them. Same share only.
+    // Colliding names get a timestamp suffix — never an overwrite. Undoable by dragging back.
+    let dragPaths = [];
+
+    function pathsFromDragstart(row) {
+      const path = row.dataset.path;
+      const checked = [...fileList.querySelectorAll('.row-check:checked')].map(cb => cb.value);
+      return checked.length && checked.includes(path) ? checked : [path];
+    }
+
+    function clearDropHighlights() {
+      document.querySelectorAll('.drop-target-highlight').forEach(el => el.classList.remove('drop-target-highlight'));
+    }
+
+    function buildDragChip(count) {
+      const chip = document.createElement('div');
+      chip.className = 'fixed -left-[9999px] top-0 z-[70] rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xl';
+      chip.textContent = count === 1 ? 'Move 1 item' : `Move ${count} items`;
+      document.body.appendChild(chip);
+      return chip;
+    }
+
+    async function moveItemsViaDrag(dest) {
+      const paths = dragPaths;
+      if (!paths.length || !dest) return;
+      // Moving everything into its own parent is a no-op.
+      const parents = new Set(paths.map(p => p.split('/').slice(0, -1).join('/')));
+      if (parents.size === 1 && parents.has(dest)) { showToast('Items are already in ' + dest, 3000); dragPaths = []; return; }
+      await runMoveCopy('move', paths, dest);
+      dragPaths = [];
+    }
+
+    fileList.addEventListener('dragstart', (e) => {
+      const row = e.target.closest('tr[data-path]');
+      if (!row || row.dataset.deleting === 'true') { e.preventDefault(); return; }
+      dragPaths = pathsFromDragstart(row);
+      try { e.dataTransfer.setData('text/plain', dragPaths.join('\n')); e.dataTransfer.effectAllowed = 'move'; } catch (_) {}
+      const chip = buildDragChip(dragPaths.length);
+      try { e.dataTransfer.setDragImage(chip, 12, 12); } catch (_) {}
+      setTimeout(() => chip.remove(), 0);
+    });
+    fileList.addEventListener('dragend', () => { dragPaths = []; clearDropHighlights(); });
+
+    fileList.addEventListener('dragover', (e) => {
+      if (!dragPaths.length) return;
+      const row = e.target.closest('tr[data-type="folder"]');
+      if (!row) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      clearDropHighlights();
+      row.classList.add('drop-target-highlight');
+    });
+    fileList.addEventListener('dragleave', (e) => {
+      const row = e.target.closest('tr[data-type="folder"]');
+      if (row) row.classList.remove('drop-target-highlight');
+    });
+    fileList.addEventListener('drop', async (e) => {
+      const row = e.target.closest('tr[data-type="folder"]');
+      if (!row || !dragPaths.length) return;
+      e.preventDefault();
+      clearDropHighlights();
+      await moveItemsViaDrag(row.dataset.path);
+    });
+
+    // Drop onto a breadcrumb segment to move items to that folder (the parent case in particular).
+    // The '/' root is not a valid destination.
+    breadcrumb.addEventListener('dragover', (e) => {
+      if (!dragPaths.length) return;
+      const a = e.target.closest('a[data-path]');
+      if (!a) return;
+      const dest = a.dataset.path;
+      if (dest === '/') { e.dataTransfer.dropEffect = 'none'; return; }
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      clearDropHighlights();
+      a.classList.add('drop-target-highlight');
+    });
+    breadcrumb.addEventListener('dragleave', (e) => {
+      const a = e.target.closest('a[data-path]');
+      if (a) a.classList.remove('drop-target-highlight');
+    });
+    breadcrumb.addEventListener('drop', async (e) => {
+      const a = e.target.closest('a[data-path]');
+      if (!a || !dragPaths.length) return;
+      e.preventDefault();
+      clearDropHighlights();
+      await moveItemsViaDrag(a.dataset.path);
+    });
+
+    // Drop onto the toolbar Up button to move items into the parent folder.
+    const upLevelBtn = document.getElementById('upLevelBtn');
+    upLevelBtn.addEventListener('dragover', (e) => {
+      if (!dragPaths.length) return;
+      const parent = parentOf(currentPath);
+      if (parent === currentPath || parent === '/') { e.dataTransfer.dropEffect = 'none'; return; }
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      clearDropHighlights();
+      upLevelBtn.classList.add('drop-target-highlight');
+    });
+    upLevelBtn.addEventListener('dragleave', () => { upLevelBtn.classList.remove('drop-target-highlight'); });
+    upLevelBtn.addEventListener('drop', async (e) => {
+      const parent = parentOf(currentPath);
+      if (!dragPaths.length || parent === currentPath || parent === '/') return;
+      e.preventDefault();
+      clearDropHighlights();
+      await moveItemsViaDrag(parent);
+    });
+
+    folderTree.addEventListener('dragover', (e) => {
+      if (!dragPaths.length) return;
+      const btn = e.target.closest('button[data-path]');
+      if (!btn) return;
+      const dest = btn.dataset.path;
+      if (dest.split('/')[1] !== currentShareName()) { e.dataTransfer.dropEffect = 'none'; return; }
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      clearDropHighlights();
+      btn.classList.add('drop-target-highlight');
+    });
+    folderTree.addEventListener('dragleave', (e) => {
+      const btn = e.target.closest('button[data-path]');
+      if (btn) btn.classList.remove('drop-target-highlight');
+    });
+    folderTree.addEventListener('drop', async (e) => {
+      const btn = e.target.closest('button[data-path]');
+      if (!btn || !dragPaths.length) return;
+      const dest = btn.dataset.path;
+      if (dest.split('/')[1] !== currentShareName()) { showToast('Cross-share moves are not supported yet.', 4000, 'error'); dragPaths = []; return; }
+      e.preventDefault();
+      clearDropHighlights();
+      await moveItemsViaDrag(dest);
+    });
+
+    // ====== SEARCH ======
+    // Recursive filename search within the current share. The NAS has no search API
+    // (verified 404 on all plausible life endpoints), so this walks the share with the
+    // folder listing API. Runs only on explicit submit (Enter or the Search button) to
+    // keep NAS load low. Capped at 200 hits; the × button or Escape stops it.
+    const searchInput = document.getElementById('searchInput');
+    const searchClear = document.getElementById('searchClear');
+    const searchStatus = document.getElementById('searchStatus');
+    const searchForm = document.getElementById('searchForm');
+    const searchSubmitBtn = document.getElementById('searchSubmitBtn');
+    let searchState = { active: false, token: 0, results: [] };
+
+    function currentShareName() { return currentPath.split('/')[1] || ''; }
+
+    function updateSearchAvailability() {
+      const share = currentShareName();
+      searchInput.disabled = !share;
+      searchSubmitBtn.disabled = !share;
+      searchInput.placeholder = share ? 'Search in ' + share : 'Open a share to search';
+      if (!share && searchState.active) { clearSearch(); }
+    }
+
+    function clearSearch() {
+      searchState.active = false;
+      searchState.token++;
+      searchInput.value = '';
+      searchState.results = [];
+      searchClear.classList.add('hidden');
+      searchStatus.textContent = '';
+    }
+
+    async function runSearch(rawQuery) {
+      const query = rawQuery.trim();
+      const share = currentShareName();
+      if (!share || query.length < 2) return;
+      const token = ++searchState.token;
+      searchState.active = true;
+      searchClear.classList.remove('hidden');
+      searchStatus.textContent = 'Searching…';
+      const q = query.toLowerCase();
+      const MAX = 200;
+      const matches = [];
+      const stack = ['/' + share];
+      while (stack.length && matches.length < MAX) {
+        if (token !== searchState.token) return;
+        const dir = stack.pop();
+        let items;
+        try { items = await fsList(dir); } catch (_) { continue; }
+        for (const it of items) {
+          const full = it.path || (dir === '/' ? '/' + it.name : `${dir}/${it.name}`);
+          if (it.name.toLowerCase().includes(q)) matches.push({ ...it, parent: dir });
+          if (it.type === 'folder' && it.name !== '@SmbRecyclebin') stack.push(full);
+        }
+        if (token !== searchState.token) return;
+        searchStatus.textContent = 'Searching… ' + matches.length + ' found';
+      }
+      searchState.results = matches;
+      searchStatus.textContent = matches.length ? matches.length + ' found' : 'No matches';
+      renderSearchResults(matches);
+    }
+
+    function renderSearchResults(matches) {
+      selectAll.disabled = !matches.length;
+      if (!matches.length) {
+        fileList.innerHTML = `<tr><td colspan="6" class="px-6 py-14 text-center">
+          <p class="text-sm font-semibold text-neutral-500">No matches for “${escapeHtml(searchInput.value.trim())}”</p>
+          <p class="mt-1 text-xs text-neutral-400">Check the spelling or try a shorter part of the name.</p>
+        </td></tr>`;
+      } else {
+        fileList.innerHTML = applySort(matches).map(it => fileRow(it, it.parent, {
+          typeCell: `<span class="block max-w-[160px] truncate text-[11px] text-neutral-500" title="${escapeHtml(it.parent)}">${escapeHtml(it.parent)}</span>`
+        })).join('');
+      }
+      bindRowEvents();
+    }
+
+    // Search runs only on explicit submit (Enter or the Search button) — not while typing.
+    searchForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const query = searchInput.value.trim();
+      if (query.length < 2) { searchStatus.textContent = 'Type at least 2 characters'; return; }
+      runSearch(query);
+    });
+    searchInput.addEventListener('input', () => {
+      const value = searchInput.value;
+      searchClear.classList.toggle('hidden', !value);
+      if (!value.trim()) {
+        const wasActive = searchState.active;
+        clearSearch();
+        if (wasActive) loadFiles(currentPath);
+      }
+    });
+    searchClear.addEventListener('click', () => { clearSearch(); loadFiles(currentPath); });
 
     // ====== BREADCRUMB ======
     function updateBreadcrumb(path) {
@@ -1003,6 +1377,7 @@
       const paths = recycleItems.map(it => it.path);
       const count = paths.length;
       emptyBinModal.classList.add('hidden');
+      binModal.classList.add('hidden'); // the browser goes away; the purge modal takes over
       // Show the purge in the blocking transfers modal, like any other long operation.
       const id = startTransfer(`Empty recycle bin — ${recycleShare} (${count} item${count === 1 ? '' : 's'})`, 'delete');
       try {
@@ -1034,15 +1409,19 @@
     const textPreviewView = document.getElementById('textPreviewView');
     const csvPreviewView = document.getElementById('csvPreviewView');
     const pdfPreviewFrame = document.getElementById('pdfPreviewFrame');
+    const videoPreviewPlayer = document.getElementById('videoPreviewPlayer');
     const previewTruncation = document.getElementById('previewTruncation');
     let imagePreviewUrl = null;
 
     function closePreview() {
       imagePreviewModal.classList.add('hidden');
-      [imagePreviewImg, textPreviewView, csvPreviewView, pdfPreviewFrame, previewTruncation].forEach(el => el.classList.add('hidden'));
+      [imagePreviewImg, textPreviewView, csvPreviewView, pdfPreviewFrame, videoPreviewPlayer, previewTruncation].forEach(el => el.classList.add('hidden'));
       imagePreviewImg.removeAttribute('src');
       pdfPreviewFrame.removeAttribute('srcdoc');
       pdfPreviewFrame.src = 'about:blank';
+      videoPreviewPlayer.pause();
+      videoPreviewPlayer.removeAttribute('src');
+      videoPreviewPlayer.load();
       textPreviewView.textContent = '';
       csvPreviewView.innerHTML = '';
       imagePreviewStatus.classList.remove('hidden');
@@ -1051,7 +1430,7 @@
     }
 
     function showPreviewView(el) {
-      [imagePreviewImg, textPreviewView, csvPreviewView, pdfPreviewFrame].forEach(v => v.classList.add('hidden'));
+      [imagePreviewImg, textPreviewView, csvPreviewView, pdfPreviewFrame, videoPreviewPlayer].forEach(v => v.classList.add('hidden'));
       imagePreviewStatus.classList.add('hidden');
       el.classList.remove('hidden');
     }
@@ -1122,15 +1501,22 @@
           throw new Error(data.error?.msg || data.error || 'NAS refused the file');
         }
         const blob = await res.blob();
-        if (kind === 'image' || kind === 'pdf') {
+        if (kind === 'image' || kind === 'pdf' || kind === 'video') {
           imagePreviewUrl = URL.createObjectURL(blob);
           if (kind === 'image') {
             imagePreviewImg.onload = () => showPreviewView(imagePreviewImg);
             imagePreviewImg.onerror = () => { imagePreviewStatus.textContent = 'Could not display this image.'; imagePreviewStatus.classList.remove('hidden'); };
             imagePreviewImg.src = imagePreviewUrl;
-          } else {
+          } else if (kind === 'pdf') {
             pdfPreviewFrame.src = imagePreviewUrl;
             showPreviewView(pdfPreviewFrame);
+          } else {
+            videoPreviewPlayer.onerror = () => { imagePreviewStatus.textContent = 'Could not play this video (format not supported in this browser). MP4 and WebM are supported.'; imagePreviewStatus.classList.remove('hidden'); videoPreviewPlayer.classList.add('hidden'); };
+            videoPreviewPlayer.onloadeddata = () => showPreviewView(videoPreviewPlayer);
+            videoPreviewPlayer.src = imagePreviewUrl;
+            // If the browser accepts the source, showPreviewView runs on 'loadeddata'.
+            // Show the player immediately as a fallback in case the event does not fire.
+            showPreviewView(videoPreviewPlayer);
           }
           return;
         }
@@ -1179,9 +1565,9 @@
       return '~' + m + 'm ' + s + 's';
     }
 
-    function startTransfer(name, kind) {
+    function startTransfer(name, kind, payload) {
       const id = String(++transferSeq);
-      transfers.set(id, { id, name, kind, loaded: 0, total: 0, rate: 0, lastAt: 0, lastLoaded: 0, state: 'active', xhr: null, message: '' });
+      transfers.set(id, { id, name, kind, loaded: 0, total: 0, rate: 0, lastAt: 0, lastLoaded: 0, state: 'active', xhr: null, message: '', payload: payload || null });
       renderTransferModal();
       return id;
     }
@@ -1209,6 +1595,22 @@
       t.message = message || '';
       t.loaded = ok && t.total > 0 ? t.total : t.loaded;
       renderTransferModal();
+    }
+
+    async function retryUpload(t) {
+      const { file, path } = t.payload;
+      transfers.delete(t.id); // drop the failed row; the retry registers a fresh one
+      renderTransferModal();
+      try {
+        await uploadOne(file, path);
+        if (currentPath === path) {
+          await loadFiles(path);
+          setTimeout(() => { if (currentPath === path) loadFiles(path); }, 1200);
+        }
+        showToast('Uploaded ' + file.name, 3000, 'success');
+      } catch (e) {
+        showToast('Retry failed: ' + e.message, 8000, 'error');
+      }
     }
 
     function closeTransferModal() {
@@ -1297,7 +1699,9 @@
         }
         const cancel = t.state === 'active'
           ? `<button class="shrink-0 text-xs font-semibold text-red-600 transition-colors hover:text-red-800 hover:underline" data-cancel="${t.id}" aria-label="Cancel ${escapeHtml(t.name)}">Cancel</button>`
-          : '';
+          : (t.state === 'error' && t.kind === 'upload' && t.payload
+            ? `<button class="shrink-0 text-xs font-semibold text-blue-600 transition-colors hover:text-blue-800 hover:underline" data-retry="${t.id}" aria-label="Retry upload of ${escapeHtml(t.name)}">Retry</button>`
+            : '');
         return `<li class="flex items-center gap-3 px-6 py-4">
           <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${transferTile(t)}">${transferIcon(t)}</span>
           <div class="min-w-0 flex-1">
@@ -1311,10 +1715,17 @@
     }
 
     transferList.addEventListener('click', (e) => {
-      const btn = e.target.closest('[data-cancel]');
-      if (!btn) return;
-      const t = transfers.get(btn.dataset.cancel);
-      if (t && t.xhr) { try { t.xhr.abort(); } catch (_) {} }
+      const cancelBtn = e.target.closest('[data-cancel]');
+      if (cancelBtn) {
+        const t = transfers.get(cancelBtn.dataset.cancel);
+        if (t && t.xhr) { try { t.xhr.abort(); } catch (_) {} }
+        return;
+      }
+      const retryBtn = e.target.closest('[data-retry]');
+      if (retryBtn) {
+        const t = transfers.get(retryBtn.dataset.retry);
+        if (t && t.payload && t.kind === 'upload') retryUpload(t);
+      }
     });
     transferCloseBtn.addEventListener('click', closeTransferModal);
     transferModal.addEventListener('click', (e) => { if (e.target === transferModal && !hasActiveTransfers()) closeTransferModal(); });
@@ -1744,13 +2155,20 @@
     });
 
     function selectPath(path) {
+      clearSearch();
       folderTree.querySelectorAll('button[data-path]').forEach(b => { b.dataset.active = String(b.dataset.path === path); });
       loadFiles(path);
+      updateSearchAvailability();
     }
 
     document.getElementById('refreshBtn').addEventListener('click', () => {
+      clearSearch();
       loadFiles(currentPath);
       loadTree().catch(() => {});
+    });
+    document.getElementById('upLevelBtn').addEventListener('click', () => {
+      const parent = parentOf(currentPath);
+      if (parent !== currentPath) { clearSearch(); selectPath(parent); }
     });
 
     // ====== CREATE / RENAME ======
@@ -1805,6 +2223,7 @@
 
     async function refreshViews(path) {
       await loadFiles(path);
+      if (searchState.active && searchInput.value.trim().length >= 2) await runSearch(searchInput.value);
       try {
         await loadTree();
       } catch (e) {
@@ -2050,7 +2469,10 @@
         summary.gone = false;
       }
 
-      if (currentPath === path) await loadFiles(path);
+      if (currentPath === path) {
+        await loadFiles(path);
+        if (searchState.active && searchInput.value.trim().length >= 2) await runSearch(searchInput.value);
+      }
       if (hadFolder) {
         loadTree().catch(() => {});
       }
@@ -2113,6 +2535,148 @@
       }
     });
 
+    // ====== MOVE / COPY ======
+    // Same-share only (product decision). The picker browses the current share;
+    // @SmbRecyclebin is never a destination. Name collisions get a timestamp suffix
+    // — never an overwrite. Errors are reported per item; list + search refresh after.
+    const moveCopyModal = document.getElementById('moveCopyModal');
+    const moveCopyTitle = document.getElementById('moveCopyTitle');
+    const moveCopyCrumbs = document.getElementById('moveCopyCrumbs');
+    const moveCopyFolderList = document.getElementById('moveCopyFolderList');
+    const moveCopyConfirm = document.getElementById('moveCopyConfirm');
+    const moveCopySummary = document.getElementById('moveCopySummary');
+    let moveCopyState = null;
+
+    function currentShare() { return currentPath.split('/')[1]; }
+
+    function openMoveCopy(mode) {
+      const paths = [...selection];
+      if (!paths.length) return;
+      const share = currentShare();
+      if (!share) { showToast('Open a share first.', 6000, 'error'); return; }
+      moveCopyState = { mode, paths, cwd: currentPath, share };
+      moveCopyTitle.textContent = (mode === 'move' ? 'Move' : 'Copy') + ' ' + paths.length + ' item' + (paths.length === 1 ? '' : 's') + ' to…';
+      moveCopyConfirm.textContent = (mode === 'move' ? 'Move' : 'Copy') + ' here';
+      moveCopyModal.classList.remove('hidden');
+      renderMoveCopyPicker();
+    }
+
+    function closeMoveCopy() { moveCopyModal.classList.add('hidden'); moveCopyState = null; }
+
+    function renderMoveCopyCrumbs() {
+      const { cwd } = moveCopyState;
+      const parts = cwd.split('/').filter(Boolean);
+      let acc = '';
+      moveCopyCrumbs.innerHTML = parts.map((p, i) => {
+        acc += '/' + p;
+        const isLast = i === parts.length - 1;
+        const target = acc;
+        return `${i ? '<span class="text-neutral-300">/</span>' : ''}<button class="rounded px-1 py-0.5 ${isLast ? 'font-semibold text-neutral-800' : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800'}" data-nav="${escapeHtml(target)}">${escapeHtml(p)}</button>`;
+      }).join('');
+      moveCopyCrumbs.querySelectorAll('[data-nav]').forEach(btn => {
+        btn.addEventListener('click', () => { moveCopyState.cwd = btn.dataset.nav; renderMoveCopyPicker(); });
+      });
+    }
+
+    async function renderMoveCopyPicker() {
+      const { cwd, mode, paths } = moveCopyState;
+      renderMoveCopyCrumbs();
+      moveCopyFolderList.innerHTML = '<li class="px-5 py-6 text-center text-xs text-neutral-400">Loading…</li>';
+      let items = [];
+      try { items = await fsList(cwd); } catch (e) {
+        moveCopyFolderList.innerHTML = `<li class="px-5 py-6 text-center text-xs text-red-600">Could not open ${escapeHtml(cwd)}: ${escapeHtml(e.message)}</li>`;
+        moveCopyConfirm.disabled = true;
+        return;
+      }
+      const folders = items.filter(it => it.type === 'folder' && it.name !== '@SmbRecyclebin');
+      moveCopyFolderList.innerHTML = folders.length
+        ? folders.map(it => {
+            const full = it.path || (cwd === '/' ? '/' + it.name : cwd + '/' + it.name);
+            return `<li><button class="flex w-full items-center gap-2.5 px-5 py-2.5 text-left text-sm text-neutral-700 transition-colors hover:bg-blue-50" data-into="${escapeHtml(full)}">${svgFolder()}<span class="truncate">${escapeHtml(it.name)}</span></button></li>`;
+          }).join('')
+        : '<li class="px-5 py-8 text-center text-xs text-neutral-400">This folder is empty.</li>';
+      moveCopyFolderList.querySelectorAll('[data-into]').forEach(btn => {
+        btn.addEventListener('click', () => { moveCopyState.cwd = btn.dataset.into; renderMoveCopyPicker(); });
+      });
+      const sameDir = cwd === currentPath;
+      moveCopyConfirm.disabled = mode === 'move' && sameDir;
+      moveCopySummary.textContent = mode === 'move'
+        ? `${paths.length} item(s) move to ${cwd}${sameDir ? ' — this is where they are' : ''}`
+        : `${paths.length} item(s) copied to ${cwd}`;
+    }
+
+    // Shared collision handling + executor for the picker and drag-and-drop moves.
+    async function runMoveCopy(mode, paths, cwd) {
+      let existing = [];
+      try { existing = await fsList(cwd); } catch (_) {}
+      const names = new Set(existing.map(it => it.name));
+      const items = paths.map(p => {
+        const name = p.split('/').pop();
+        let targetName = name;
+        if (names.has(name)) {
+          const dot = name.lastIndexOf('.');
+          const base = dot > 0 ? name.slice(0, dot) : name;
+          const ext = dot > 0 ? name.slice(dot) : '';
+          targetName = `${base}.${TIMESTAMP_SUFFIX()}${ext}`;
+        }
+        names.add(targetName);
+        return { source: p, target: (cwd === '/' ? '' : cwd) + '/' + targetName, renamedTo: targetName === name ? null : targetName };
+      });
+      const failed = [], renamed = [], done = [];
+      for (const it of items) {
+        try {
+          const res = await authFetch(`${PROXY_URL}/life/v1/folder`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': cookie ? `Bearer ${cookie}` : '' },
+            body: JSON.stringify({ action: mode, items: [{ source: { root: 'local', path: it.source }, target: { root: 'local', path: it.target } }] })
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok || data.result === false) throw new Error(data.error || ('HTTP ' + res.status));
+          done.push(it.target);
+          if (it.renamedTo) renamed.push(`${it.source.split('/').pop()} → ${it.renamedTo}`);
+        } catch (e) {
+          failed.push(`${it.source.split('/').pop()}: ${e.message}`);
+        }
+      }
+      selection.clear();
+      updateSelection();
+      await refreshViews(currentPath);
+      if (searchState.active && searchInput.value.trim().length >= 2) await runSearch(searchInput.value);
+      const modeText = mode === 'move' ? 'Moved' : 'Copied';
+      if (failed.length) {
+        showToast(`${modeText} ${done.length} of ${items.length}; failed: ${failed[0]}`, 9000, 'error');
+      } else {
+        showToast(`${modeText} ${done.length} item(s) to ${cwd}`, 5000, 'success');
+      }
+      if (renamed.length) {
+        showToast('Renamed to avoid collisions: ' + renamed.slice(0, 3).join(', ') + (renamed.length > 3 ? ` (+${renamed.length - 3} more)` : ''), 8000, 'info');
+      }
+      return { done, failed };
+    }
+
+    // "Move up one level": move a folder row into the parent of the current listing.
+    // Async by design — the move runs through runMoveCopy (timestamp rename on collision).
+    async function moveFolderUp(path) {
+      const dest = parentOf(currentPath);
+      if (dest === '/') return;
+      await runMoveCopy('move', [path], dest);
+    }
+
+    async function executeMoveCopy() {
+      if (!moveCopyState) return;
+      const { mode, paths, cwd } = moveCopyState;
+      moveCopyModal.classList.add('hidden');
+      await runMoveCopy(mode, paths, cwd);
+      moveCopyState = null;
+    }
+
+    document.getElementById('moveSelectedBtn').addEventListener('click', () => openMoveCopy('move'));
+    document.getElementById('copySelectedBtn').addEventListener('click', () => openMoveCopy('copy'));
+    document.getElementById('moveCopyConfirm').addEventListener('click', executeMoveCopy);
+    document.getElementById('moveCopyCloseBtn').addEventListener('click', closeMoveCopy);
+    document.getElementById('moveCopyCancel').addEventListener('click', closeMoveCopy);
+    moveCopyModal.addEventListener('click', (e) => { if (e.target === moveCopyModal) moveCopyModal.classList.add('hidden'); });
+
     // ====== UPLOAD ======
     const uploadBtn = document.getElementById('uploadBtn');
     const uploadStatus = document.getElementById('uploadStatus');
@@ -2129,7 +2693,7 @@
       // The NAS reads the file from the field named after the file itself.
       form.append(file.name, file, file.name);
 
-      const id = startTransfer(file.name, 'upload');
+      const id = startTransfer(file.name, 'upload', { file, path });
       try {
         await new Promise((resolve, reject) => {
           const xhr = new XMLHttpRequest();
@@ -2183,9 +2747,13 @@
       const sessionDead = failed.some(f => f.includes('session expired'));
       if (!sessionDead) {
         await loadFiles(targetPath);
+        if (searchState.active && searchInput.value.trim().length >= 2) await runSearch(searchInput.value);
         // The NAS may index the new file just after the response.
         setTimeout(() => {
-          if (currentPath === targetPath) loadFiles(targetPath);
+          if (currentPath === targetPath) {
+            if (searchState.active && searchInput.value.trim().length >= 2) runSearch(searchInput.value);
+            else loadFiles(targetPath);
+          }
         }, 1200);
       }
 
@@ -2294,6 +2862,7 @@
     document.getElementById('modalCancel').addEventListener('click', () => { modal.classList.add('hidden'); modalResolve = null; });
     document.addEventListener('keydown', (e) => {
       if (e.key !== 'Escape') return;
+      if (!moveCopyModal.classList.contains('hidden')) { closeMoveCopy(); return; }
       if (!binChoiceModal.classList.contains('hidden')) { settleBinChoice('cancel'); return; }
       if (!shareDeleteModal.classList.contains('hidden')) { closeShareDeleteModal(); return; }
       if (!changePasswordModal.classList.contains('hidden')) { closeChangePasswordModal(); return; }
@@ -2304,6 +2873,7 @@
       if (!emptyBinModal.classList.contains('hidden')) { emptyBinModal.classList.add('hidden'); return; }
       if (!imagePreviewModal.classList.contains('hidden')) { closePreview(); return; }
       if (!transferModal.classList.contains('hidden') && !hasActiveTransfers()) { closeTransferModal(); return; }
+      if (searchState.active) { clearSearch(); loadFiles(currentPath); return; }
     });
     document.getElementById('modalConfirm').addEventListener('click', async () => {
       const val = modalInput.value.trim();
@@ -2349,6 +2919,7 @@
 
     // Phase 3 (5.3.5): preview is offered for these file kinds only.
     const PREVIEWABLE_IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+    const PREVIEWABLE_VIDEO_EXTS = ['mp4', 'webm', 'mov'];
     const PDF_PREVIEW_EXTS = ['pdf'];
     const TSV_PREVIEW_EXTS = ['tsv'];
     const CSV_PREVIEW_EXTS = ['csv'];
@@ -2363,6 +2934,7 @@
       const dot = name.lastIndexOf('.');
       const ext = dot >= 0 ? name.slice(dot + 1).toLowerCase() : '';
       if (PREVIEWABLE_IMAGE_EXTS.includes(ext)) return 'image';
+      if (PREVIEWABLE_VIDEO_EXTS.includes(ext)) return 'video';
       if (PDF_PREVIEW_EXTS.includes(ext)) return 'pdf';
       if (CSV_PREVIEW_EXTS.includes(ext)) return 'csv';
       if (TSV_PREVIEW_EXTS.includes(ext)) return 'tsv';

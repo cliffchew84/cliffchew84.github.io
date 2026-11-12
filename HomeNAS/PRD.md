@@ -112,10 +112,12 @@ Legend: ⬜ Planned | 🚧 In Progress | 🔮 Future | ✅ Done
 
 #### 5.3.1 UI Enhancements
 - ✅ Toast notifications tied to specific actions
+- 🚧 Column sorting (built 2026-11-12): sortable Name/Size/Modified/Type headers, folders always above files, toggles asc/desc; applies to search results too
+- 🚧 Up-nav button (built 2026-11-12): toolbar button navigates one folder up (Windows Explorer style); disabled at root; per-folder-row 'move up one level' button added earlier remains
 
 #### 5.3.2 Advanced File Operations
-- Bulk move/copy between folders — deferred; same-share first, cross-share move only after NAS API and failure behavior are verified
-- Search files by name across opened shares
+- 🚧 Bulk move/copy between folders (built 2026-11-12): toolbar Move/Copy buttons (enabled with a selection); same-share destination picker (folder browser; @SmbRecyclebin excluded); collision → automatic timestamp rename; per-item error reporting; list + search re-render after; drag-and-drop move for checked (or single) rows onto folder rows or tree folder nodes (same-share only); per-folder-row 'move up one level' action (built 2026-11-12); drag-and-drop onto breadcrumb segments and the toolbar Up button (built 2026-11-12). Cross-share not built; NAS-side folder copy not verified (file copy verified)
+- 🚧 Search files by name — within the current share only (built 2026-11-12; recursive walk of the share, max 200 results, runs only on explicit submit — Enter or Search button, to limit NAS load; ×/Escape stops; NAS has no search endpoint — verified 404). Cross-share scope intentionally narrowed by product decision
 
 #### 5.3.3 Alerts
 - SMART warnings
@@ -124,25 +126,24 @@ Legend: ⬜ Planned | 🚧 In Progress | 🔮 Future | ✅ Done
 
 #### 5.3.4 Performance
 - The file list remains smooth and usable with at least 1,000 items
-- Immediate-correcting UI after every file operation
+- ✅ Immediate-correcting UI after every file operation (views re-render immediately after upload/rename/create/delete; list re-fetches twice to cover NAS indexing lag)
 - App keeps working after brief disconnects while uploading
 
 #### 5.3.5 Photo Preview
 - 🚧 Preview modal (built 2026-11-12, unverified in the UI): image preview for JPEG, PNG, WebP, GIF; text preview for code/config/log files (whole file, first 512 KB with notice); PDF preview via the browser’s native viewer; CSV/TSV as a table (first 200 rows, first 60 columns, first row shown as header)
 - “Preview” via the file-type icon (icon-as-trigger), not a separate button
 - Previews operate through the storage-share paths (in-memory only, never written to disk)
-- Deferred: a thumbnail service produces small JPEG previews on demand; video preview stays deferred (5.3.6)
+- Deferred: a thumbnail service produces small JPEG previews on demand
 
-#### 5.3.6 Video Preview — Deferred, not deleted
-- Video preview modal for MP4, WebM playback
-- “Preview” button appears for supported video types
-- Previews operate through the storage-share paths (not copied to your browser)
-- *Note:* because storage shares stream full files, true video seeking needs a streaming layer added later
+#### 5.3.6 Video Preview
+- 🚧 Built 2026-11-12 (un-deferred by product decision): MP4, WebM, MOV (H.264) preview in the shared preview modal (native `<video controls>`). MKV and AVI are excluded — browsers cannot decode them. Whole file is buffered in memory before playback (MP4/MOV only play correctly in Safari/Chrome for H.264; seeks work offline once buffered)
+- “Preview” via the file-type icon (icon-as-trigger), consistent with images
+- Previews operate through the storage-share paths (in-memory only, never written to disk)
 
 #### 5.3.7 Large Transfer Progress
 - Bulk download as one ZIP archive — moved from Phase 1; requires a reliable NAS or server-side ZIP path
 - Bulk ZIP job progress and queue state when the NAS exposes a job-status API
-- Large upload progress, including percent, bytes transferred, estimated time remaining, cancel, retry, and one aggregate view for a multi-file queue
+- 🚧 Large upload progress, including percent, bytes transferred, estimated time remaining, cancel, retry on failure, aggregate queue view (built 2026-11-12). Downloads show the same progress too
 
 ### 5.4 Phase 4 — Remote & Offline-Capable Operation
 
