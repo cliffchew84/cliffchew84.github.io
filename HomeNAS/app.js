@@ -1,7 +1,9 @@
     // ====== CONFIG ======
     // No credentials live in this file. Sign in on the login screen.
     // Token is kept in memory by default; "Keep me signed in" stores it in this browser only.
-    const PROXY_URL = 'http://localhost:3001';  // proxy -> NAS
+    // API base. Served by the proxy (same origin — e.g. LAN URL) → use it directly.
+    // Opened via file:// (no origin) → call the proxy on this machine explicitly.
+    const PROXY_URL = window.location.protocol === 'file:' ? 'http://localhost:3001' : window.location.origin; // proxy -> NAS
 
     // ====== STATE ======
     let cookie = '';
@@ -177,19 +179,24 @@
     // The panel icon button hides the sidebar and shows it again.
     // The state is kept in localStorage. This is a display preference, not a secret.
     const sidebarToggle = document.getElementById('sidebarToggle');
-    function setSidebarCollapsed(collapsed) {
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const isMobile = () => window.matchMedia('(max-width: 767px)').matches;
+    function setSidebarCollapsed(collapsed, persist = true) {
       document.body.classList.toggle('sidebar-collapsed', collapsed);
       sidebarToggle.setAttribute('aria-expanded', String(!collapsed));
       sidebarToggle.setAttribute('data-tooltip', collapsed ? 'Show sidebar' : 'Hide sidebar');
       sidebarToggle.setAttribute('aria-label', sidebarToggle.getAttribute('data-tooltip'));
+      if (sidebarOverlay) sidebarOverlay.classList.toggle('open', !collapsed && isMobile());
+      if (!persist) return; // don't overwrite the stored desktop preference
       try {
         localStorage.setItem('homenas.sidebar.collapsed', collapsed ? '1' : '0');
       } catch (e) {
         // localStorage can be unavailable. The toggle still works.
       }
     }
+    if (sidebarOverlay) sidebarOverlay.addEventListener('click', () => setSidebarCollapsed(true, false));
     try {
-      setSidebarCollapsed(localStorage.getItem('homenas.sidebar.collapsed') === '1');
+      setSidebarCollapsed(isMobile() ? true : localStorage.getItem('homenas.sidebar.collapsed') === '1', false);
     } catch (e) {
       // keep the sidebar visible
     }
@@ -536,12 +543,12 @@
 
       return `
         <tr draggable="${pending ? 'false' : 'true'}" data-selected="false" data-deleting="${pending}" data-name="${escapeHtml(label)}" data-path="${escapeHtml(fullPath)}" data-type="${isFolder ? 'folder' : 'file'}" class="transition-colors odd:bg-white even:bg-neutral-50/60 hover:bg-blue-50/70 data-[selected=true]:bg-blue-50 data-[deleting=true]:opacity-45 data-[deleting=true]:[&_td]:pointer-events-none">
-          <td class="border-b border-neutral-100 px-3 py-2"><input type="checkbox" class="row-check h-4 w-4 accent-blue-600" value="${escapeHtml(fullPath)}"${pending ? ' disabled' : ''} aria-label="Select ${escapeHtml(label)}"></td>
-          <td class="border-b border-neutral-100 px-3 py-2"${realName}>${nameCellHtml}</td>
-          <td class="border-b border-neutral-100 px-3 py-2 text-right tabular-nums text-neutral-600">${isFolder ? '—' : formatSize(item.size)}</td>
-          <td class="border-b border-neutral-100 px-3 py-2 text-neutral-600">${formatDate(item.access_date)}</td>
-          <td class="type border-b border-neutral-100 px-3 py-2 text-neutral-600">${typeCell}</td>
-          <td class="border-b border-neutral-100 px-3 py-2">${actionsHtml}</td>
+          <td class="cell-check border-b border-neutral-100 px-3 py-2"><input type="checkbox" class="row-check h-4 w-4 accent-blue-600" value="${escapeHtml(fullPath)}"${pending ? ' disabled' : ''} aria-label="Select ${escapeHtml(label)}"></td>
+          <td class="cell-name border-b border-neutral-100 px-3 py-2"${realName}>${nameCellHtml}</td>
+          <td class="cell-size border-b border-neutral-100 px-3 py-2 text-right tabular-nums text-neutral-600">${isFolder ? '—' : formatSize(item.size)}</td>
+          <td class="cell-date border-b border-neutral-100 px-3 py-2 text-neutral-600">${formatDate(item.access_date)}</td>
+          <td class="type cell-type border-b border-neutral-100 px-3 py-2 text-neutral-600">${typeCell}</td>
+          <td class="cell-actions border-b border-neutral-100 px-3 py-2">${actionsHtml}</td>
         </tr>
       `;
     }
@@ -581,6 +588,9 @@
         const th = btn.closest('th');
         if (th) th.setAttribute('aria-sort', active ? (sortDir === -1 ? 'descending' : 'ascending') : 'none');
       });
+      document.querySelectorAll('#mobileSortBar .sort-chip').forEach(chip => {
+        chip.setAttribute('aria-pressed', String(chip.dataset.sort === sortKey));
+      });
     }
 
     function rerenderCurrentView() {
@@ -592,12 +602,16 @@
       }
     }
 
+    function cycleSort(key) {
+      if (sortKey === key) sortDir = -sortDir;
+      else { sortKey = key; sortDir = 1; }
+      rerenderCurrentView();
+    }
     document.querySelectorAll('.sort-header').forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (btn.dataset.sort === sortKey) sortDir = -sortDir;
-        else { sortKey = btn.dataset.sort; sortDir = 1; }
-        rerenderCurrentView();
-      });
+      btn.addEventListener('click', () => cycleSort(btn.dataset.sort));
+    });
+    document.querySelectorAll('#mobileSortBar .sort-chip').forEach(btn => {
+      btn.addEventListener('click', () => cycleSort(btn.dataset.sort));
     });
 
     function renderFiles(items, path) {
@@ -1858,6 +1872,7 @@
       folderTree.querySelectorAll('button[data-path]').forEach(b => { b.dataset.active = String(b.dataset.path === path); });
       loadFiles(path);
       updateSearchAvailability();
+      if (isMobile()) setSidebarCollapsed(true, false);
     }
 
     document.getElementById('refreshBtn').addEventListener('click', () => {

@@ -55,7 +55,7 @@
           <button class="menu-item" id="signOutBtn" role="menuitem"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v8"/><path d="M6.3 6.3a8 8 0 1 0 11.4 0"/></svg><span>Sign out</span></button>
         </div>
       </div>
-      <span class="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-800 ring-1 ring-inset ring-blue-200" id="userBadge">admin</span>
+      <span class="sm-hidden rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-800 ring-1 ring-inset ring-blue-200" id="userBadge">admin</span>
     </div>
   </header>
   <main class="app-shell hidden flex flex-1 overflow-hidden">
@@ -63,6 +63,7 @@
       <p class="px-2 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-widest text-neutral-400">Shares</p>
       <ul class="min-w-[260px]" id="folderTree"></ul>
     </aside>
+    <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
     <section class="min-w-0 flex-1 overflow-auto p-4">
       <div class="mb-4 flex flex-wrap items-center gap-2">
         <button class="btn-icon btn-icon-primary" id="uploadBtn" data-tooltip="Upload" aria-label="Upload">
@@ -97,6 +98,13 @@
         <button class="icon-btn ml-1" id="refreshBtn" data-tooltip="Refresh" data-tooltip-pos="bottom" aria-label="Refresh">
           <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
         </button>
+      </div>
+      <div id="mobileSortBar" class="only-mobile mb-2 flex-wrap items-center gap-1.5 text-[11px]" role="group" aria-label="Sort files">
+        <span class="mr-1 text-neutral-400">Sort:</span>
+        <button class="sort-chip" data-sort="name" type="button" aria-pressed="true">Name</button>
+        <button class="sort-chip" data-sort="size" type="button" aria-pressed="false">Size</button>
+        <button class="sort-chip" data-sort="access_date" type="button" aria-pressed="false">Modified</button>
+        <button class="sort-chip" data-sort="type" type="button" aria-pressed="false">Type</button>
       </div>
       <div class="overflow-x-auto rounded-xl border border-neutral-200 bg-white shadow-sm">
         <table class="w-full border-collapse" id="fileTable">
@@ -197,7 +205,7 @@
         </div>
       </div>
       <p class="mb-3 rounded-lg bg-blue-50 px-3 py-2 text-[11px] leading-relaxed text-blue-800">Deletes from this app and from Finder/SMB land here. Permanent deletes happen only via “Delete permanently” and “Empty bin” in this window.</p>
-      <div id="recycleBody" class="max-h-[65vh] overflow-y-auto text-sm text-neutral-700"><p class="text-neutral-400">Loading…</p></div>
+      <div id="recycleBody" class="max-h-[65vh] overflow-auto text-sm text-neutral-700"><p class="text-neutral-400">Loading…</p></div>
     </div>
   </div>
 

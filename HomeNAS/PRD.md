@@ -112,7 +112,8 @@ Legend: ⬜ Planned | 🚧 In Progress | 🔮 Future | ✅ Done
 
 #### 5.3.1 UI Enhancements
 - ✅ Toast notifications tied to specific actions
-- 🚧 Gear (Settings) menu in the header combining Health, Change password, and Sign out (built 2026-11-12, unverified). Health and Change password are hidden for non-admin sessions; Esc/click-outside closes; focus returns to the gear on Esc
+- ✅ Mobile responsive layout (built and verified in the UI 2026-11-12): off-canvas sidebar drawer + overlay below 768 px (auto-closes on selection), file table becomes stacked cards (sort chips replace the hidden column headers), full-width search, larger tap targets on row actions, badge hidden on narrow phones. Desktop behavior kept unchanged
+- ✅ Gear (Settings) menu in the header combining Health, Change password, and Sign out (built and verified in the UI 2026-11-12). Health and Change password are hidden for non-admin sessions; Esc/click-outside closes; focus returns to the gear on Esc
 - ✅ Column sorting (built and verified in the UI 2026-11-12): sortable Name/Size/Modified/Type headers, folders always above files, toggles asc/desc; applies to search results too
 - ✅ Up-nav button (built and verified in the UI 2026-11-12): toolbar button navigates one folder up (Windows Explorer style); disabled at root; per-folder-row 'move up one level' button remains; items can also be dragged onto the button or onto a breadcrumb segment
 
@@ -201,7 +202,7 @@ Access retained from phones and laptops on the home private network. Goals: HTTP
 
 ### Family (chewfamily) usage untested
 - **Issue**: Login as chewfamily works at the NAS level, but the app is untested with that account. Admin-only actions fail with NAS error toasts — expected.
-- **Status**: ⏸ Known limitation — resolve with a chewfamily test session
+- **Status**: ✅ Closed 2026-11-12 by user — chewfamily session tested in the UI; admin-only items (Health, Change password) now hidden for non-admins via the gear menu
 
 ### App deletes go to the recycle bin
 - **Issue**: Deleting from HomeNAS used the NAS delete API (`folderex action=delete`), which was permanent and bypassed the bin. Now deletes in the UI **move the item(s) into the share's `@SmbRecyclebin`** (original folder tree mirrored) instead of deleting — same layout as SMB deletes. Collision → automatic timestamp rename. Share with no bin → asks per session: create bin / delete permanently / cancel. Empty mirror shells persist in the bin (same as SMB). `result:true` is not trusted — the source folder is re-listed to confirm the move.

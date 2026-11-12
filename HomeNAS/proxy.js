@@ -1,5 +1,6 @@
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const express = require('express');
+const path = require('path');
 
 const app = express();
 
@@ -32,6 +33,18 @@ const bearerToCookie = (proxyReq, req) => {
     proxyReq.setHeader('Cookie', `authorization_code=${token}`);
   }
 };
+
+// Serve the UI itself to the LAN. Exact-path allowlist only — PRD.md, NAS-API.md,
+// package.json and everything else are never served. Paths not listed here proxy to the NAS.
+const PUBLIC_FILES = {
+  '/': 'index.html',
+  '/index.html': 'index.html',
+  '/app.js': 'app.js',
+  '/tailwind.css': 'tailwind.css'
+};
+app.get(Object.keys(PUBLIC_FILES), (req, res) => {
+  res.sendFile(path.join(__dirname, PUBLIC_FILES[req.path]));
+});
 
 // File listing and download API (same NAS, different path prefix).
 const ROUTES = [
