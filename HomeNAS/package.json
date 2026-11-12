@@ -1,0 +1,21 @@
+{
+  "name": "homenas",
+  "version": "1.0.0",
+  "description": "",
+  "main": "proxy.js",
+  "scripts": {
+    "start": "node proxy.js",
+    "build:css": "tailwindcss -i ./input.css -o ./tailwind.css --minify"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.3.0",
+    "http-proxy-middleware": "^4.2.1"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.19"
+  }
+}

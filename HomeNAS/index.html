@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%232563eb' d='M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8z'/%3E%3C/svg%3E">
+  <title>HomeNAS File Browser</title>
+  <!-- Tailwind. Rebuild with: npm run build:css -->
+  <link rel="stylesheet" href="tailwind.css">
+</head>
+<body class="app-bg flex h-screen flex-col text-sm text-neutral-900">
+  <!-- Login view. Shown when signed out; the app shell stays hidden until then. -->
+  <div class="app-bg flex hidden h-screen items-center justify-center p-4" id="loginView">
+    <form class="w-full max-w-sm rounded-2xl border border-neutral-200 bg-white p-6 shadow-xl" id="loginForm">
+      <div class="mb-6 flex items-center gap-3">
+        <svg class="h-9 w-9 shrink-0 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6.5" y1="12" x2="6.5" y2="12.01"/><line x1="11" y1="12" x2="11.01" y2="12"/><line x1="15.5" y1="12" x2="15.5" y2="12.01"/></svg>
+        <div>
+          <h1 class="text-lg font-semibold tracking-tight text-neutral-800">HomeNAS</h1>
+          <p class="text-xs text-neutral-500">Sign in to your NAS</p>
+        </div>
+      </div>
+      <label class="mb-1 block text-xs font-medium text-neutral-600" for="loginUsername">Username</label>
+      <input type="text" id="loginUsername" class="mb-3 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" required>
+      <label class="mb-1 block text-xs font-medium text-neutral-600" for="loginPassword">Password</label>
+      <div class="relative mb-3">
+        <input type="password" id="loginPassword" class="w-full rounded-lg border border-neutral-300 py-2 pl-3 pr-10 text-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" autocomplete="current-password" required>
+        <button type="button" id="toggleLoginPassword" class="absolute inset-y-0 right-0 flex items-center rounded-r-lg px-3 text-neutral-400 transition-colors hover:text-neutral-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600" aria-pressed="false" aria-label="Show password" data-tooltip="Show password">
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <label class="mb-4 flex cursor-pointer select-none items-center gap-2 text-xs text-neutral-600">
+        <input type="checkbox" id="loginKeepSignedIn" class="h-4 w-4 accent-blue-600">
+        Keep me signed in on this computer
+      </label>
+      <p class="mb-3 hidden rounded-lg bg-red-50 px-3 py-2 text-xs leading-relaxed text-red-700" id="loginError" role="alert"></p>
+      <button type="submit" class="btn btn-primary w-full justify-center" id="loginSubmit">Sign in</button>
+    </form>
+  </div>
+  <header class="app-shell app-header sticky top-0 z-10 hidden flex items-center justify-between border-b border-neutral-200 bg-white px-4 py-3">
+    <div class="flex items-center gap-2">
+      <button class="icon-btn" id="sidebarToggle" aria-controls="sidebar" aria-expanded="true" data-tooltip="Hide sidebar" data-tooltip-pos="bottom" aria-label="Hide sidebar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
+      </button>
+      <svg class="h-6 w-6 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6.5" y1="12" x2="6.5" y2="12.01"/><line x1="11" y1="12" x2="11" y2="12.01"/></svg>
+      <h1 class="text-lg font-semibold tracking-tight text-neutral-800">HomeNAS</h1>
+    </div>
+    <div class="flex items-center gap-2">
+      <button class="icon-btn" id="recycleBinBtn" data-tooltip="Recycle bin" data-tooltip-pos="bottom" aria-label="Recycle bin"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M6 7l1.5 13a2 2 0 0 0 2 1.8h5a2 2 0 0 0 2-1.8L18 7"/><path d="M9.5 7V5a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v2"/><path d="M10.5 12v5M13.5 12v5"/></svg></button>
+      <div class="relative" id="gearMenuWrap">
+        <button class="icon-btn" id="gearMenuBtn" data-tooltip="Settings" data-tooltip-pos="bottom" aria-label="Settings" aria-haspopup="menu" aria-expanded="false" aria-controls="gearMenu"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+        <div class="hidden absolute right-0 top-full z-50 mt-2 w-56 rounded-xl border border-neutral-200 bg-white p-1 shadow-xl" id="gearMenu" role="menu" aria-label="Settings">
+          <button class="menu-item" id="healthBtn" role="menuitem"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><span>Health</span><span class="menu-item-hint">admin</span></button>
+          <button class="menu-item" id="changePasswordBtn" role="menuitem"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span>Change password</span><span class="menu-item-hint">admin</span></button>
+          <div class="my-1 border-t border-neutral-100" id="gearDivider" role="separator"></div>
+          <button class="menu-item" id="signOutBtn" role="menuitem"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v8"/><path d="M6.3 6.3a8 8 0 1 0 11.4 0"/></svg><span>Sign out</span></button>
+        </div>
+      </div>
+      <span class="sm-hidden rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-800 ring-1 ring-inset ring-blue-200" id="userBadge">admin</span>
+    </div>
+  </header>
+  <main class="app-shell hidden flex flex-1 overflow-hidden">
+    <aside id="sidebar" class="w-[280px] shrink-0 overflow-y-auto overflow-x-hidden border-r border-neutral-200 bg-white p-2 transition-[width,padding] duration-200 ease-in-out">
+      <p class="px-2 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-widest text-neutral-400">Shares</p>
+      <ul class="min-w-[260px]" id="folderTree"></ul>
+    </aside>
+    <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
+    <section class="min-w-0 flex-1 overflow-auto p-4">
+      <div class="mb-4 flex flex-wrap items-center gap-2">
+        <button class="btn-icon btn-icon-primary" id="uploadBtn" data-tooltip="Upload" aria-label="Upload">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </button>
+        <span class="text-xs tabular-nums text-neutral-500" id="uploadStatus" role="status"></span>
+        <input type="file" class="hidden" id="fileInput" multiple>
+        <button class="btn-icon" id="newFolderBtn" data-tooltip="New Folder" aria-label="New Folder">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="10" x2="12" y2="14"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+        </button>
+        <button class="btn-icon" id="moveSelectedBtn" disabled data-tooltip="Move Selected" aria-label="Move Selected">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M10 13h6M13.5 10.5 16 13l-2.5 2.5"/></svg>
+        </button>
+        <button class="btn-icon" id="copySelectedBtn" disabled data-tooltip="Copy Selected" aria-label="Copy Selected">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        </button>
+        <button class="btn-icon" id="deleteSelectedBtn" disabled data-tooltip="Delete Selected" aria-label="Delete Selected">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
+        <button class="icon-btn" id="upLevelBtn" data-tooltip="Up one level" data-tooltip-pos="bottom" aria-label="Up one level"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 15v-4M9.5 12.5 12 10l2.5 2.5"/></svg></button>
+        <span class="mx-1 h-5 w-px bg-neutral-200" aria-hidden="true"></span>
+        <nav class="flex flex-wrap items-center gap-1.5 text-sm text-neutral-500" id="breadcrumb" aria-label="Breadcrumb"></nav>
+        <form class="relative ml-auto flex items-center gap-1.5" id="searchForm" role="search" autocomplete="off">
+          <div class="relative flex items-center">
+            <svg class="pointer-events-none absolute left-2.5 h-4 w-4 text-neutral-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
+            <input class="h-9 w-40 rounded-lg border border-neutral-200 bg-white py-1.5 pl-8 pr-7 text-xs text-neutral-700 shadow-sm transition-colors placeholder:text-neutral-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-neutral-50 disabled:text-neutral-400" id="searchInput" type="text" placeholder="Search in home" autocomplete="off" spellcheck="false" aria-label="Search files in this share">
+            <button class="absolute right-1.5 flex h-6 w-6 items-center justify-center rounded-md text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-700 hidden" id="searchClear" aria-label="Clear search" type="button"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+          </div>
+          <button class="btn h-9 px-3 text-xs" id="searchSubmitBtn" type="submit" data-tooltip="Search (Enter)" data-tooltip-pos="bottom"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>Search</button>
+        </form>
+        <span class="text-[11px] tabular-nums text-neutral-500" id="searchStatus" role="status"></span>
+        <button class="icon-btn ml-1" id="refreshBtn" data-tooltip="Refresh" data-tooltip-pos="bottom" aria-label="Refresh">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        </button>
+      </div>
+      <div id="mobileSortBar" class="only-mobile mb-2 flex-wrap items-center gap-1.5 text-[11px]" role="group" aria-label="Sort files">
+        <span class="mr-1 text-neutral-400">Sort:</span>
+        <button class="sort-chip" data-sort="name" type="button" aria-pressed="true">Name</button>
+        <button class="sort-chip" data-sort="size" type="button" aria-pressed="false">Size</button>
+        <button class="sort-chip" data-sort="access_date" type="button" aria-pressed="false">Modified</button>
+        <button class="sort-chip" data-sort="type" type="button" aria-pressed="false">Type</button>
+      </div>
+      <div class="overflow-x-auto rounded-xl border border-neutral-200 bg-white shadow-sm">
+        <table class="w-full border-collapse" id="fileTable">
+          <thead>
+            <tr>
+              <th class="w-10 border-b border-neutral-200 bg-neutral-50 px-3 py-2 text-left"><input type="checkbox" id="selectAll" class="h-4 w-4 accent-blue-600" data-tooltip="Select all" aria-label="Select all"></th>
+              <th class="border-b border-neutral-200 bg-neutral-50 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500"><button class="sort-header inline-flex items-center gap-1" data-sort="name" type="button" data-active="true" data-dir="asc" aria-label="Sort by name">Name <svg class="sort-arrow h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 15 12 9 18 15"/></svg></button></th>
+              <th class="w-28 border-b border-neutral-200 bg-neutral-50 px-3 py-2 text-right text-[11px] font-semibold uppercase tracking-wider text-neutral-500"><button class="sort-header inline-flex items-center gap-1" data-sort="size" type="button" data-active="false" data-dir="asc" aria-label="Sort by size">Size <svg class="sort-arrow h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 15 12 9 18 15"/></svg></button></th>
+              <th class="w-44 border-b border-neutral-200 bg-neutral-50 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500"><button class="sort-header inline-flex items-center gap-1" data-sort="access_date" type="button" data-active="false" data-dir="asc" aria-label="Sort by modified date">Modified <svg class="sort-arrow h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 15 12 9 18 15"/></svg></button></th>
+              <th class="w-24 border-b border-neutral-200 bg-neutral-50 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500"><button class="sort-header inline-flex items-center gap-1" data-sort="type" type="button" data-active="false" data-dir="asc" aria-label="Sort by type">Type <svg class="sort-arrow h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 15 12 9 18 15"/></svg></button></th>
+              <th class="w-44 border-b border-neutral-200 bg-neutral-50 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="fileList"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div class="fixed inset-0 z-50 flex hidden items-center justify-center bg-black/40 p-4 backdrop-blur-[2px]" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl ring-1 ring-black/5">
+      <h3 class="mb-4 text-base font-semibold text-neutral-800" id="modalTitle"></h3>
+      <input type="text" class="mb-4 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" id="modalInput" placeholder="Folder name">
+      <div class="flex justify-end gap-2">
+        <button class="btn" id="modalCancel">Cancel</button>
+        <button class="btn btn-primary" id="modalConfirm">OK</button>
+      </div>
+    </div>
+  </div>
+  <div class="toast hidden" id="toast" role="status"></div>
+  <div class="fixed inset-0 z-[60] flex hidden items-center justify-center bg-black/50 p-4 backdrop-blur-[2px]" id="transferModal" role="dialog" aria-modal="true" aria-labelledby="transferTitleText">
+    <div class="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5">
+      <div class="flex items-center gap-4 border-b border-neutral-100 px-6 py-4">
+        <span id="transferTitleIcon" class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-white"></span>
+        <div class="min-w-0 flex-1">
+          <p class="text-base font-semibold leading-snug text-neutral-900" id="transferTitleText">Transfers in progress</p>
+          <p class="mt-0.5 text-xs leading-snug text-neutral-500" id="transferSubtitle">Please keep this tab open.</p>
+        </div>
+      </div>
+      <div class="hidden border-b border-neutral-100 bg-neutral-50 px-6 py-3" id="transferAggregate">
+        <div class="flex items-baseline justify-between gap-3">
+          <p class="text-[11px] font-medium uppercase tracking-wider text-neutral-500">Overall</p>
+          <p class="text-xs tabular-nums text-neutral-600" id="transferAggregateMeta"></p>
+        </div>
+        <div class="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-neutral-200"><div class="h-full rounded-full bg-blue-600 transition-[width] duration-200" id="transferAggregateBar" style="width:0%"></div></div>
+      </div>
+      <ul class="max-h-96 divide-y divide-neutral-100 overflow-y-auto" id="transferList"></ul>
+      <div class="flex items-center justify-end gap-4 border-t border-neutral-100 px-6 py-4">
+        <p class="mr-auto text-xs leading-relaxed text-neutral-500" id="transferFooterNote">Closing or reloading this tab stops the transfers.</p>
+        <button class="btn btn-primary hidden shrink-0" id="transferCloseBtn">Close</button>
+      </div>
+    </div>
+  </div>
+  <div id="tooltip" role="tooltip" hidden></div>
+
+  <div class="fixed inset-0 z-50 flex hidden items-center justify-center bg-black/40 p-4 backdrop-blur-[2px]" id="changePasswordModal" role="dialog" aria-modal="true" aria-labelledby="changePasswordTitle">
+    <div class="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl ring-1 ring-black/5">
+      <h3 class="mb-1 text-base font-semibold text-neutral-800" id="changePasswordTitle">Change admin password</h3>
+      <p class="mb-4 text-xs leading-relaxed text-neutral-500">NAS password for “admin”. 8–32 characters; must include upper- and lowercase letters and a digit. Allowed symbols: ! @ # $ % ^ &amp; * ( ) _ + - = / .</p>
+      <label class="mb-1 block text-xs font-medium text-neutral-600" for="currentPasswordInput">Current password</label>
+      <input type="password" id="currentPasswordInput" class="mb-3 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" autocomplete="current-password" autocapitalize="off" spellcheck="false">
+      <label class="mb-1 block text-xs font-medium text-neutral-600" for="newPasswordInput">New password</label>
+      <input type="password" id="newPasswordInput" class="mb-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" autocomplete="new-password" autocapitalize="off" spellcheck="false">
+      <p class="mb-3 hidden text-xs leading-relaxed text-red-600" id="newPasswordError"></p>
+      <label class="mb-1 block text-xs font-medium text-neutral-600" for="confirmPasswordInput">Confirm new password</label>
+      <input type="password" id="confirmPasswordInput" class="mb-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" autocomplete="new-password" autocapitalize="off" spellcheck="false">
+      <p class="mb-3 hidden text-xs leading-relaxed text-red-600" id="confirmPasswordError"></p>
+      <p class="hidden text-xs leading-relaxed text-red-600" id="changePasswordError"></p>
+      <div class="mt-4 flex justify-end gap-2">
+        <button class="btn" id="changePasswordCancel">Cancel</button>
+        <button class="btn btn-primary" id="changePasswordConfirm" disabled>Change</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="fixed inset-0 z-50 flex hidden items-stretch justify-center overflow-y-auto bg-black/40 p-4 backdrop-blur-[2px]" id="healthModal" role="dialog" aria-modal="true" aria-labelledby="healthTitle">
+    <div class="my-auto w-full max-w-3xl rounded-xl bg-white p-6 shadow-xl ring-1 ring-black/5">
+      <div class="mb-4 flex items-center justify-between gap-3">
+        <h3 class="text-base font-semibold text-neutral-800" id="healthTitle">Health <span class="text-xs font-normal text-neutral-400">(admin)</span></h3>
+        <div class="flex items-center gap-2">
+          <button class="btn" id="healthRefreshBtn">Refresh</button>
+          <button class="icon-btn" id="healthCloseBtn" aria-label="Close" data-tooltip="Close"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </div>
+      </div>
+      <div id="healthBody" class="max-h-[70vh] overflow-y-auto text-sm text-neutral-700"><p class="text-neutral-400">Loading…</p></div>
+    </div>
+  </div>
+
+  <div class="fixed inset-0 z-50 flex hidden items-stretch justify-center overflow-y-auto bg-black/40 p-4 backdrop-blur-[2px]" id="recycleModal" role="dialog" aria-modal="true" aria-labelledby="recycleTitle">
+    <div class="my-auto w-full max-w-3xl rounded-xl bg-white p-6 shadow-xl ring-1 ring-black/5">
+      <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <h3 class="text-base font-semibold text-neutral-800" id="recycleTitle">Recycle bin <span class="text-xs font-normal text-neutral-400">(app and SMB deletes)</span></h3>
+        <div class="flex items-center gap-2">
+          <select id="recycleShareSelect" class="rounded-lg border border-neutral-300 px-2 py-1.5 text-sm text-neutral-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" aria-label="Share"></select>
+          <button class="btn" id="recycleRefreshBtn">Refresh</button>
+          <button class="btn" id="recycleEmptyBtn">Empty bin</button>
+          <button class="icon-btn" id="recycleCloseBtn" aria-label="Close" data-tooltip="Close"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </div>
+      </div>
+      <p class="mb-3 rounded-lg bg-blue-50 px-3 py-2 text-[11px] leading-relaxed text-blue-800">Deletes from this app and from Finder/SMB land here. Permanent deletes happen only via “Delete permanently” and “Empty bin” in this window.</p>
+      <div id="recycleBody" class="max-h-[65vh] overflow-auto text-sm text-neutral-700"><p class="text-neutral-400">Loading…</p></div>
+    </div>
+  </div>
+
+  <div class="fixed inset-0 z-50 flex hidden items-center justify-center bg-black/40 p-4 backdrop-blur-[2px]" id="moveCopyModal" role="dialog" aria-modal="true" aria-labelledby="moveCopyTitle">
+    <div class="w-full max-w-md overflow-hidden rounded-xl bg-white shadow-2xl ring-1 ring-black/5">
+      <div class="flex items-center justify-between gap-3 border-b border-neutral-100 px-5 py-3">
+        <h3 class="text-base font-semibold text-neutral-800" id="moveCopyTitle">Move items</h3>
+        <button class="icon-btn" id="moveCopyCloseBtn" aria-label="Close" data-tooltip="Close"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="border-b border-neutral-100 px-5 py-2.5">
+        <nav class="flex flex-wrap items-center gap-1.5 text-xs text-neutral-500" id="moveCopyCrumbs" aria-label="Destination folder"></nav>
+      </div>
+      <ul class="max-h-56 min-h-32 divide-y divide-neutral-100 overflow-y-auto" id="moveCopyFolderList"></ul>
+      <div class="border-t border-neutral-100 px-5 py-3.5">
+        <p class="mb-3 text-[11px] leading-relaxed text-neutral-500"><span id="moveCopySummary" class="font-medium text-neutral-700">Choose the destination folder.</span></p>
+        <div class="flex justify-end gap-2">
+          <button class="btn" id="moveCopyCancel">Cancel</button>
+          <button class="btn btn-primary" id="moveCopyConfirm">Move here</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fixed inset-0 z-50 flex hidden items-center justify-center bg-black/40 p-4 backdrop-blur-[2px]" id="binChoiceModal" role="dialog" aria-modal="true" aria-labelledby="binChoiceTitle">
+    <div class="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl ring-1 ring-black/5">
+      <h3 class="mb-2 text-base font-semibold text-neutral-800" id="binChoiceTitle">Create a recycle bin for this share?</h3>
+      <p class="text-sm leading-relaxed text-neutral-600"><span id="binChoiceShare" class="font-semibold text-neutral-800"></span> has no recycle bin yet. Where should the deleted item(s) go?</p>
+      <div class="mt-4 flex flex-col gap-2">
+        <button class="btn btn-primary justify-center" id="binChoiceCreate">Create bin, then delete</button>
+        <button class="btn justify-center" id="binChoicePermanent">Delete permanently</button>
+        <button class="btn justify-center" id="binChoiceCancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="fixed inset-0 z-50 flex hidden items-center justify-center bg-black/40 p-4 backdrop-blur-[2px]" id="purgeConfirmModal" role="dialog" aria-modal="true" aria-labelledby="purgeConfirmTitle">
+    <div class="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl ring-1 ring-black/5">
+      <h3 class="mb-2 text-base font-semibold text-neutral-800" id="purgeConfirmTitle">Delete permanently?</h3>
+      <p class="text-sm text-neutral-600">“<span id="purgeConfirmName" class="font-semibold"></span>” will be deleted forever. This cannot be undone.</p>
+      <div class="mt-4 flex justify-end gap-2">
+        <button class="btn" id="purgeConfirmCancel">Cancel</button>
+        <button class="btn btn-danger-solid" id="purgeConfirmOk">Delete forever</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="fixed inset-0 z-50 flex hidden items-center justify-center bg-black/40 p-4 backdrop-blur-[2px]" id="emptyBinModal" role="dialog" aria-modal="true" aria-labelledby="emptyBinTitle">
+    <div class="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl ring-1 ring-black/5">
+      <h3 class="mb-2 text-base font-semibold text-neutral-800" id="emptyBinTitle">Empty bin?</h3>
+      <p class="text-sm text-neutral-600">Everything in the <span id="emptyBinShareName" class="font-semibold"></span> recycle bin will be deleted forever. This cannot be undone.</p>
+      <div class="mt-4 flex justify-end gap-2">
+        <button class="btn" id="emptyBinCancel">Cancel</button>
+        <button class="btn btn-danger-solid" id="emptyBinOk">Empty bin</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="fixed inset-0 z-50 flex hidden items-center justify-center bg-neutral-950/85 p-4" id="imagePreviewModal" role="dialog" aria-modal="true" aria-labelledby="imagePreviewName">
+    <div class="flex h-full max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-xl bg-neutral-900 shadow-2xl ring-1 ring-white/10">
+      <div class="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-4 py-2.5">
+        <p class="min-w-0 truncate text-sm font-medium text-neutral-100" id="imagePreviewName"></p>
+        <div class="flex shrink-0 items-center gap-3">
+          <span class="hidden rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-medium text-amber-300 ring-1 ring-inset ring-amber-500/30" id="previewTruncation"></span>
+          <span class="text-[11px] tabular-nums text-neutral-400" id="imagePreviewMeta"></span>
+          <button class="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-300 transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400" id="imagePreviewCloseBtn" aria-label="Close preview" data-tooltip="Close" data-tooltip-pos="bottom"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </div>
+      </div>
+      <div class="flex min-h-0 flex-1 items-center justify-center p-4">
+        <p class="text-sm text-neutral-400" id="imagePreviewStatus">Loading…</p>
+        <img class="hidden max-h-full max-w-full rounded object-contain" id="imagePreviewImg" alt="">
+        <pre class="hidden h-full w-full self-stretch overflow-auto whitespace-pre-wrap break-all rounded border border-neutral-200 bg-white p-3 font-mono text-[12px] leading-5 text-neutral-800" id="textPreviewView"></pre>
+        <div class="hidden h-full w-full self-stretch overflow-auto rounded border border-neutral-200 bg-white p-3" id="csvPreviewView"></div>
+        <iframe class="hidden h-full w-full self-stretch rounded bg-white" id="pdfPreviewFrame" title="PDF preview"></iframe>
+        <video class="hidden h-full w-full self-stretch rounded bg-black" id="videoPreviewPlayer" controls playsinline preload="auto"></video>
+        <audio class="hidden w-full max-w-lg" id="audioPreviewPlayer" controls preload="auto"></audio>
+      </div>
+    </div>
+  </div>
+
+  <!-- Drop target for file upload. pointer-events:none so document-level drag handlers keep working. -->
+  <div id="dropOverlay" class="pointer-events-none fixed inset-0 z-40 hidden items-center justify-center bg-blue-600/10 backdrop-blur-[1px]" aria-hidden="true">
+    <div class="rounded-2xl border-2 border-dashed border-blue-500 bg-white/95 px-10 py-8 text-center shadow-xl">
+      <p class="text-base font-semibold text-blue-700">Drop files to upload</p>
+      <p class="mt-1 text-xs text-neutral-500" id="dropPath"></p>
+    </div>
+  </div>
+
+  <div class="fixed inset-0 z-50 flex hidden items-center justify-center bg-black/40 p-4 backdrop-blur-[2px]" id="shareDeleteModal" role="dialog" aria-modal="true" aria-labelledby="shareDeleteTitle">
+    <div class="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl ring-1 ring-black/5">
+      <div class="mb-3 flex items-center gap-2 text-red-600">
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        <h3 class="text-base font-semibold" id="shareDeleteTitle">Delete shared folder</h3>
+      </div>
+      <p class="text-sm text-neutral-700">Delete <strong id="shareDeleteName" class="font-semibold"></strong>?</p>
+      <p class="mt-2 text-xs leading-relaxed text-neutral-500">This removes the SMB share <strong>and destroys all data in it</strong>. This cannot be undone.</p>
+      <label class="mt-4 block text-xs font-medium text-neutral-600" for="shareDeleteInput">Type <span id="shareDeletePromptName" class="font-semibold text-neutral-800"></span> to confirm</label>
+      <input id="shareDeleteInput" type="text" class="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm transition-colors focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-100" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+      <p class="mt-1 hidden text-xs text-red-600" id="shareDeleteError"></p>
+      <div class="mt-4 flex justify-end gap-2">
+        <button class="btn" id="shareDeleteCancel">Cancel</button>
+        <button class="btn btn-danger-solid" id="shareDeleteConfirm" disabled>Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
