@@ -118,7 +118,7 @@ Legend: ⬜ Planned | 🚧 In Progress | 🔮 Future | ✅ Done
 - ✅ Up-nav button (built and verified in the UI 2026-11-12): toolbar button navigates one folder up (Windows Explorer style); disabled at root; per-folder-row 'move up one level' button remains; items can also be dragged onto the button or onto a breadcrumb segment
 
 #### 5.3.2 Advanced File Operations
-- ✅ Bulk move/copy between folders (built and verified in the UI 2026-11-12): toolbar Move/Copy buttons (enabled with a selection); same-share destination picker (folder browser; @SmbRecyclebin excluded); collision → automatic timestamp rename; per-item error reporting; list + search re-render after; drag-and-drop move for checked (or single) rows onto folder rows or tree folder nodes (same-share only); per-folder-row 'move up one level' action (built 2026-11-12); drag-and-drop onto breadcrumb segments and the toolbar Up button (built and verified 2026-11-12). Same-share only (cross-share not built); NAS-side folder copy not verified (file copy verified)
+- ✅ Bulk move/copy between folders (built and verified in the UI 2026-11-12): toolbar Move/Copy buttons (enabled with a selection); destination picker (folder browser across all shares; @SmbRecyclebin excluded); collision → automatic timestamp rename; per-item error reporting; list + search re-render after; drag-and-drop move for checked (or single) rows onto folder rows or tree folder nodes (any share); per-folder-row 'move up one level' action (built 2026-11-12); drag-and-drop onto breadcrumb segments and the toolbar Up button (built and verified 2026-11-12). Cross-share move and copy verified by probe 2026-11-12 (folder moved /home → /SharedFolder; folder copied /home → /VPHome, both listed and cleaned up); picker now starts at the share list and any folder inside a share is a valid destination; bins excluded. Folder copy is verified on the NAS. Cross-share drag-and-drop onto sidebar tree nodes enabled
 - ✅ Search files by name — within the current share only (built and verified in the UI 2026-11-12; recursive walk of the share, max 200 results, runs only on explicit submit — Enter or Search button, to limit NAS load; ×/Escape stops; NAS has no search endpoint — verified 404). Cross-share scope intentionally narrowed by product decision
 
 #### 5.3.3 Alerts
@@ -141,6 +141,17 @@ Legend: ⬜ Planned | 🚧 In Progress | 🔮 Future | ✅ Done
 - ✅ Built and verified in the UI 2026-11-12 (un-deferred by product decision): MP4, WebM, MOV (H.264) preview in the shared preview modal (native `<video controls>`). MKV and AVI are excluded — browsers cannot decode them. Whole file is buffered in memory before playback (MP4/MOV only play correctly in Safari/Chrome for H.264; seeks work offline once buffered)
 - “Preview” via the file-type icon (icon-as-trigger), consistent with images
 - Previews operate through the storage-share paths (in-memory only, never written to disk)
+
+#### 5.3.8 Audio Preview
+- ✅ Built and verified in the UI 2026-11-12: MP3 and M4A play in the shared preview modal (native `<audio controls>`); whole file is buffered in memory before playback
+- "Preview" via the file-type icon, consistent with images and video
+- Previews operate through the storage-share paths (in-memory only, never written to disk)
+
+#### 5.3.9 Disk Failure-Risk (experiment)
+- ✅ Stage 1 built and verified in the UI 2026-11-12: daily disk-health snapshot stored locally by the proxy (`.health-history.jsonl`, gitignored). Records per disk: model, SMART status/state, temperature + alert/shutdown thresholds, power-on hours (attr 9), power cycles (12), load cycles (193), reallocated sectors (5), pending sectors (197), offline uncorrectable (198), CRC errors (199), LBAs written/read (241/242). Health view shows snapshot count and latest date. The NAS is never written to; one SMART read per day. The endpoint requires a bearer header (presence check, not NAS validation — stops casual LAN writes) and keeps one snapshot per day, server-enforced
+- ✅ Stage 2 built and verified in the UI 2026-11-12: rule-based Low/Medium/High risk per disk with explicit reasons — trend growth of attributes 5/187/197/198/199, temperature excursions vs thresholds, age from power-on hours, usage rates from LBAs written and load cycles per day. Conventional default thresholds first, tuned with real data
+- 🔮 Stage 3 (optional): population base rates by disk model and age (Backblaze/Google published data), clearly labelled as population statistics — never a personal probability
+- Not a substitute for backups; RAID 1 covers single-disk death only
 
 #### 5.3.7 Large Transfer Progress
 - Bulk download as one ZIP archive — moved from Phase 1; requires a reliable NAS or server-side ZIP path

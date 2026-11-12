@@ -836,7 +836,7 @@
       const btn = e.target.closest('button[data-path]');
       if (!btn) return;
       const dest = btn.dataset.path;
-      if (dest.split('/')[1] !== currentShareName()) { e.dataTransfer.dropEffect = 'none'; return; }
+      if (!safeDest(dest)) { e.dataTransfer.dropEffect = 'none'; return; }
       e.preventDefault();
       e.dataTransfer.dropEffect = 'move';
       clearDropHighlights();
@@ -850,7 +850,7 @@
       const btn = e.target.closest('button[data-path]');
       if (!btn || !dragPaths.length) return;
       const dest = btn.dataset.path;
-      if (dest.split('/')[1] !== currentShareName()) { showToast('Cross-share moves are not supported yet.', 4000, 'error'); dragPaths = []; return; }
+      if (!safeDest(dest)) { showToast('That folder cannot take items.', 4000, 'error'); dragPaths = []; return; }
       e.preventDefault();
       clearDropHighlights();
       await moveItemsViaDrag(dest);
@@ -1129,18 +1129,22 @@
     const csvPreviewView = document.getElementById('csvPreviewView');
     const pdfPreviewFrame = document.getElementById('pdfPreviewFrame');
     const videoPreviewPlayer = document.getElementById('videoPreviewPlayer');
+    const audioPreviewPlayer = document.getElementById('audioPreviewPlayer');
     const previewTruncation = document.getElementById('previewTruncation');
     let imagePreviewUrl = null;
 
     function closePreview() {
       imagePreviewModal.classList.add('hidden');
-      [imagePreviewImg, textPreviewView, csvPreviewView, pdfPreviewFrame, videoPreviewPlayer, previewTruncation].forEach(el => el.classList.add('hidden'));
+      [imagePreviewImg, textPreviewView, csvPreviewView, pdfPreviewFrame, videoPreviewPlayer, audioPreviewPlayer, previewTruncation].forEach(el => el.classList.add('hidden'));
       imagePreviewImg.removeAttribute('src');
       pdfPreviewFrame.removeAttribute('srcdoc');
       pdfPreviewFrame.src = 'about:blank';
       videoPreviewPlayer.pause();
       videoPreviewPlayer.removeAttribute('src');
       videoPreviewPlayer.load();
+      audioPreviewPlayer.pause();
+      audioPreviewPlayer.removeAttribute('src');
+      audioPreviewPlayer.load();
       textPreviewView.textContent = '';
       csvPreviewView.innerHTML = '';
       imagePreviewStatus.classList.remove('hidden');
@@ -1149,7 +1153,7 @@
     }
 
     function showPreviewView(el) {
-      [imagePreviewImg, textPreviewView, csvPreviewView, pdfPreviewFrame, videoPreviewPlayer].forEach(v => v.classList.add('hidden'));
+      [imagePreviewImg, textPreviewView, csvPreviewView, pdfPreviewFrame, videoPreviewPlayer, audioPreviewPlayer].forEach(v => v.classList.add('hidden'));
       imagePreviewStatus.classList.add('hidden');
       el.classList.remove('hidden');
     }
@@ -1219,7 +1223,7 @@
           throw new Error(data.error?.msg || data.error || 'NAS refused the file');
         }
         const blob = await res.blob();
-        if (kind === 'image' || kind === 'pdf' || kind === 'video') {
+        if (kind === 'image' || kind === 'pdf' || kind === 'video' || kind === 'audio') {
           imagePreviewUrl = URL.createObjectURL(blob);
           if (kind === 'image') {
             imagePreviewImg.onload = () => showPreviewView(imagePreviewImg);
@@ -1228,6 +1232,10 @@
           } else if (kind === 'pdf') {
             pdfPreviewFrame.src = imagePreviewUrl;
             showPreviewView(pdfPreviewFrame);
+          } else if (kind === 'audio') {
+            audioPreviewPlayer.onerror = () => { imagePreviewStatus.textContent = 'Could not play this audio (format not supported in this browser). MP3 and M4A are supported.'; imagePreviewStatus.classList.remove('hidden'); audioPreviewPlayer.classList.add('hidden'); };
+            audioPreviewPlayer.src = imagePreviewUrl;
+            showPreviewView(audioPreviewPlayer);
           } else {
             videoPreviewPlayer.onerror = () => { imagePreviewStatus.textContent = 'Could not play this video (format not supported in this browser). MP4 and WebM are supported.'; imagePreviewStatus.classList.remove('hidden'); videoPreviewPlayer.classList.add('hidden'); };
             videoPreviewPlayer.onloadeddata = () => showPreviewView(videoPreviewPlayer);
@@ -1639,6 +1647,95 @@
           sensorWarnings.push('Storage / SMART probe failed: ' + e.message);
         }
 
+        // ====== DISK HISTORY (failure-risk experiment) ======
+        // One compact snapshot per day. The proxy stores it on this Mac; the NAS is never written to.
+        const smartRawOf = (diskName, id) => {
+          const list = Array.isArray(smartByDisk[diskName]) ? smartByDisk[diskName] : [];
+          const attr = list.find(a => String(a.id) === String(id));
+          if (!attr) return null;
+          const m = String(attr.raw ?? '').match(/-?\d+/);
+          return m ? Number(m[0]) : null;
+        };
+        let historySamples = [];
+        try {
+          const histRes = await fetch(`${PROXY_URL}/health/history`);
+          const histData = await histRes.json();
+          if (histData && histData.result) historySamples = Array.isArray(histData.samples) ? histData.samples : [];
+        } catch (e) { historySamples = []; }
+        const nowDate = new Date();
+        const todayKey = nowDate.getFullYear() + '-' + String(nowDate.getMonth() + 1).padStart(2, '0') + '-' + String(nowDate.getDate()).padStart(2, '0');
+        const lastHistoryDate = historySamples.length ? String(historySamples[historySamples.length - 1].date || '') : '';
+        const willSnapshot = disks.length > 0 && lastHistoryDate !== todayKey;
+        if (willSnapshot) {
+          const snapshot = {
+            date: todayKey,
+            disks: disks.map(d => ({
+              name: d.NAME, model: d.MODEL, smart: d.SMART, state: d.STATE,
+              temp_c: parseFloat(d.TEMPERATURE), alert_c: parseFloat(d.HIGH), shutdown_c: parseFloat(d.MAX_HIGH),
+              power_on_hours: smartRawOf(d.NAME, 9),
+              power_cycles: smartRawOf(d.NAME, 12),
+              load_cycles: smartRawOf(d.NAME, 193),
+              reallocated: smartRawOf(d.NAME, 5),
+              pending: smartRawOf(d.NAME, 197),
+              offline_uncorrectable: smartRawOf(d.NAME, 198),
+              crc_errors: smartRawOf(d.NAME, 199),
+              lbas_written: smartRawOf(d.NAME, 241),
+              lbas_read: smartRawOf(d.NAME, 242)
+            }))
+          };
+          authFetch(`${PROXY_URL}/health/history`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(snapshot) }).catch(() => {});
+        }
+        const historyCount = historySamples.length + (willSnapshot ? 1 : 0);
+        const historyLast = willSnapshot ? todayKey : lastHistoryDate;
+
+        // Rule-based failure-risk rating. Advisory only, conventional thresholds.
+        // Level 2 = high, 1 = medium, 0 = low. Every rating carries explicit reasons.
+        const riskOf = (d) => {
+          const reasons = [];
+          let level = 0;
+          const bump = (lvl, why) => { level = Math.max(level, lvl); reasons.push(why); };
+          const name = d.NAME;
+          const raw = id => smartRawOf(name, id);
+
+          if (String(d.SMART).toLowerCase() !== 'normal') bump(2, 'SMART status is \u201C' + d.SMART + '\u201D');
+          if (String(d.STATE).toLowerCase() !== 'normal') bump(2, 'drive state is \u201C' + d.STATE + '\u201D');
+
+          const pending = raw(197), offUnc = raw(198), realloc = raw(5), crc = raw(199);
+          if (pending > 0) bump(2, pending + ' pending sector(s) — data the drive could not read');
+          if (offUnc > 0) bump(2, offUnc + ' offline uncorrectable sector(s)');
+          if (realloc >= 16) bump(2, realloc + ' reallocated sector(s)');
+          else if (realloc > 0) bump(1, realloc + ' reallocated sector(s)');
+          if (crc > 0) bump(1, crc + ' UDMA CRC error(s) — check the SATA cable');
+
+          const t = parseFloat(d.TEMPERATURE), hi = parseFloat(d.HIGH), shut = parseFloat(d.MAX_HIGH);
+          if (Number.isFinite(t) && Number.isFinite(shut) && t >= shut) bump(2, t + '\u00A0\u00B0C is at or above the shutdown threshold');
+          else if (Number.isFinite(t) && Number.isFinite(hi) && t >= hi) bump(1, t + '\u00A0\u00B0C is at or above the alert threshold');
+
+          const poh = raw(9);
+          if (poh >= 50000) bump(1, poh + ' power-on hours (about ' + (poh / 8760).toFixed(1) + ' years)');
+          else if (poh >= 20000) reasons.push(poh + ' power-on hours (about ' + (poh / 8760).toFixed(1) + ' years)');
+
+          // Temperature excursions across stored samples.
+          const mine = historySamples.map(x => (x.disks || []).find(y => y.name === name)).filter(Boolean);
+          if (Number.isFinite(hi)) {
+            const hotDays = mine.filter(x => Number(x.temp_c) >= hi).length;
+            if (hotDays > 0) bump(1, hotDays + ' previous snapshot(s) at or above the alert temperature');
+          }
+          // Growth across snapshots — the strongest real signal.
+          if (mine.length >= 2) {
+            const first = mine[0], last = mine[mine.length - 1];
+            const grew = k => Number(last[k] ?? 0) > Number(first[k] ?? 0);
+            if (grew('pending')) bump(2, 'pending sectors increased since the first snapshot');
+            if (grew('offline_uncorrectable')) bump(2, 'offline uncorrectable sectors increased');
+            if (grew('reallocated')) bump(1, 'reallocated sectors increased since the first snapshot');
+            if (grew('crc_errors')) bump(1, 'CRC errors increased since the first snapshot');
+          }
+          if (!reasons.length) reasons.push('no warning counters, temperature within limits, no growth across snapshots');
+          return { level, reasons };
+        };
+        const riskLabel = ['Low', 'Medium', 'High'];
+        const riskTone = ['bg-emerald-50 text-emerald-700 ring-emerald-200', 'bg-amber-50 text-amber-800 ring-amber-200', 'bg-red-50 text-red-700 ring-red-200'];
+
         const tempTone = (v) => {
           const n = parseFloat(v);
           if (Number.isNaN(n)) return 'text-neutral-700';
@@ -1747,6 +1844,21 @@
           html += '<p class="text-xs text-neutral-400">No disk info returned.</p>';
         }
 
+        html += '<h4 class="mb-2 mt-5 text-xs font-semibold uppercase tracking-wider text-neutral-500">Failure risk</h4>';
+        if (disks.length) {
+          html += '<div class="grid gap-2 sm:grid-cols-2">' + disks.map(d => {
+            const r = riskOf(d);
+            return `<div class="rounded-xl border border-neutral-200 bg-white p-3 shadow-sm">
+              <div class="flex items-center justify-between gap-2">
+                <p class="text-sm font-semibold text-neutral-800">${escapeHtml(String(d.NAME ?? '—'))}</p>
+                <span class="rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ring-inset ${riskTone[r.level]}">${riskLabel[r.level]} risk</span>
+              </div>
+              <ul class="mt-1.5 list-disc pl-4 text-[11px] leading-relaxed text-neutral-600">${r.reasons.map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ul>
+            </div>`;
+          }).join('') + '</div>';
+          html += '<p class="mt-2 text-[10px] leading-relaxed text-neutral-400">Rule-based rating from SMART counters, temperature, age and snapshot trends. Advisory only — keep backups; a Low rating is not a guarantee.</p>';
+        }
+
         html += '<h4 class="mb-2 mt-5 text-xs font-semibold uppercase tracking-wider text-neutral-500">SMART attributes</h4>';
         const names = Object.keys(smartByDisk);
         if (!names.length) {
@@ -1764,6 +1876,12 @@
             return `<p class="mb-1 mt-3 text-xs font-semibold text-neutral-600">${escapeHtml(name)}</p>` +
               `<div class="overflow-x-auto rounded-lg border border-neutral-200"><table class="w-full border-collapse text-xs"><thead><tr class="bg-neutral-50">${head}</tr></thead><tbody>${rows || '<tr><td class="py-2 text-neutral-400" colspan="7">No attributes</td></tr>'}</tbody></table></div>`;
           }).join('');
+        }
+
+        if (historyCount > 0) {
+          html += `<p class="mt-3 text-[11px] leading-relaxed text-neutral-400">Disk history: ${historyCount} daily snapshot${historyCount === 1 ? '' : 's'}, latest ${escapeHtml(historyLast)}. Collected locally to rate failure risk (experiment).</p>`;
+        } else {
+          html += '<p class="mt-3 text-[11px] leading-relaxed text-neutral-400">No disk history yet. The next Health refresh stores today\'s snapshot.</p>';
         }
 
         healthBody.innerHTML = html;
@@ -2259,12 +2377,17 @@
     let moveCopyState = null;
 
 
+    // Valid move/copy destination: a folder inside a share, never the root, never a recycle bin.
+    function safeDest(path) {
+      return !!path && path !== '/' && !path.split('/').includes('@SmbRecyclebin');
+    }
+
     function openMoveCopy(mode) {
       const paths = [...selection];
       if (!paths.length) return;
       const share = currentShareName();
       if (!share) { showToast('Open a share first.', 6000, 'error'); return; }
-      moveCopyState = { mode, paths, cwd: currentPath, share };
+      moveCopyState = { mode, paths, cwd: '/' };
       moveCopyTitle.textContent = (mode === 'move' ? 'Move' : 'Copy') + ' ' + paths.length + ' item' + (paths.length === 1 ? '' : 's') + ' to…';
       moveCopyConfirm.textContent = (mode === 'move' ? 'Move' : 'Copy') + ' here';
       moveCopyModal.classList.remove('hidden');
@@ -2277,11 +2400,11 @@
       const { cwd } = moveCopyState;
       const parts = cwd.split('/').filter(Boolean);
       let acc = '';
-      moveCopyCrumbs.innerHTML = parts.map((p, i) => {
-        acc += '/' + p;
-        const isLast = i === parts.length - 1;
-        const target = acc;
-        return `${i ? '<span class="text-neutral-300">/</span>' : ''}<button class="rounded px-1 py-0.5 ${isLast ? 'font-semibold text-neutral-800' : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800'}" data-nav="${escapeHtml(target)}">${escapeHtml(p)}</button>`;
+      const crumbs = [{ label: 'Home', target: '/' }];
+      parts.forEach(p => { acc += '/' + p; crumbs.push({ label: p, target: acc }); });
+      moveCopyCrumbs.innerHTML = crumbs.map((c, i) => {
+        const isLast = i === crumbs.length - 1;
+        return `${i ? '<span class="text-neutral-300">/</span>' : ''}<button class="rounded px-1 py-0.5 ${isLast ? 'font-semibold text-neutral-800' : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800'}" data-nav="${escapeHtml(c.target)}">${escapeHtml(c.label)}</button>`;
       }).join('');
       moveCopyCrumbs.querySelectorAll('[data-nav]').forEach(btn => {
         btn.addEventListener('click', () => { moveCopyState.cwd = btn.dataset.nav; renderMoveCopyPicker(); });
@@ -2309,10 +2432,19 @@
         btn.addEventListener('click', () => { moveCopyState.cwd = btn.dataset.into; renderMoveCopyPicker(); });
       });
       const sameDir = cwd === currentPath;
-      moveCopyConfirm.disabled = mode === 'move' && sameDir;
-      moveCopySummary.textContent = mode === 'move'
-        ? `${paths.length} item(s) move to ${cwd}${sameDir ? ' — this is where they are' : ''}`
-        : `${paths.length} item(s) copied to ${cwd}`;
+      const destOk = safeDest(cwd);
+      moveCopyConfirm.disabled = !destOk || (mode === 'move' && sameDir);
+      if (!destOk) {
+        moveCopySummary.textContent = cwd === '/'
+          ? 'Choose a share, then a folder inside it.'
+          : 'That location cannot take items. Choose a folder inside a share.';
+      } else if (mode === 'move' && sameDir) {
+        moveCopySummary.textContent = `${paths.length} item(s) move to ${cwd} — this is where they are`;
+      } else {
+        moveCopySummary.textContent = mode === 'move'
+          ? `${paths.length} item(s) move to ${cwd}`
+          : `${paths.length} item(s) copied to ${cwd}`;
+      }
     }
 
     // Shared collision handling + executor for the picker and drag-and-drop moves.
@@ -2647,6 +2779,7 @@
     // Phase 3 (5.3.5): preview is offered for these file kinds only.
     const PREVIEWABLE_IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
     const PREVIEWABLE_VIDEO_EXTS = ['mp4', 'webm', 'mov'];
+    const PREVIEWABLE_AUDIO_EXTS = ['mp3', 'm4a'];
     const PDF_PREVIEW_EXTS = ['pdf'];
     const TSV_PREVIEW_EXTS = ['tsv'];
     const CSV_PREVIEW_EXTS = ['csv'];
@@ -2656,12 +2789,13 @@
     const PREVIEW_CSV_ROW_CAP = 200;
     const PREVIEW_CSV_COL_CAP = 60;
 
-    // Returns 'image' | 'pdf' | 'csv' | 'tsv' | 'text' | null
+    // Returns 'image' | 'video' | 'audio' | 'pdf' | 'csv' | 'tsv' | 'text' | null
     function previewKind(name) {
       const dot = name.lastIndexOf('.');
       const ext = dot >= 0 ? name.slice(dot + 1).toLowerCase() : '';
       if (PREVIEWABLE_IMAGE_EXTS.includes(ext)) return 'image';
       if (PREVIEWABLE_VIDEO_EXTS.includes(ext)) return 'video';
+      if (PREVIEWABLE_AUDIO_EXTS.includes(ext)) return 'audio';
       if (PDF_PREVIEW_EXTS.includes(ext)) return 'pdf';
       if (CSV_PREVIEW_EXTS.includes(ext)) return 'csv';
       if (TSV_PREVIEW_EXTS.includes(ext)) return 'tsv';
