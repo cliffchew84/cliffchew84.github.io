@@ -614,11 +614,123 @@
       btn.addEventListener('click', () => cycleSort(btn.dataset.sort));
     });
 
+    // ====== TYPE FILTER ======
+    // Files are classified by extension. Unknown formats go to "other" and stay
+    // visible. Folders always show, in every category.
+    const TYPE_CATEGORIES = [
+      { key: 'photos', label: 'Photos', exts: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif', 'avif', 'bmp', 'tif', 'tiff', 'svg', 'raw', 'cr2', 'cr3', 'nef', 'arw', 'dng', 'orf', 'rw2', 'raf', 'srw', 'pef'] },
+      { key: 'videos', label: 'Videos', exts: ['mp4', 'm4v', 'mov', 'webm', 'mkv', 'avi', 'wmv', 'flv', 'mpg', 'mpeg', '3gp', 'ts', 'm2ts'] },
+      { key: 'audio', label: 'Audio', exts: ['mp3', 'm4a', 'aac', 'wav', 'flac', 'ogg', 'opus', 'aiff', 'aif', 'wma', 'amr'] },
+      { key: 'documents', label: 'Documents', exts: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'odt', 'ods', 'odp', 'rtf', 'txt', 'md', 'markdown', 'csv', 'tsv', 'epub', 'pages', 'numbers', 'key', 'tex', 'log'] },
+      { key: 'code', label: 'Code', exts: ['js', 'mjs', 'cjs', 'ts', 'tsx', 'jsx', 'py', 'rb', 'sh', 'bash', 'zsh', 'fish', 'php', 'pl', 'lua', 'r', 'swift', 'kt', 'java', 'c', 'h', 'cc', 'cpp', 'hpp', 'cs', 'go', 'rs', 'sql', 'html', 'htm', 'css', 'scss', 'sass', 'less', 'vue', 'svelte', 'json', 'jsonl', 'yaml', 'yml', 'toml', 'xml', 'ini', 'cfg', 'conf', 'env', 'properties', 'gradle', 'cmake', 'ipynb', 'awk', 'bat', 'ps1'] },
+      { key: 'archives', label: 'Archives', exts: ['zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'xz', 'tgz', 'dmg', 'iso', 'pkg'] },
+      { key: 'other', label: 'Other', exts: [] }
+    ];
+    // Files without an extension that people expect in a category.
+    const TYPE_NAMES = { makefile: 'code', dockerfile: 'code', readme: 'documents', license: 'documents', changelog: 'documents' };
+    const EXT_TO_TYPE = TYPE_CATEGORIES.reduce((map, cat) => {
+      cat.exts.forEach(ext => { map[ext] = cat.key; });
+      return map;
+    }, {});
+    const TYPE_LABEL = { all: 'All' };
+    TYPE_CATEGORIES.forEach(cat => { TYPE_LABEL[cat.key] = cat.label; });
+
+    const typeChips = document.getElementById('typeChips');
+    const TYPE_KEYS = TYPE_CATEGORIES.map(cat => cat.key);
+
+    // Filter choice persists across folders, shares and reloads (localStorage).
+    let activeType = 'all';
+    try {
+      const saved = localStorage.getItem('homenas.typeFilter');
+      if (saved === 'all' || TYPE_KEYS.includes(saved)) activeType = saved;
+    } catch (e) { /* keep default */ }
+
+    function categoryOf(item) {
+      if (item.type === 'folder') return 'folders';
+      const name = String(item.name || '').toLowerCase();
+      if (TYPE_NAMES[name]) return TYPE_NAMES[name];
+      const ext = extOf(name);
+      if (!ext) return 'other';
+      return EXT_TO_TYPE[ext] || 'other';
+    }
+
+    function visibleItems(items) {
+      return items.filter(item => !item.name.startsWith('.'));
+    }
+
+    function filterByType(items) {
+      if (activeType === 'all') return items;
+      return items.filter(item => item.type === 'folder' || categoryOf(item) === activeType);
+    }
+
+    function typeCounts(items) {
+      const counts = { all: items.length };
+      TYPE_KEYS.forEach(key => { counts[key] = 0; });
+      items.forEach(item => {
+        if (item.type !== 'folder') counts[categoryOf(item)]++;
+      });
+      return counts;
+    }
+
+    // Counts come from the current list, so a folder is never a surprise.
+    function renderTypeChips(items) {
+      const counts = typeCounts(items);
+      const chips = [{ key: 'all', label: 'All' }].concat(TYPE_CATEGORIES);
+      const focused = document.activeElement && document.activeElement.classList.contains('type-chip')
+        ? document.activeElement.dataset.type : null;
+      typeChips.innerHTML = chips.map(chip => {
+        const n = counts[chip.key] || 0;
+        return `<button class="type-chip" type="button" data-type="${chip.key}" aria-pressed="${chip.key === activeType}" aria-label="${chip.label}, ${n} item${n === 1 ? '' : 's'}">${chip.label}<span class="type-count">${n}</span></button>`;
+      }).join('');
+      // Keep keyboard focus on the same chip after the row is rebuilt.
+      if (focused) {
+        const again = typeChips.querySelector(`.type-chip[data-type="${focused}"]`);
+        if (again) again.focus({ preventScroll: true });
+      }
+    }
+
+    function setActiveType(key) {
+      activeType = key;
+      try { localStorage.setItem('homenas.typeFilter', key); } catch (e) { /* ignore */ }
+      selection.clear();
+      selectAll.checked = false;
+      rerenderCurrentView();
+      updateSelection();
+    }
+
+    typeChips.addEventListener('click', (e) => {
+      const btn = e.target.closest('.type-chip');
+      if (!btn || btn.dataset.type === activeType) return;
+      setActiveType(btn.dataset.type);
+    });
+
+    // "Show all" inside the filtered empty state.
+    fileList.addEventListener('click', (e) => {
+      if (e.target.closest('#clearTypeFilter')) setActiveType('all');
+    });
+
+    function typeEmptyRow(total) {
+      const label = (TYPE_LABEL[activeType] || 'items').toLowerCase();
+      return `<tr>
+        <td colspan="6" class="px-6 py-14 text-center">
+          <p class="text-sm font-semibold text-neutral-600">No ${escapeHtml(label)} in this folder</p>
+          <p class="mt-1.5 text-xs text-neutral-400">This folder has ${total} item${total === 1 ? '' : 's'} of other types.</p>
+          <div class="mt-4 flex justify-center"><button class="btn" type="button" id="clearTypeFilter">Show all</button></div>
+        </td>
+      </tr>`;
+    }
+
     function renderFiles(items, path) {
       updateSortHeaderUI();
-      const visible = items.filter(item => !item.name.startsWith('.'));
-      selectAll.disabled = !visible.length;
-      if (!visible.length) {
+      const visible = visibleItems(items);
+      renderTypeChips(visible);
+      const shown = filterByType(visible);
+      selectAll.disabled = !shown.length;
+      if (!shown.length) {
+        if (visible.length) {
+          fileList.innerHTML = typeEmptyRow(visible.length);
+          return;
+        }
         fileList.innerHTML = `<tr>
           <td colspan="6" class="px-6 py-14 text-center">
             <svg class="mx-auto mb-4 h-40 w-auto" viewBox="0 0 220 150" role="img" aria-label="Empty folder illustration">
@@ -663,7 +775,7 @@
         </tr>`;
         return;
       }
-      fileList.innerHTML = applySort(visible).map(item => fileRow(item, path)).join('');
+      fileList.innerHTML = applySort(shown).map(item => fileRow(item, path)).join('');
       bindRowEvents();
     }
 
@@ -918,14 +1030,26 @@
     }
 
     function renderSearchResults(matches) {
-      selectAll.disabled = !matches.length;
-      if (!matches.length) {
-        fileList.innerHTML = `<tr><td colspan="6" class="px-6 py-14 text-center">
-          <p class="text-sm font-semibold text-neutral-500">No matches for “${escapeHtml(searchInput.value.trim())}”</p>
-          <p class="mt-1 text-xs text-neutral-400">Check the spelling or try a shorter part of the name.</p>
-        </td></tr>`;
+      const visible = visibleItems(matches);
+      renderTypeChips(visible);
+      const shown = filterByType(visible);
+      selectAll.disabled = !shown.length;
+      if (!shown.length) {
+        if (visible.length) {
+          const label = (TYPE_LABEL[activeType] || 'items').toLowerCase();
+          fileList.innerHTML = `<tr><td colspan="6" class="px-6 py-14 text-center">
+            <p class="text-sm font-semibold text-neutral-500">No ${escapeHtml(label)} in these results</p>
+            <p class="mt-1 text-xs text-neutral-400">${visible.length} match${visible.length === 1 ? '' : 'es'} of other types were found.</p>
+            <div class="mt-4 flex justify-center"><button class="btn" type="button" id="clearTypeFilter">Show all</button></div>
+          </td></tr>`;
+        } else {
+          fileList.innerHTML = `<tr><td colspan="6" class="px-6 py-14 text-center">
+            <p class="text-sm font-semibold text-neutral-500">No matches for “${escapeHtml(searchInput.value.trim())}”</p>
+            <p class="mt-1 text-xs text-neutral-400">Check the spelling or try a shorter part of the name.</p>
+          </td></tr>`;
+        }
       } else {
-        fileList.innerHTML = applySort(matches).map(it => fileRow(it, it.parent, {
+        fileList.innerHTML = applySort(shown).map(it => fileRow(it, it.parent, {
           typeCell: `<span class="block max-w-[160px] truncate text-[11px] text-neutral-500" title="${escapeHtml(it.parent)}">${escapeHtml(it.parent)}</span>`
         })).join('');
       }
@@ -2789,10 +2913,17 @@
     const PREVIEW_CSV_ROW_CAP = 200;
     const PREVIEW_CSV_COL_CAP = 60;
 
+    // Lowercase extension of a file name. Empty when there is none.
+    function extOf(name) {
+      const s = String(name || '');
+      const dot = s.lastIndexOf('.');
+      if (dot < 0 || dot === s.length - 1) return '';
+      return s.slice(dot + 1).toLowerCase();
+    }
+
     // Returns 'image' | 'video' | 'audio' | 'pdf' | 'csv' | 'tsv' | 'text' | null
     function previewKind(name) {
-      const dot = name.lastIndexOf('.');
-      const ext = dot >= 0 ? name.slice(dot + 1).toLowerCase() : '';
+      const ext = extOf(name);
       if (PREVIEWABLE_IMAGE_EXTS.includes(ext)) return 'image';
       if (PREVIEWABLE_VIDEO_EXTS.includes(ext)) return 'video';
       if (PREVIEWABLE_AUDIO_EXTS.includes(ext)) return 'audio';
@@ -2800,14 +2931,13 @@
       if (CSV_PREVIEW_EXTS.includes(ext)) return 'csv';
       if (TSV_PREVIEW_EXTS.includes(ext)) return 'tsv';
       if (TEXT_PREVIEW_EXTS.includes(ext)) return 'text';
-      if (dot < 0 && TEXT_PREVIEW_NAMES.includes(name.toLowerCase())) return 'text';
+      if (!ext && TEXT_PREVIEW_NAMES.includes(name.toLowerCase())) return 'text';
       return null;
     }
 
     function fileType(name) {
-      const dot = name.lastIndexOf('.');
-      if (dot < 0 || dot === name.length - 1) return 'File';
-      return name.slice(dot + 1).toUpperCase() + ' file';
+      const ext = extOf(name);
+      return ext ? ext.toUpperCase() + ' file' : 'File';
     }
 
     function escapeHtml(s) {
@@ -2821,7 +2951,7 @@
       return svgFolder();
     }
     function svgFile(name) {
-      const ext = name.split('.').pop().toLowerCase();
+      const ext = extOf(name);
       const img = ['jpg','jpeg','png','gif','webp','svg'].includes(ext);
       const vid = ['mp4','webm','mov','mkv'].includes(ext);
       const pdf = ext === 'pdf';
