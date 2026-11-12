@@ -131,6 +131,8 @@ Legend: ⬜ Planned | 🚧 In Progress | 🔮 Future | ✅ Done
 - The file list remains smooth and usable with at least 1,000 items
 - ✅ Immediate-correcting UI after every file operation (views re-render immediately after upload/rename/create/delete; list re-fetches twice to cover NAS indexing lag)
 - App keeps working after brief disconnects while uploading
+- 🚧 Built 2026-11-12 (unverified in the browser): uploads never replace an existing file — the target folder is listed once per upload batch, and a name that is already taken becomes `name (1).ext`, `name (2).ext`, and so on (the transfers row and the toast show the new name). If the folder cannot be read, the upload proceeds and a toast warns that a file may be replaced
+- 🚧 Built 2026-11-12 (unverified — fixes a real wedge observed today): upload stall watchdog — if no upload progress arrives for 45 s, the XHR is aborted and the row shows "The NAS did not respond — try again"; the transfers modal Close button is now always visible during uploads (transfers continue in the background), so a wedged transfer can no longer trap the user behind the modal
 
 #### 5.3.5 Photo Preview
 - ✅ Preview modal (built and verified in the UI 2026-11-12): image preview for JPEG, PNG, WebP, GIF; text preview for code/config/log files (whole file, first 512 KB with notice); PDF preview via the browser’s native viewer; CSV/TSV as a table (first 200 rows, first 60 columns, first row shown as header)
@@ -155,7 +157,7 @@ Legend: ⬜ Planned | 🚧 In Progress | 🔮 Future | ✅ Done
 - Not a substitute for backups; RAID 1 covers single-disk death only
 
 #### 5.3.7 Large Transfer Progress
-- Bulk download as one ZIP archive — moved from Phase 1; requires a reliable NAS or server-side ZIP path
+- 🚧 Built 2026-11-12 (unverified in the browser — endpoint verified live through the proxy): Download ZIP button in the toolbar (enabled with a selection; disabled at root paths). Single file selection keeps the normal direct download; anything else submits a hidden form to `/life/v1/file/zip` through the proxy with `SameSite=Strict` session cookie auth — the NAS builds the archive itself and returns it as an attachment, so the app stays usable while the download runs (no progress bar by design). Sizes are checked before the NAS is touched: a recursive size walk over the selection stops at 1 GB (refuses above it) or 300 listing calls (refuses rather than walks the whole NAS). Paths containing quotes or backslashes are refused with a toast. Folders are recursed server-side by the NAS itself (tree verified `_zipprobe/sub/b.txt` inside the archive). A `beforeunload` guard warns before leaving the page while any upload, download, or ZIP is active. `homenas_session` cookie is set at login/resume and cleared at sign-out; the proxy converts it to the NAS `authorization_code` when no Authorization header is present; it is session-scoped and same-site
 - Bulk ZIP job progress and queue state when the NAS exposes a job-status API
 - ✅ Large upload progress, including percent, bytes transferred, estimated time remaining, cancel, retry on failure, aggregate queue view (built and verified in the UI 2026-11-12). Downloads show the same progress too
 

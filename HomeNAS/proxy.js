@@ -30,9 +30,12 @@ app.use((req, res, next) => {
 const bearerToCookie = (proxyReq, req) => {
   const auth = req.headers.authorization;
   if (auth && auth.startsWith('Bearer ')) {
-    const token = auth.slice(7);
-    proxyReq.setHeader('Cookie', `authorization_code=${token}`);
+    proxyReq.setHeader('Cookie', `authorization_code=${auth.slice(7)}`);
+    return;
   }
+  // Hidden-form downloads cannot carry headers; fall back to the session cookie we set at login.
+  const m = /(?:^|;\s*)homenas_session=([^;]+)/.exec(req.headers.cookie || '');
+  if (m) proxyReq.setHeader('Cookie', `authorization_code=${m[1]}`);
 };
 
 // ====== Disk history (failure-risk experiment) ======
