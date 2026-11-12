@@ -2,8 +2,9 @@
   "name": "homenas",
   "version": "1.0.0",
   "description": "",
-  "main": "login.js",
+  "main": "proxy.js",
   "scripts": {
+    "start": "node proxy.js",
     "build:css": "tailwindcss -i ./input.css -o ./tailwind.css --minify"
   },
   "keywords": [],

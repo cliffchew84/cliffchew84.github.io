@@ -1,70 +1,39 @@
 # HomeNAS
 
-Simple web UI for the LatticeWork Amber NAS.
+Simple web UI for the LatticeWork Amber NAS at `http://192.168.68.53`. Use it on the home network only.
 
-## Network
+## Layout
 
-For now, use the home Wi-Fi network `ChewFamily5G`.
-
-The UI talks to the NAS at `http://192.168.68.53`.
-The NAS does not respond on other networks.
+- `index.html` — the whole user interface (markup and styles).
+- `app.js` — all application logic.
+- `proxy.js` — the API proxy on port 3001. Forwards `/life` and `/` to the NAS and rewrites the bearer token to the NAS cookie.
+- `input.css` → `tailwind.css` — Tailwind build for this folder.
 
 ## Run
 
-Go to the correct folder:
-
 ```bash
 cd /Users/techinasia/Work/tia/cliff/cliffchew84.github.io/HomeNAS
+npm start
 ```
 
-Start the API proxy:
+Open `HomeNAS/index.html` in a browser (double-click or `file://`), or serve this folder with any static server on any port except 5173 (the Town app uses 5173). The app calls the proxy at `http://localhost:3001`.
+
+Changes to `input.css` require:
 
 ```bash
-node proxy.js
-```
-
-Start the static web server in a second terminal:
-
-```bash
-cd /Users/techinasia/Work/tia/cliff/cliffchew84.github.io/HomeNAS
-python3 -m http.server 5173
-```
-
-Open:
-
-```text
-http://localhost:5173
+npm run build:css
 ```
 
 ## Check
 
-Check the static server on port 5173:
-
-```bash
-lsof -nP -iTCP:5173 -sTCP:LISTEN
-```
-
-Check the API proxy on port 3001:
+Proxy on port 3001:
 
 ```bash
 lsof -nP -iTCP:3001 -sTCP:LISTEN
 ```
 
-Check the Wi-Fi network:
-
-```bash
-ipconfig getsummary en0 | grep SSID
-```
-
-Expected result:
-
-```text
-SSID : ChewFamily5G
-```
-
 ## Notes
 
-- `proxy.js` listens on port 3001.
-- `index.html` calls `http://localhost:3001`.
-- The access token stays in memory.
-- Reload signs you out.
+- The access token stays in memory. “Keep me signed in on this computer” stores it in this browser’s local storage only.
+- Reload signs you out, unless you kept me signed in.
+- All files in this folder are tracked in git. NAS endpoint details live in `NAS-API.md`, which is excluded via `.git/info/exclude` and is never committed. No NAS credentials are stored anywhere in this folder.

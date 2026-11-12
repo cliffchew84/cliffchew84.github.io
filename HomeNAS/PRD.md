@@ -106,18 +106,19 @@ Legend: ⬜ Planned | 🚧 In Progress | 🔮 Future | ✅ Done
 #### 5.2.1 Recycle Bin Browser
 - ✅ Browse deleted items by share (verified in the UI 2026-11-12)
 - ✅ Restore individual files or folders (restore round-trip verified live)
-- ✅ Purge selected items permanently (per item and Empty bin with typed confirmation)
+- ✅ Purge selected items permanently (per item and Empty bin with a confirmation modal — no typed text, per product decision 2026-11-12)
 
 ### 5.3 Phase 3 — Quality of Life
 
 #### 5.3.1 UI Enhancements
 - ✅ Toast notifications tied to specific actions
-- 🚧 Column sorting (built 2026-11-12): sortable Name/Size/Modified/Type headers, folders always above files, toggles asc/desc; applies to search results too
-- 🚧 Up-nav button (built 2026-11-12): toolbar button navigates one folder up (Windows Explorer style); disabled at root; per-folder-row 'move up one level' button added earlier remains
+- 🚧 Gear (Settings) menu in the header combining Health, Change password, and Sign out (built 2026-11-12, unverified). Health and Change password are hidden for non-admin sessions; Esc/click-outside closes; focus returns to the gear on Esc
+- ✅ Column sorting (built and verified in the UI 2026-11-12): sortable Name/Size/Modified/Type headers, folders always above files, toggles asc/desc; applies to search results too
+- ✅ Up-nav button (built and verified in the UI 2026-11-12): toolbar button navigates one folder up (Windows Explorer style); disabled at root; per-folder-row 'move up one level' button remains; items can also be dragged onto the button or onto a breadcrumb segment
 
 #### 5.3.2 Advanced File Operations
-- 🚧 Bulk move/copy between folders (built 2026-11-12): toolbar Move/Copy buttons (enabled with a selection); same-share destination picker (folder browser; @SmbRecyclebin excluded); collision → automatic timestamp rename; per-item error reporting; list + search re-render after; drag-and-drop move for checked (or single) rows onto folder rows or tree folder nodes (same-share only); per-folder-row 'move up one level' action (built 2026-11-12); drag-and-drop onto breadcrumb segments and the toolbar Up button (built 2026-11-12). Cross-share not built; NAS-side folder copy not verified (file copy verified)
-- 🚧 Search files by name — within the current share only (built 2026-11-12; recursive walk of the share, max 200 results, runs only on explicit submit — Enter or Search button, to limit NAS load; ×/Escape stops; NAS has no search endpoint — verified 404). Cross-share scope intentionally narrowed by product decision
+- ✅ Bulk move/copy between folders (built and verified in the UI 2026-11-12): toolbar Move/Copy buttons (enabled with a selection); same-share destination picker (folder browser; @SmbRecyclebin excluded); collision → automatic timestamp rename; per-item error reporting; list + search re-render after; drag-and-drop move for checked (or single) rows onto folder rows or tree folder nodes (same-share only); per-folder-row 'move up one level' action (built 2026-11-12); drag-and-drop onto breadcrumb segments and the toolbar Up button (built and verified 2026-11-12). Same-share only (cross-share not built); NAS-side folder copy not verified (file copy verified)
+- ✅ Search files by name — within the current share only (built and verified in the UI 2026-11-12; recursive walk of the share, max 200 results, runs only on explicit submit — Enter or Search button, to limit NAS load; ×/Escape stops; NAS has no search endpoint — verified 404). Cross-share scope intentionally narrowed by product decision
 
 #### 5.3.3 Alerts
 - SMART warnings
@@ -130,20 +131,20 @@ Legend: ⬜ Planned | 🚧 In Progress | 🔮 Future | ✅ Done
 - App keeps working after brief disconnects while uploading
 
 #### 5.3.5 Photo Preview
-- 🚧 Preview modal (built 2026-11-12, unverified in the UI): image preview for JPEG, PNG, WebP, GIF; text preview for code/config/log files (whole file, first 512 KB with notice); PDF preview via the browser’s native viewer; CSV/TSV as a table (first 200 rows, first 60 columns, first row shown as header)
+- ✅ Preview modal (built and verified in the UI 2026-11-12): image preview for JPEG, PNG, WebP, GIF; text preview for code/config/log files (whole file, first 512 KB with notice); PDF preview via the browser’s native viewer; CSV/TSV as a table (first 200 rows, first 60 columns, first row shown as header)
 - “Preview” via the file-type icon (icon-as-trigger), not a separate button
 - Previews operate through the storage-share paths (in-memory only, never written to disk)
 - Deferred: a thumbnail service produces small JPEG previews on demand
 
 #### 5.3.6 Video Preview
-- 🚧 Built 2026-11-12 (un-deferred by product decision): MP4, WebM, MOV (H.264) preview in the shared preview modal (native `<video controls>`). MKV and AVI are excluded — browsers cannot decode them. Whole file is buffered in memory before playback (MP4/MOV only play correctly in Safari/Chrome for H.264; seeks work offline once buffered)
+- ✅ Built and verified in the UI 2026-11-12 (un-deferred by product decision): MP4, WebM, MOV (H.264) preview in the shared preview modal (native `<video controls>`). MKV and AVI are excluded — browsers cannot decode them. Whole file is buffered in memory before playback (MP4/MOV only play correctly in Safari/Chrome for H.264; seeks work offline once buffered)
 - “Preview” via the file-type icon (icon-as-trigger), consistent with images
 - Previews operate through the storage-share paths (in-memory only, never written to disk)
 
 #### 5.3.7 Large Transfer Progress
 - Bulk download as one ZIP archive — moved from Phase 1; requires a reliable NAS or server-side ZIP path
 - Bulk ZIP job progress and queue state when the NAS exposes a job-status API
-- 🚧 Large upload progress, including percent, bytes transferred, estimated time remaining, cancel, retry on failure, aggregate queue view (built 2026-11-12). Downloads show the same progress too
+- ✅ Large upload progress, including percent, bytes transferred, estimated time remaining, cancel, retry on failure, aggregate queue view (built and verified in the UI 2026-11-12). Downloads show the same progress too
 
 ### 5.4 Phase 4 — Remote & Offline-Capable Operation
 
