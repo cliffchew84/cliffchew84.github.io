@@ -16,7 +16,7 @@ from requests.adapters import HTTPAdapter
 
 load_dotenv()
 
-required = ["SOURCE_API_KEY", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_ACCOUNT_ID"]
+required = ["DATA_GOV_SG_API_KEY", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_ACCOUNT_ID"]
 missing = [v for v in required if not os.getenv(v)]
 if missing:
     raise RuntimeError(f"Missing environment variables: {missing}")
@@ -76,7 +76,7 @@ def fetch_month(mth: str, session: requests.Session) -> pl.DataFrame:
     ]
     empty_df = pl.DataFrame(schema=df_cols)
 
-    API_KEY = os.environ["SOURCE_API_KEY"]
+    API_KEY = os.environ["DATA_GOV_SG_API_KEY"]
     BASE_URL = "https://data.gov.sg/api/action/datastore_search"
     EXT_URL = "?resource_id=d_8b84c4ee58e3cfc0ece0d773c8ca6abc"
     full_url = BASE_URL + EXT_URL

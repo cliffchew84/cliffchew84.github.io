@@ -195,7 +195,7 @@ All pipeline files live in `data/`. `data/requirements.txt` lists every Python d
 - Secret scanning and push protection are both **enabled** (2026-10-31).
 - **Scan completed**: 0 alerts found. History is clean.
 
-Secrets used by workflows: `SOURCE_API_KEY`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ACCOUNT_ID`.
+Secrets used by workflows: `DATA_GOV_SG_API_KEY`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ACCOUNT_ID`.
 
 All other secrets removed (2026-11-03): `PERSONAL_ACCESS_TOKEN`, `BASE_URL`, `EXT_URL`, `MONGO_PASSWORD`, `OGP_API_KEY`, `RENDER_DEPLOY`.
 
