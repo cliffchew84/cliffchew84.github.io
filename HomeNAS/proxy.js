@@ -394,7 +394,13 @@ const PUBLIC_FILES = {
   '/': 'index.html',
   '/index.html': 'index.html',
   '/app.js': 'app.js',
-  '/tailwind.css': 'tailwind.css'
+  '/tailwind.css': 'tailwind.css',
+  // PWA: manifest and icons so the home-screen icon opens the app fullscreen.
+  '/manifest.json': 'manifest.json',
+  '/icon-32.png': 'icon-32.png',
+  '/icon-180.png': 'icon-180.png',
+  '/icon-192.png': 'icon-192.png',
+  '/icon-512.png': 'icon-512.png'
 };
 app.get(Object.keys(PUBLIC_FILES), (req, res) => {
   res.sendFile(path.join(__dirname, PUBLIC_FILES[req.path]));

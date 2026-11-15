@@ -112,6 +112,12 @@ Setup per device:
 
 1. Open the address.
 2. Add it to the home screen: Safari Share menu → “Add to Home Screen”; Chrome menu → “Add to Home screen”.
+   The site now ships a web app manifest, an `apple-touch-icon` and icons at 192 and 512 px, so the home screen
+   icon uses the HomeNAS logo and opens the app fullscreen, with no browser bar.
+   On an iPhone this is the only kind of install iOS offers, and it behaves like an app. On Android, Chrome
+   will still call it “Add to Home screen”, because Android reserves the real “Install app” entry for HTTPS
+   pages. The fullscreen icon works the same either way.
+   A real Android install needs HTTPS. That is Phase 4; nothing about the LAN setup has to change once it exists.
 3. Sign in with a personal NAS account (`chewfamily`, never the admin account).
 4. Tick “Keep me signed in on this computer”. A refresh then keeps the session.
 

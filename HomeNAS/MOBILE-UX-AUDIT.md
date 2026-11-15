@@ -334,17 +334,22 @@ indicator.innerHTML = '🔆 Screen kept on';
 
 ---
 
-## 10. PWA / INSTALLABILITY (Medium)
+## 10. PWA / INSTALLABILITY (Medium) — updated 2026-11-15
 
-### Missing
+Done 2026-11-15: web app manifest (`manifest.json`, `start_url: "/"`, `display: "standalone"`, theme/background color, 192 px and 512 px maskable PNG icons); `<link rel="manifest">`; `apple-touch-icon` (180 px); Apple capable/status-bar/title meta tags; theme-color meta; 192/180/32 px PNG icons generated from one design; proxy serves all of them on exact paths; the home-screen icon now opens HomeNAS fullscreen. Android still only offers “Add to Home screen” over plain LAN HTTP, because Android requires HTTPS for the real “Install app” entry. Same for Chrome on desktop.
+
+### Not done — the one missing piece: a service worker
+A service worker is the second installability requirement for Android and cannot register on a plain HTTP LAN address. It ships when Phase 4 brings HTTPS. With it, Android shows “Install app” and the shortcut gets standalone treatment everywhere.
+
 | Feature | Status |
 |---------|--------|
-| Web App Manifest | ❌ |
-| Service Worker | ❌ |
-| Offline fallback | ❌ |
-| Install prompt | ❌ |
-| Splash screens | ❌ |
-| Theme color | ❌ |
+| Web App Manifest | ✅ |
+| Icons (192/512/180/32) | ✅ |
+| Install meta/link tags | ✅ |
+| Service Worker | ⏳ needs HTTPS (Phase 4) |
+| Offline fallback | ⏳ needs service worker |
+| Install prompt | ⏳ needs HTTPS |
+| Splash screens | Derived from manifest on Add to Home Screen |
 
 ### Required `manifest.json`
 ```json
