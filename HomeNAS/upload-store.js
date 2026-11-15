@@ -93,7 +93,7 @@ function readMeta(root, id) {
     const meta = JSON.parse(raw);
     meta.totalChunks = meta.size === 0 ? 0 : Math.ceil(meta.size / meta.chunkSize);
     return meta;
-  } catch (e) {
+  } catch {
     return null;
   }
 }
@@ -108,7 +108,7 @@ function receivedChunks(root, id, meta) {
   const dir = uploadDir(root, id);
   const received = [];
   let names = [];
-  try { names = fs.readdirSync(dir); } catch (e) { return received; }
+  try { names = fs.readdirSync(dir); } catch { return received; }
   for (const name of names) {
     const m = /^(\d+)\.part$/.exec(name);
     if (!m) continue;
@@ -116,7 +116,7 @@ function receivedChunks(root, id, meta) {
     const want = expectedLength(meta, index);
     if (want < 0) continue;
     let stat;
-    try { stat = fs.statSync(path.join(dir, name)); } catch (e) { continue; }
+    try { stat = fs.statSync(path.join(dir, name)); } catch { continue; }
     if (stat.size === want) received.push(index);
   }
   received.sort((a, b) => a - b);
@@ -126,7 +126,7 @@ function receivedChunks(root, id, meta) {
 function stagingBytes(root) {
   let total = 0;
   let names = [];
-  try { names = fs.readdirSync(root); } catch (e) { return 0; }
+  try { names = fs.readdirSync(root); } catch { return 0; }
   for (const name of names) {
     const meta = readMeta(root, name);
     if (!meta) continue;
@@ -139,21 +139,21 @@ function freeBytes(dir) {
   try {
     const s = fs.statfsSync(dir);
     return Number(s.bavail) * Number(s.bsize);
-  } catch (e) {
+  } catch {
     return null;
   }
 }
 
 function cleanOld(root, now = Date.now()) {
   let names = [];
-  try { names = fs.readdirSync(root); } catch (e) { return; }
+  try { names = fs.readdirSync(root); } catch { return; }
   for (const name of names) {
     const dir = path.join(root, name);
     let stat;
-    try { stat = fs.statSync(dir); } catch (e) { continue; }
+    try { stat = fs.statSync(dir); } catch { continue; }
     if (!stat.isDirectory()) continue;
     if (now - stat.mtimeMs > MAX_AGE_MS) {
-      try { fs.rmSync(dir, { recursive: true, force: true }); } catch (e) { /* ignore */ }
+      try { fs.rmSync(dir, { recursive: true, force: true }); } catch { /* ignore */ }
     }
   }
 }
@@ -179,7 +179,7 @@ async function assemble(root, id, meta) {
   for (let i = 0; i < meta.totalChunks; i++) {
     const part = path.join(dir, `${i}.part`);
     let stat = null;
-    try { stat = fs.statSync(part); } catch (e) { /* missing */ }
+    try { stat = fs.statSync(part); } catch { /* missing */ }
     if (!stat || stat.size !== expectedLength(meta, i)) missing.push(i);
   }
   if (missing.length) {
@@ -208,15 +208,15 @@ async function assemble(root, id, meta) {
     if (fs.statSync(tmp).size !== meta.size) throw new Error('Assembled size does not match');
     fs.renameSync(tmp, assembled);
   } catch (e) {
-    try { out.destroy(); } catch (_) { /* ignore */ }
-    try { fs.rmSync(tmp, { force: true }); } catch (_) { /* ignore */ }
+    try { out.destroy(); } catch { /* ignore */ }
+    try { fs.rmSync(tmp, { force: true }); } catch { /* ignore */ }
     throw e;
   }
   return { path: assembled, sha256: hash.digest('hex'), size: meta.size };
 }
 
 function remove(root, id) {
-  try { fs.rmSync(uploadDir(root, id), { recursive: true, force: true }); } catch (e) { /* ignore */ }
+  try { fs.rmSync(uploadDir(root, id), { recursive: true, force: true }); } catch { /* ignore */ }
 }
 
 module.exports = {

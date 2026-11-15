@@ -146,11 +146,11 @@
 
     wireTypedConfirm(shareDeleteInput, shareDeleteConfirm, () => shareDeleteTarget && shareDeleteTarget.display, () => !!shareDeleteTarget);
 
-    async function renameShareDisplayName(id, display, newDisplay) {
+    async function renameShareDisplayName(id, newDisplay) {
       await nasBatchOne(['folder', 'set_display_name', [], { folder_name: id, display_name: newDisplay }]);
     }
 
-    async function deleteShareFolder(id, display) {
+    async function deleteShareFolder(id) {
       await nasBatchOne(['folder', 'delete', [], { folder_name: id }]);
     }
 
@@ -161,7 +161,7 @@
       shareDeleteConfirm.disabled = true;
       shareDeleteError.classList.add('hidden');
       try {
-        await deleteShareFolder(id, display);
+        await deleteShareFolder(id);
         closeShareDeleteModal();
         showToast(`Deleted shared folder ${display}`, 4000, 'success');
         // Leave the deleted folder view, if we are inside it.
@@ -191,14 +191,14 @@
       if (!persist) return; // don't overwrite the stored desktop preference
       try {
         localStorage.setItem('homenas.sidebar.collapsed', collapsed ? '1' : '0');
-      } catch (e) {
+      } catch {
         // localStorage can be unavailable. The toggle still works.
       }
     }
     if (sidebarOverlay) sidebarOverlay.addEventListener('click', () => setSidebarCollapsed(true, false));
     try {
       setSidebarCollapsed(isMobile() ? true : localStorage.getItem('homenas.sidebar.collapsed') === '1', false);
-    } catch (e) {
+    } catch {
       // keep the sidebar visible
     }
     sidebarToggle.addEventListener('click', () => {
@@ -208,7 +208,6 @@
     // ====== GEAR MENU ======
     const gearMenuBtn = document.getElementById('gearMenuBtn');
     const gearMenu = document.getElementById('gearMenu');
-    const gearDivider = document.getElementById('gearDivider');
 
     function setGearMenuOpen(open) {
       gearMenu.classList.toggle('hidden', !open);
@@ -314,14 +313,14 @@
     function setSessionCookie(token) {
       try {
         document.cookie = 'homenas_session=' + encodeURIComponent(token) + '; SameSite=Strict; path=/';
-      } catch (e) { /* hidden-form downloads will fail without this; showApp still works */ }
+      } catch { /* hidden-form downloads will fail without this; showApp still works */ }
     }
 
     function endSession() {
       cookie = '';
       currentUser = '';
       localStorage.removeItem('homenas.session');
-      try { document.cookie = 'homenas_session=; Max-Age=0; path=/'; } catch (e) { /* ignore */ }
+      try { document.cookie = 'homenas_session=; Max-Age=0; path=/'; } catch { /* ignore */ }
     }
     function startSession(user, token, remember) {
       cookie = token;
@@ -390,7 +389,7 @@
 
     // Group collapse state. Display preference only (localStorage).
     let collapsedGroups = {};
-    try { collapsedGroups = JSON.parse(localStorage.getItem('homenas.collapsedGroups') || '{}') || {}; } catch (e) { collapsedGroups = {}; }
+    try { collapsedGroups = JSON.parse(localStorage.getItem('homenas.collapsedGroups') || '{}') || {}; } catch { collapsedGroups = {}; }
     // Migrate the old Shared folders hide flag.
     try {
       if (localStorage.getItem('homenas.hideSharedFolders') === '1') {
@@ -398,13 +397,13 @@
         localStorage.setItem('homenas.collapsedGroups', JSON.stringify(collapsedGroups));
         localStorage.removeItem('homenas.hideSharedFolders');
       }
-    } catch (e) { /* keep defaults */ }
+    } catch { /* keep defaults */ }
 
     function isGroupCollapsed(label) { return collapsedGroups[label] === true; }
 
     function toggleGroup(label) {
       collapsedGroups[label] = !isGroupCollapsed(label);
-      try { localStorage.setItem('homenas.collapsedGroups', JSON.stringify(collapsedGroups)); } catch (e) { /* ignore */ }
+      try { localStorage.setItem('homenas.collapsedGroups', JSON.stringify(collapsedGroups)); } catch { /* ignore */ }
       loadTree().catch(() => {});
     }
 
@@ -507,7 +506,7 @@
             return;
           }
           names.forEach(item => addTreeNode(itemLabel(item), item.path || `${path}/${item.name}`, childrenUl, shareType(item)));
-        } catch (e) {
+        } catch {
           loaded = false; // allow a retry on the next click
           childrenUl.innerHTML = `<li class="my-0.5"><button class="${TREE_BUTTON_CLASS}" disabled>Error</button></li>`;
         }
@@ -674,7 +673,7 @@
     try {
       const saved = localStorage.getItem('homenas.typeFilter');
       if (saved === 'all' || TYPE_KEYS.includes(saved)) activeType = saved;
-    } catch (e) { /* keep default */ }
+    } catch { /* keep default */ }
 
     function categoryOf(item) {
       if (item.type === 'folder') return 'folders';
@@ -721,7 +720,7 @@
 
     function setActiveType(key) {
       activeType = key;
-      try { localStorage.setItem('homenas.typeFilter', key); } catch (e) { /* ignore */ }
+      try { localStorage.setItem('homenas.typeFilter', key); } catch { /* ignore */ }
       selection.clear();
       selectAll.checked = false;
       rerenderCurrentView();
@@ -898,9 +897,9 @@
       const row = e.target.closest('tr[data-path]');
       if (!row || row.dataset.deleting === 'true') { e.preventDefault(); return; }
       dragPaths = pathsFromDragstart(row);
-      try { e.dataTransfer.setData('text/plain', dragPaths.join('\n')); e.dataTransfer.effectAllowed = 'move'; } catch (_) {}
+      try { e.dataTransfer.setData('text/plain', dragPaths.join('\n')); e.dataTransfer.effectAllowed = 'move'; } catch {}
       const chip = buildDragChip(dragPaths.length);
-      try { e.dataTransfer.setDragImage(chip, 12, 12); } catch (_) {}
+      try { e.dataTransfer.setDragImage(chip, 12, 12); } catch {}
       setTimeout(() => chip.remove(), 0);
     });
     fileList.addEventListener('dragend', () => { dragPaths = []; clearDropHighlights(); });
@@ -1043,7 +1042,7 @@
         if (token !== searchState.token) return;
         const dir = stack.pop();
         let items;
-        try { items = await fsList(dir); } catch (_) { continue; }
+        try { items = await fsList(dir); } catch { continue; }
         for (const it of items) {
           const full = it.path || (dir === '/' ? '/' + it.name : `${dir}/${it.name}`);
           if (it.name.toLowerCase().includes(q)) matches.push({ ...it, parent: dir });
@@ -1144,7 +1143,7 @@
     async function walkBin(path, depth, out) {
       if (depth > 12 || out.length >= 2000) return;
       let items;
-      try { items = await fsList(path); } catch (e) { return; }
+      try { items = await fsList(path); } catch { return; }
       for (const it of items) {
         const full = it.path || `${path}/${it.name}`;
         out.push({ type: it.type === 'folder' ? 'folder' : 'file', path: full, name: it.name, size: it.size ?? null, date: it.access_date ?? null });
@@ -1588,7 +1587,7 @@
       const cancelBtn = e.target.closest('[data-cancel]');
       if (cancelBtn) {
         const t = transfers.get(cancelBtn.dataset.cancel);
-        if (t && t.xhr) { try { t.xhr.abort(); } catch (_) {} }
+        if (t && t.xhr) { try { t.xhr.abort(); } catch {} }
         return;
       }
     });
@@ -1794,7 +1793,7 @@
           const histRes = await fetch(`${PROXY_URL}/health/history`);
           const histData = await histRes.json();
           if (histData && histData.result) historySamples = Array.isArray(histData.samples) ? histData.samples : [];
-        } catch (e) { historySamples = []; }
+        } catch { historySamples = []; }
         const nowDate = new Date();
         const todayKey = nowDate.getFullYear() + '-' + String(nowDate.getMonth() + 1).padStart(2, '0') + '-' + String(nowDate.getDate()).padStart(2, '0');
         const lastHistoryDate = historySamples.length ? String(historySamples[historySamples.length - 1].date || '') : '';
@@ -2057,7 +2056,7 @@
               if (contentType.includes('application/json')) {
                 xhr.response.text().then(text => {
                   let msg = 'NAS refused the download';
-                  try { const data = JSON.parse(text); msg = data.error?.msg || data.error || msg; } catch (_) {}
+                  try { const data = JSON.parse(text); msg = data.error?.msg || data.error || msg; } catch {}
                   reject(new Error(msg));
                 });
                 return;
@@ -2219,7 +2218,7 @@
           zipSelectedBtn.disabled = selection.size === 0;
           return;
         }
-      } catch (e) {
+      } catch {
         showToast('Could not check selection size. The NAS may be busy — try again.', 6000, 'error');
         zipSelectedBtn.disabled = selection.size === 0;
         return;
@@ -2239,7 +2238,7 @@
           if (name === editBtn.dataset.display) return;
           try {
             showToast('Renaming ' + editBtn.dataset.display + '…');
-            await renameShareDisplayName(editBtn.dataset.id, editBtn.dataset.display, name);
+            await renameShareDisplayName(editBtn.dataset.id, name);
             await loadTree();
             showToast('Renamed to ' + name, 3000, 'success');
           } catch (err) {
@@ -2326,7 +2325,7 @@
       if (searchState.active && searchInput.value.trim().length >= 2) await runSearch(searchInput.value);
       try {
         await loadTree();
-      } catch (e) {
+      } catch {
         // keep the current tree if it cannot reload
       }
       // The NAS may apply the change just after the response.
@@ -2335,7 +2334,7 @@
       }, 1000);
     }
 
-    window.renameItem = (path, name) => {
+    function renameItem(path, name) {
       if (currentPath === '/') {
         showToast('Open a share or folder first.', 6000, 'error');
         return;
@@ -2354,7 +2353,7 @@
           showToast('Rename failed: ' + e.message, 8000, 'error');
         }
       }, 'Rename');
-    };
+    }
 
     // ====== MOVE TO RECYCLE BIN ======
     // Deletes now move items into the share's @SmbRecyclebin (where one exists or
@@ -2409,7 +2408,7 @@
         current += '/' + part;
         try {
           await createFolder(parentOf(current), part);
-        } catch (_) {
+        } catch {
           // tolerate "already exists" — the move check afterwards is the source of truth
           try { await fsList(current, 1); } catch (e) { throw new Error('Could not create ' + current + ' (' + e.message + ')'); }
         }
@@ -2420,7 +2419,7 @@
     async function resolveCollision(targetPath) {
       const dir = parentOf(targetPath);
       let existing = [];
-      try { existing = await fsList(dir, 1); } catch (_) { return { targetPath, renamedTo: null }; }
+      try { existing = await fsList(dir, 1); } catch { return { targetPath, renamedTo: null }; }
       const names = new Set(existing.map(it => it.name));
       const name = targetPath.split('/').pop();
       if (!names.has(name)) return { targetPath, renamedTo: null };
@@ -2436,7 +2435,7 @@
         await fsList('/' + share + '/@SmbRecyclebin', 1);
         binChoiceByShare[share] = 'bin';
         return 'bin';
-      } catch (_) {
+      } catch {
         const choice = await askBinChoice(share);
         binChoiceByShare[share] = choice === 'permanent' ? 'permanent' : choice === 'create' ? 'create' : '';
         if (choice === 'cancel') return 'cancel';
@@ -2459,7 +2458,7 @@
         try {
           await createFolder('/' + share, '@SmbRecyclebin');
           try { await fsList('/' + share + '/@SmbRecyclebin', 1); }
-          catch (_) { throw new Error('the recycle bin could not be created for ' + share + ' — the file was NOT deleted'); }
+          catch { throw new Error('the recycle bin could not be created for ' + share + ' — the file was NOT deleted'); }
         } catch (e) {
           binChoiceByShare[share] = ''; // choice not remembered — ask again next delete
           throw e;
@@ -2485,7 +2484,7 @@
         try {
           const items = await fsList(parentOf(sourcePath), 1);
           if (!items.some(it => (it.path || parentOf(sourcePath) + '/' + it.name) === sourcePath)) { gone = true; break; }
-        } catch (_) {}
+        } catch {}
         await new Promise(r => setTimeout(r, 700));
       }
       if (!gone) throw new Error('the NAS did not move the file — it was NOT deleted');
@@ -2530,7 +2529,7 @@
         try {
           const items = await fsList(path);
           if (!items.some(item => paths.includes(item.path))) return true;
-        } catch (e) {
+        } catch {
           // keep waiting on a transient error
         }
         await new Promise(resolve => setTimeout(resolve, interval));
@@ -2578,7 +2577,7 @@
       return summary;
     }
 
-    window.deleteItem = async (path) => {
+    async function deleteItem(path) {
       if (currentPath === '/') {
         showToast('Open a share or folder first.', 6000, 'error');
         return;
@@ -2596,7 +2595,7 @@
       } catch (e) {
         showToast('Delete failed: ' + e.message, 8000, 'error');
       }
-    };
+    }
 
     document.getElementById('deleteSelectedBtn').addEventListener('click', async () => {
       const paths = [...selection];
@@ -2720,7 +2719,7 @@
     // Shared collision handling + executor for the picker and drag-and-drop moves.
     async function runMoveCopy(mode, paths, cwd) {
       let existing = [];
-      try { existing = await fsList(cwd); } catch (_) {}
+      try { existing = await fsList(cwd); } catch {}
       const names = new Set(existing.map(it => it.name));
       const items = paths.map(p => {
         const name = p.split('/').pop();
@@ -3102,13 +3101,13 @@
         syncWakeLockSentinel = await navigator.wakeLock.request('screen');
         syncWakeLockSentinel.addEventListener('release', () => { syncWakeLockSentinel = null; });
         return true;
-      } catch (e) {
+      } catch {
         return false;
       }
     }
 
     function releaseSyncWakeLock() {
-      try { if (syncWakeLockSentinel) syncWakeLockSentinel.release(); } catch (e) { /* ignore */ }
+      try { if (syncWakeLockSentinel) syncWakeLockSentinel.release(); } catch { /* ignore */ }
       syncWakeLockSentinel = null;
     }
 
@@ -3130,9 +3129,9 @@
       area.style.opacity = '0';
       document.body.appendChild(area);
       area.select();
-      try { area.setSelectionRange(0, text.length); } catch (e) { /* ignore */ }
+      try { area.setSelectionRange(0, text.length); } catch { /* ignore */ }
       let ok = false;
-      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      try { ok = document.execCommand('copy'); } catch { ok = false; }
       document.body.removeChild(area);
       if (ok) done();
       else showToast('Could not copy the list. Select the names by hand.', 6000, 'error');
@@ -3302,7 +3301,7 @@
           sourceRoot: s.sourceRoot,
           manifest
         }));
-      } catch (e) {
+      } catch {
         // localStorage can be full or unavailable. The chunks stay on the Mac.
       }
     }
@@ -3314,7 +3313,7 @@
         const saved = JSON.parse(raw);
         if (!saved || saved.version !== 1 || !Array.isArray(saved.manifest) || !saved.targetPath) return null;
         return saved;
-      } catch (e) {
+      } catch {
         return null;
       }
     }
@@ -4032,7 +4031,7 @@
           const tree = await walkNasTree(s.targetPath);
           files = tree.files;
         }
-      } catch (e) {
+      } catch {
         return;
       }
       for (const entry of s.queue) {
@@ -4157,7 +4156,7 @@
     }
 
     function discardSavedBatch() {
-      try { localStorage.removeItem(SYNC_STATE_KEY); } catch (e) { /* ignore */ }
+      try { localStorage.removeItem(SYNC_STATE_KEY); } catch { /* ignore */ }
       refreshResumeBanner();
     }
 
@@ -4342,7 +4341,7 @@
       if (!changePasswordModal.classList.contains('hidden')) { closeChangePasswordModal(); return; }
       if (!modal.classList.contains('hidden')) { modal.classList.add('hidden'); modalResolve = null; }
       if (!healthModal.classList.contains('hidden')) { healthModal.classList.add('hidden'); }
-      if (!recycleModal.classList.contains('hidden')) { recycleModal.classList.add('hidden'); return; }
+      if (!binModal.classList.contains('hidden')) { binModal.classList.add('hidden'); return; }
       if (!purgeConfirmModal.classList.contains('hidden')) { purgeConfirmModal.classList.add('hidden'); return; }
       if (!emptyBinModal.classList.contains('hidden')) { emptyBinModal.classList.add('hidden'); return; }
       if (!imagePreviewModal.classList.contains('hidden')) { closePreview(); return; }
@@ -4490,7 +4489,7 @@
           loadFiles('/home');
           return;
         }
-      } catch (e) {
+      } catch {
         endSession();
         showLogin('Session expired. Please sign in again.');
         return;

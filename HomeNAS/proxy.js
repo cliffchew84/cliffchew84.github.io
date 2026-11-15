@@ -52,10 +52,10 @@ function parsedHistoryEntries() {
     const lines = fs.readFileSync(HISTORY_FILE, 'utf8').split('\n').filter(Boolean);
     const entries = [];
     for (const line of lines) {
-      try { entries.push(JSON.parse(line)); } catch (e) { /* skip a bad line */ }
+      try { entries.push(JSON.parse(line)); } catch { /* skip a bad line */ }
     }
     return entries;
-  } catch (e) { return []; }
+  } catch { return []; }
 }
 
 app.get('/health/history', (req, res) => {
@@ -83,7 +83,7 @@ app.post('/health/history', express.json({ limit: '256kb' }), (req, res) => {
   const entry = { ts: now.toISOString(), date, disks: body.disks.slice(0, 16) };
   try {
     fs.appendFileSync(HISTORY_FILE, JSON.stringify(entry) + '\n');
-  } catch (e) {
+  } catch {
     return res.status(500).json({ result: false, error: 'Write failed' });
   }
   res.json({ result: true });
@@ -124,7 +124,7 @@ function collectNasResponse(req, res, resolve, reject) {
   });
   res.on('end', () => {
     let data = {};
-    try { data = JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch (e) { /* keep empty */ }
+    try { data = JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch { /* keep empty */ }
     resolve({ status: res.statusCode || 0, data });
   });
 }
@@ -259,7 +259,7 @@ app.post('/upload/init', requireToken, express.json({ limit: '64kb' }), (req, re
 
   try {
     uploadStore.writeMeta(STAGING_ROOT, id, meta);
-  } catch (e) {
+  } catch {
     return jsonError(res, 500, 'Could not create the staging folder');
   }
   const received = uploadStore.receivedChunks(STAGING_ROOT, id, meta);
@@ -293,8 +293,8 @@ app.put('/upload/chunk', requireToken, express.raw({ type: () => true, limit: up
     fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(tmp, body);
     fs.renameSync(tmp, part);
-  } catch (e) {
-    try { fs.rmSync(tmp, { force: true }); } catch (_) { /* ignore */ }
+  } catch {
+    try { fs.rmSync(tmp, { force: true }); } catch { /* ignore */ }
     return jsonError(res, 500, 'Could not save the chunk');
   }
   res.json({ result: true, received: index });
@@ -335,7 +335,7 @@ app.post('/upload/finalize', requireToken, express.json({ limit: '64kb' }), asyn
     try {
       const landed = await findNasItem(req.nasToken, dir, name);
       verified = !!landed && Number(landed.size) === meta.size;
-    } catch (e) { /* the client retries */ }
+    } catch { /* the client retries */ }
 
     if (verified) uploadStore.remove(STAGING_ROOT, uploadId);
     res.json({ result: true, sha256: assembled.sha256, size: meta.size, verified });
