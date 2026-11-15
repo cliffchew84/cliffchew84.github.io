@@ -5,7 +5,8 @@
   "main": "proxy.js",
   "scripts": {
     "start": "node proxy.js",
-    "build:css": "tailwindcss -i ./input.css -o ./tailwind.css --minify"
+    "build:css": "tailwindcss -i ./input.css -o ./tailwind.css --minify",
+    "test": "node --test"
   },
   "keywords": [],
   "author": "",

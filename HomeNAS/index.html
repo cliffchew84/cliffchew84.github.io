@@ -19,6 +19,7 @@
           <p class="text-xs text-neutral-500">Sign in to your NAS</p>
         </div>
       </div>
+      <p class="hidden mb-3 rounded-lg bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-800" id="proxyDownBanner" role="alert"></p>
       <label class="mb-1 block text-xs font-medium text-neutral-600" for="loginUsername">Username</label>
       <input type="text" id="loginUsername" class="mb-3 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" required>
       <label class="mb-1 block text-xs font-medium text-neutral-600" for="loginPassword">Password</label>
@@ -69,8 +70,17 @@
         <button class="btn-icon btn-icon-primary" id="uploadBtn" data-tooltip="Upload" aria-label="Upload">
           <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         </button>
+        <button class="btn-icon" id="syncBtn" data-tooltip="Upload folder or sync" aria-label="Upload folder or sync">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 17v-5M9.5 14.5 12 12l2.5 2.5"/></svg>
+        </button>
+        <button class="btn btn-primary" id="addPhotosBtn" data-tooltip="Add photos from this device" aria-label="Add photos from this device">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+          <span>Add photos</span>
+        </button>
         <span class="text-xs tabular-nums text-neutral-500" id="uploadStatus" role="status"></span>
         <input type="file" class="hidden" id="fileInput" multiple>
+        <input type="file" class="hidden" id="folderInput" webkitdirectory directory multiple>
+        <input type="file" class="hidden" id="phoneFilesInput" multiple>
         <button class="btn-icon" id="newFolderBtn" data-tooltip="New Folder" aria-label="New Folder">
           <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="10" x2="12" y2="14"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
         </button>
@@ -103,6 +113,11 @@
         </button>
       </div>
       <div class="type-chips mb-2" id="typeChips" role="group" aria-label="Filter by file type"></div>
+      <button class="mb-2 hidden w-full flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-left text-xs text-amber-800 transition hover:bg-amber-100" id="syncResumeBanner" type="button">
+        <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><polyline points="3 4 3 10 9 10"/></svg>
+        <span class="min-w-0 flex-1">Unfinished upload: <span class="font-semibold" id="syncResumeName"></span> — <span id="syncResumeMeta"></span></span>
+        <span class="shrink-0 font-semibold">Resume</span>
+      </button>
       <div id="mobileSortBar" class="only-mobile mb-2 flex-wrap items-center gap-1.5 text-[11px]" role="group" aria-label="Sort files">
         <span class="mr-1 text-neutral-400">Sort:</span>
         <button class="sort-chip" data-sort="name" type="button" aria-pressed="true">Name</button>
@@ -160,6 +175,21 @@
         <p class="mr-auto text-xs leading-relaxed text-neutral-500" id="transferFooterNote">Closing or reloading this tab stops the transfers.</p>
         <button class="btn btn-primary hidden shrink-0" id="transferCloseBtn">Close</button>
       </div>
+    </div>
+  </div>
+<div class="fixed inset-0 z-[60] flex hidden items-stretch justify-center overflow-y-auto bg-black/50 p-3 backdrop-blur-[2px] sm:items-center sm:p-4" id="syncModal" role="dialog" aria-modal="true" aria-labelledby="syncTitle">
+    <div class="my-auto w-full max-w-2xl rounded-2xl bg-white shadow-2xl ring-1 ring-black/5">
+      <div class="flex items-start gap-4 border-b border-neutral-100 px-5 py-4 sm:px-6">
+        <div class="min-w-0 flex-1">
+          <h3 class="text-base font-semibold text-neutral-900" id="syncTitle">Upload folder or sync</h3>
+          <p class="mt-0.5 text-xs leading-snug text-neutral-500" id="syncSubtitle">Compare first. Nothing is overwritten.</p>
+        </div>
+        <button class="icon-btn shrink-0" id="syncCloseBtn" aria-label="Close" data-tooltip="Close">
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="max-h-[62vh] overflow-y-auto px-5 py-4 text-sm text-neutral-700 sm:px-6" id="syncBody"></div>
+      <div class="flex flex-wrap items-center justify-end gap-2 border-t border-neutral-100 px-5 py-4 sm:px-6" id="syncFooter"></div>
     </div>
   </div>
   <div id="tooltip" role="tooltip" hidden></div>

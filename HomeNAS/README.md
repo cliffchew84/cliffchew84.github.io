@@ -52,10 +52,45 @@ npm run build:css
 | `index.html`                 | Page shell and inline icons                                         |
 | `app.js`                     | All application logic                                               |
 | `proxy.js`                   | Port 3001: serves the UI, proxies the NAS API, records disk history |
+| `upload-store.js`            | Chunk staging, assembly and SHA-256 for large uploads               |
 | `input.css` → `tailwind.css` | Tailwind source and build output                                    |
+| `.uploads/`                  | Local upload staging (gitignored)                                   |
 | `.health-history.jsonl`      | Local daily disk snapshots (gitignored)                             |
 | `PRD.md`                     | Scope and status tracker                                            |
 | `NAS-API.md`                 | NAS endpoint notes (git-excluded, never committed)                  |
+
+## Large uploads and folder sync
+
+The NAS has no chunk API. The proxy stages chunks on the Mac, then sends each
+complete file to the NAS as one normal upload.
+
+- **Upload** sends single files or a multi-file selection to the open folder.
+- **Upload folder or sync** compares a folder on this device with the open
+  folder on the NAS. It compares the relative path, size and modified time.
+- **Add photos** sends photos and videos from a phone. It uses a batch name
+  such as `Phone 2026-11-15` inside the open folder.
+- Chunks are 5 MB. A paused or closed upload resumes when the same folder is
+  compared again.
+- The proxy checks the staged file with SHA-256 and compares the size in the
+  NAS listing. `access_date` on the NAS stores the modified time.
+- The proxy never overwrites a file. A name that already exists stops with a
+  conflict error, and the compare view marks it as already on the NAS.
+- Limits: 50 GB per file, 60 GB total staging. Staged uploads older than 7
+  days are removed. Zero-byte files are supported.
+
+Staging lives in `HomeNAS/.uploads/` and is gitignored. It needs free space on
+the Mac that runs `proxy.js`. Remove it by hand only when no upload is running.
+
+Optional environment variables:
+
+| Variable     | Default                      | Purpose                          |
+| ------------ | ---------------------------- | -------------------------------- |
+| `NAS_TARGET` | `192.168.68.53`              | NAS address used by the proxy    |
+| `PORT`       | `3001`                       | Proxy listen port                |
+| `UPLOAD_DIR` | `HomeNAS/.uploads`           | Chunk staging directory          |
+
+If the proxy stops during a folder upload, start it again and compare the same
+folder. The proxy reuses the chunks that are still in `.uploads/`.
 
 ## Share with the household
 

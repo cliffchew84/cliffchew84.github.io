@@ -182,3 +182,6 @@ portfolio/assets/archive/
 
 # Local HomeNAS disk-health snapshots (never committed)
 HomeNAS/.health-history.jsonl
+
+# Local HomeNAS upload staging (chunks live on this machine only)
+HomeNAS/.uploads/
