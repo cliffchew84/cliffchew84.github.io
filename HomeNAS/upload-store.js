@@ -123,10 +123,6 @@ function receivedChunks(root, id, meta) {
   return received;
 }
 
-function receivedBytes(root, id, meta) {
-  return receivedChunks(root, id, meta).reduce((sum, i) => sum + expectedLength(meta, i), 0);
-}
-
 function stagingBytes(root) {
   let total = 0;
   let names = [];
@@ -224,9 +220,7 @@ function remove(root, id) {
 }
 
 module.exports = {
-  CHUNK_SIZE,
   MAX_CHUNK,
-  MAX_FILE,
   MAX_STAGING,
   validateTargetPath,
   validateRelPath,
@@ -235,11 +229,9 @@ module.exports = {
   uploadIdFor,
   expectedLength,
   uploadDir,
-  metaPath,
   readMeta,
   writeMeta,
   receivedChunks,
-  receivedBytes,
   stagingBytes,
   freeBytes,
   cleanOld,

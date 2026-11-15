@@ -1735,12 +1735,6 @@
     const healthBody = document.getElementById('healthBody');
     const healthRefreshBtn = document.getElementById('healthRefreshBtn');
 
-    function sensorValue(v) {
-      if (v === null || v === undefined) return '—';
-      if (typeof v === 'object') return escapeHtml(JSON.stringify(v));
-      return escapeHtml(String(v));
-    }
-
     async function loadHealth() {
       healthRefreshBtn.disabled = true;
       healthRefreshBtn.textContent = 'Refreshing…';
@@ -4279,7 +4273,6 @@
     const moreBtn = document.getElementById('moreBtn');
     const moreMenu = document.getElementById('moreMenu');
     const moreWrap = document.getElementById('moreMenuWrap');
-    const moreSelection = document.getElementById('moreSelection');
     const MORE_SOURCES = {
       newFolder: 'newFolderBtn',
       sync: 'syncBtn',
@@ -4294,17 +4287,7 @@
     function syncMoreMenu() {
       const menu = document.getElementById('moreMenu');
       if (!menu) return;
-      const sources = {
-        newFolder: 'newFolderBtn',
-        sync: 'syncBtn',
-        up: 'upLevelBtn',
-        refresh: 'refreshBtn',
-        move: 'moveSelectedBtn',
-        copy: 'copySelectedBtn',
-        zip: 'zipSelectedBtn',
-        delete: 'deleteSelectedBtn'
-      };
-      for (const [action, id] of Object.entries(sources)) {
+      for (const [action, id] of Object.entries(MORE_SOURCES)) {
         const item = menu.querySelector(`[data-more-action="${action}"]`);
         const src = document.getElementById(id);
         if (item && src) item.disabled = src.disabled;

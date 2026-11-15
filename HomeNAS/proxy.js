@@ -46,15 +46,20 @@ const bearerToCookie = (proxyReq, req) => {
 // One compact snapshot per day, stored on this Mac. The NAS is never written to.
 const HISTORY_FILE = path.join(__dirname, '.health-history.jsonl');
 
-app.get('/health/history', (req, res) => {
-  let samples = [];
+// Read the local disk-health history. Bad lines are skipped; a missing file means no history yet.
+function parsedHistoryEntries() {
   try {
-    const lines = fs.readFileSync(HISTORY_FILE, 'utf8').split('\n').filter(Boolean).slice(-400);
+    const lines = fs.readFileSync(HISTORY_FILE, 'utf8').split('\n').filter(Boolean);
+    const entries = [];
     for (const line of lines) {
-      try { samples.push(JSON.parse(line)); } catch (e) { /* skip a bad line */ }
+      try { entries.push(JSON.parse(line)); } catch (e) { /* skip a bad line */ }
     }
-  } catch (e) { /* no history yet */ }
-  res.json({ result: true, samples });
+    return entries;
+  } catch (e) { return []; }
+}
+
+app.get('/health/history', (req, res) => {
+  res.json({ result: true, samples: parsedHistoryEntries().slice(-400) });
 });
 
 app.post('/health/history', express.json({ limit: '256kb' }), (req, res) => {
@@ -72,13 +77,7 @@ app.post('/health/history', express.json({ limit: '256kb' }), (req, res) => {
   const date = String(body.date || now.toISOString().slice(0, 10));
 
   // One snapshot per day: keep the first, skip later writes for the same date.
-  let seenDates = new Set();
-  try {
-    const lines = fs.readFileSync(HISTORY_FILE, 'utf8').split('\n').filter(Boolean);
-    for (const line of lines) {
-      try { seenDates.add(String(JSON.parse(line).date || '')); } catch (e) { /* skip a bad line */ }
-    }
-  } catch (e) { /* no history yet */ }
+  const seenDates = new Set(parsedHistoryEntries().map(e => String(e.date || '')));
   if (seenDates.has(date)) return res.json({ result: true, skipped: 'duplicate' });
 
   const entry = { ts: now.toISOString(), date, disks: body.disks.slice(0, 16) };
@@ -114,6 +113,22 @@ function requireToken(req, res, next) {
   next();
 }
 
+// Collect a small NAS response (JSON, at most 2 MB) and resolve with its status and body.
+function collectNasResponse(req, res, resolve, reject) {
+  const chunks = [];
+  let size = 0;
+  res.on('data', chunk => {
+    size += chunk.length;
+    if (size > 2 * 1024 * 1024) { req.destroy(); reject(new Error('NAS response is too large')); return; }
+    chunks.push(chunk);
+  });
+  res.on('end', () => {
+    let data = {};
+    try { data = JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch (e) { /* keep empty */ }
+    resolve({ status: res.statusCode || 0, data });
+  });
+}
+
 // Small JSON call to the NAS. The NAS expects the session in a cookie.
 function nasJson(token, pathname, method = 'GET') {
   return new Promise((resolve, reject) => {
@@ -122,20 +137,7 @@ function nasJson(token, pathname, method = 'GET') {
     const req = lib.request(url, {
       method,
       headers: { Cookie: `authorization_code=${token}` }
-    }, res => {
-      const chunks = [];
-      let size = 0;
-      res.on('data', chunk => {
-        size += chunk.length;
-        if (size > 2 * 1024 * 1024) { req.destroy(); reject(new Error('NAS response is too large')); return; }
-        chunks.push(chunk);
-      });
-      res.on('end', () => {
-        let data = {};
-        try { data = JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch (e) { /* keep empty */ }
-        resolve({ status: res.statusCode || 0, data });
-      });
-    });
+    }, res => collectNasResponse(req, res, resolve, reject));
     req.on('error', reject);
     req.end();
   });
@@ -205,20 +207,7 @@ function nasUpload(token, meta, name, filePath, dir) {
         'Content-Type': `multipart/form-data; boundary=${boundary}`,
         'Content-Length': total
       }
-    }, res => {
-      const chunks = [];
-      let size = 0;
-      res.on('data', chunk => {
-        size += chunk.length;
-        if (size > 2 * 1024 * 1024) { req.destroy(); reject(new Error('NAS response is too large')); return; }
-        chunks.push(chunk);
-      });
-      res.on('end', () => {
-        let data = {};
-        try { data = JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch (e) { /* keep empty */ }
-        resolve({ status: res.statusCode || 0, data });
-      });
-    });
+    }, res => collectNasResponse(req, res, resolve, reject));
     req.on('error', reject);
     req.write(head);
     const rs = fs.createReadStream(filePath);

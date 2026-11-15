@@ -80,7 +80,7 @@
           <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           <span class="btn-label">Upload</span>
         </button>
-        <button class="btn-icon" id="syncBtn" data-tooltip="Sync a folder" aria-label="Sync a folder">
+        <button class="btn-icon" id="syncBtn" aria-label="Sync a folder">
           <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 17v-5M9.5 14.5 12 12l2.5 2.5"/></svg>
         </button>
         <div class="relative" id="moreMenuWrap">
@@ -104,23 +104,22 @@
         <input type="file" class="hidden" id="fileInput" multiple>
         <input type="file" class="hidden" id="folderInput" webkitdirectory directory multiple>
         <input type="file" class="hidden" id="phoneFilesInput" multiple>
-        <button class="btn-icon" id="newFolderBtn" data-tooltip="New Folder" aria-label="New Folder">
+        <button class="btn-icon" id="newFolderBtn" aria-label="New Folder">
           <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="10" x2="12" y2="14"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
         </button>
-        <button class="btn-icon" id="moveSelectedBtn" disabled data-tooltip="Move Selected" aria-label="Move Selected">
+        <button class="btn-icon" id="moveSelectedBtn" disabled aria-label="Move Selected">
           <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M10 13h6M13.5 10.5 16 13l-2.5 2.5"/></svg>
         </button>
-        <button class="btn-icon" id="copySelectedBtn" disabled data-tooltip="Copy Selected" aria-label="Copy Selected">
+        <button class="btn-icon" id="copySelectedBtn" disabled aria-label="Copy Selected">
           <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
         </button>
-        <button class="btn-icon" id="zipSelectedBtn" disabled data-tooltip="Download selected as ZIP" aria-label="Download selected as ZIP">
+        <button class="btn-icon" id="zipSelectedBtn" disabled aria-label="Download selected as ZIP">
           <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v11a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9"/><path d="M10 13h4"/></svg>
         </button>
-        <button class="btn-icon" id="deleteSelectedBtn" disabled data-tooltip="Delete Selected" aria-label="Delete Selected">
+        <button class="btn-icon" id="deleteSelectedBtn" disabled aria-label="Delete Selected">
           <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
         </button>
-        <button class="icon-btn" id="upLevelBtn" data-tooltip="Up one level" data-tooltip-pos="bottom" aria-label="Up one level"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 15v-4M9.5 12.5 12 10l2.5 2.5"/></svg></button>
-        <span class="mx-1 h-5 w-px bg-neutral-200" id="toolbarDivider" aria-hidden="true"></span>
+        <button class="icon-btn" id="upLevelBtn" aria-label="Up one level"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 15v-4M9.5 12.5 12 10l2.5 2.5"/></svg></button>
         <nav class="flex flex-wrap items-center gap-1.5 text-sm text-neutral-500" id="breadcrumb" aria-label="Breadcrumb"></nav>
         <form class="relative ml-auto flex items-center gap-1.5" id="searchForm" role="search" autocomplete="off">
           <div class="relative flex items-center">
@@ -131,7 +130,7 @@
           <button class="btn h-9 px-3 text-xs" id="searchSubmitBtn" type="submit" data-tooltip="Search (Enter)" data-tooltip-pos="bottom" aria-label="Search (Enter)"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg><span class="btn-label">Search</span></button>
         </form>
         <span class="text-[11px] tabular-nums text-neutral-500" id="searchStatus" role="status"></span>
-        <button class="icon-btn ml-1" id="refreshBtn" data-tooltip="Refresh" data-tooltip-pos="bottom" aria-label="Refresh">
+        <button class="icon-btn ml-1" id="refreshBtn" aria-label="Refresh">
           <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
         </button>
       </div>
