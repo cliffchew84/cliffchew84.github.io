@@ -666,7 +666,7 @@
     const TYPE_LABEL = { all: 'All' };
     TYPE_CATEGORIES.forEach(cat => { TYPE_LABEL[cat.key] = cat.label; });
 
-    const typeChips = document.getElementById('typeChips');
+    const typeSelect = document.getElementById('typeSelect');
     const TYPE_KEYS = TYPE_CATEGORIES.map(cat => cat.key);
 
     // Filter choice persists across folders, shares and reloads (localStorage).
@@ -704,20 +704,19 @@
     }
 
     // Counts come from the current list, so a folder is never a surprise.
+    // The select is rebuilt only when the counts or the choice change; this
+    // keeps an open dropdown open during background refreshes.
     function renderTypeChips(items) {
       const counts = typeCounts(items);
-      const chips = [{ key: 'all', label: 'All' }].concat(TYPE_CATEGORIES);
-      const focused = document.activeElement && document.activeElement.classList.contains('type-chip')
-        ? document.activeElement.dataset.type : null;
-      typeChips.innerHTML = chips.map(chip => {
-        const n = counts[chip.key] || 0;
-        return `<button class="type-chip" type="button" data-type="${chip.key}" aria-pressed="${chip.key === activeType}" aria-label="${chip.label}, ${n} item${n === 1 ? '' : 's'}">${chip.label}<span class="type-count">${n}</span></button>`;
+      const options = [{ key: 'all', label: 'All' }].concat(TYPE_CATEGORIES);
+      const signature = options.map(o => (counts[o.key] || 0)).join(':') + '|' + activeType;
+      if (typeSelect.dataset.signature === signature) return;
+      typeSelect.dataset.signature = signature;
+      typeSelect.innerHTML = options.map(option => {
+        const n = counts[option.key] || 0;
+        const chosen = option.key === activeType ? ' selected' : '';
+        return `<option value="${option.key}"${chosen}>${option.label} (${n})</option>`;
       }).join('');
-      // Keep keyboard focus on the same chip after the row is rebuilt.
-      if (focused) {
-        const again = typeChips.querySelector(`.type-chip[data-type="${focused}"]`);
-        if (again) again.focus({ preventScroll: true });
-      }
     }
 
     function setActiveType(key) {
@@ -729,11 +728,7 @@
       updateSelection();
     }
 
-    typeChips.addEventListener('click', (e) => {
-      const btn = e.target.closest('.type-chip');
-      if (!btn || btn.dataset.type === activeType) return;
-      setActiveType(btn.dataset.type);
-    });
+    typeSelect.addEventListener('change', () => setActiveType(typeSelect.value));
 
     // "Show all" inside the filtered empty state.
     fileList.addEventListener('click', (e) => {
