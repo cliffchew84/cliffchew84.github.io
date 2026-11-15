@@ -67,8 +67,8 @@ complete file to the NAS as one normal upload.
 - **Upload** sends single files or a multi-file selection to the open folder.
 - **Upload folder or sync** compares a folder on this device with the open
   folder on the NAS. It compares the relative path, size and modified time.
-- **Add photos** sends photos and videos from a phone. It uses a batch name
-  such as `Phone 2026-11-15` inside the open folder.
+- **Upload from phone** sends photos, videos and files from a phone. It uses a
+  batch name such as `Phone 2026-11-15` inside the open folder.
 - Chunks are 5 MB. A paused or closed upload resumes when the same folder is
   compared again.
 - The proxy checks the staged file with SHA-256 and compares the size in the

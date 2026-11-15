@@ -3588,7 +3588,7 @@
                 <button type="button" class="btn" data-sync-action="pick-folder">Choose folder…</button>
                 <button type="button" class="btn" data-sync-action="pick-files">Choose photos or files…</button>
               </div>
-              <p class="rounded-lg bg-amber-50 p-3 text-[11px] leading-relaxed text-amber-800">iPhone cannot choose a folder. Use the toolbar photo button for one tap, or “Choose photos or files” here.</p>
+              <p class="rounded-lg bg-amber-50 p-3 text-[11px] leading-relaxed text-amber-800">iPhone cannot choose a folder. Use “Upload from phone” in the toolbar for one tap, or “Choose photos or files” here.</p>
             `}
           </div>`;
         footer = syncFooterButtons(hasFiles
@@ -4233,7 +4233,7 @@
       beginSyncScan();
     }
 
-    // One tap on Add photos: today's folder, no typing, compare at once.
+    // One tap on Upload from phone: today's folder, no typing, compare at once.
     function startPhoneBatch(list) {
       if (currentPath === '/') {
         showToast('Open a share or folder first.', 6000, 'error');
