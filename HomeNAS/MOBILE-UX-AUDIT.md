@@ -351,22 +351,20 @@ A service worker is the second installability requirement for Android and cannot
 | Install prompt | ⏳ needs HTTPS |
 | Splash screens | Derived from manifest on Add to Home Screen |
 
-### Required `manifest.json`
+### Shipped `manifest.json` (2026-11-15)
 ```json
 {
   "name": "HomeNAS",
   "short_name": "HomeNAS",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f8fafc",
+  "categories": ["utilities", "productivity"],
   "theme_color": "#2563eb",
+  "background_color": "#f8fafc",
+  "lang": "en",
   "icons": [
     { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
     { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
-  ],
-  "categories": ["utilities", "productivity"],
-  "shortcuts": [
-    { "name": "Add Photos", "url": "/?action=add-photos", "icons": [{ "src": "/icon-add.png", "sizes": "192x192" }] }
   ]
 }
 ```
@@ -416,8 +414,8 @@ A service worker is the second installability requirement for Android and cannot
 5. Edge swipe for sidebar
 
 ### Phase 3: Polish & PWA (Week 3)
-1. Web App Manifest + icons
-2. Service Worker (offline shell)
+1. Web App Manifest + icons — done 2026-11-15 (HomeNAS icon and fullscreen launch on a home screen icon)
+2. Service Worker (offline shell) — needs HTTPS (Phase 4); also the last piece for a real Android install
 3. Keyboard handling for modals
 4. Format table → card list on mobile
 5. Virtual scrolling for file list

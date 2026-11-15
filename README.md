@@ -231,66 +231,43 @@ All other secrets removed (2026-11-03): `PERSONAL_ACCESS_TOKEN`, `BASE_URL`, `EX
 
 ## HomeNAS (local project)
 
-A custom web frontend for the LatticeWork Amber NAS (model AM1213-1). Located in `HomeNAS/` (gitignored, local-only).
+A self-hosted web UI for the LatticeWork Amber NAS (model AM1213-1), home network only.
+Committed in this repository under `HomeNAS/` (branch `home_nas`).
 
 ### Overview
 
 | Component | Stack | Purpose |
 |-----------|-------|---------|
-| Frontend | React + TypeScript + Vite + Tailwind | Modern UI for NAS management |
-| Proxy | FastAPI + Python (smbprotocol) | Bridges REST API to SMB file operations |
+| Frontend | Static HTML, vanilla JS, Tailwind (compiled) | File browser, uploads, health view |
+| Proxy | Node.js (Express) | Serves the UI on `:3001` and forwards `/life` plus chunk endpoints to the NAS |
 
-### Features (Phase 1 complete)
+### Features
 
-- Login / JWT session management
-- Dashboard: disks, RAID, SMART, CPU temp, fan, LED status
-- File browser: tree + table, download, rename, delete, mkdir, upload (drag-drop)
-- Share management: list shares, toggle protocols, edit ACLs
-- User management: create/modify/delete users, set passwords
-- LED control: color picker, brightness slider, DND schedule
-- Health monitoring: thermal, sensors, SMART attributes (admin)
+- Login / JWT session management for NAS accounts
+- File browser: share tree, sortable table, folders, rename, delete, mkdir
+- One **Upload** action: compare-first upload into the open folder — identical files are skipped, clashes upload as `name (1).ext`, nothing overwritten; resumable 5 MB chunks, SHA-256 verified, SHA-256 checked on resume
+- Folder sync (compare and copy a folder tree) from the More menu; move/copy/delete/ZIP download in bulk
+- File-type filter (dropdown with live counts), search, recycle bin with purge, disk health view
+- Phone-first layout: 44 px targets, full-height sync window, icons-only toolbar; PWA manifest and icons so the home-screen icon opens the app fullscreen
+- Home network only, HTTP (no HTTPS yet; HTTPS is Phase 4). Android therefore offers "Add to Home screen" rather than a native install
 
 ### Quick Start
 
 ```bash
-# Frontend (Terminal 1)
-cd HomeNAS/frontend && npm run dev
-# Opens at http://localhost:5173
-
-# Proxy (Terminal 2)
-cd HomeNAS/proxy && pip install -r requirements.txt
-export NAS_HOST=<your-nas-ip>
-export NAS_SHARE=<your-share-name>
-export SMB_USER=<your-smb-user>
-export SMB_PASSWORD=<your-smb-password>
-python main.py
-# Runs on http://localhost:3001
+cd HomeNAS
+npm install && npm start     # http://localhost:3001
 ```
 
-### NAS Configuration (example)
-
-| Setting | Example Value |
-|---------|---------------|
-| NAS IP | `192.168.x.x` (DHCP reserved) |
-| mDNS | `<name>.local` |
-| Share | `<share-name>` |
-| Users | `<admin>`, `<family>` |
-
-Credentials are **not stored** in the repo. Set them via environment variables when running the proxy.
+Sign in through the page with a NAS account; the proxy never stores credentials.
+For remote access or Pi deployment, see `HomeNAS/README.md` and `HomeNAS/pi-deployment.md`.
 
 ### Documentation
 
-Full details in `HomeNAS/README.md` and `HomeNAS/PRD.md`.
+- `HomeNAS/README.md` — run instructions, background mode, household setup (iPhone/iPad/Android home screen), large uploads, disk-health view
+- `HomeNAS/PRD.md` — scope and status tracker
+- `HomeNAS/MOBILE-UX-AUDIT.md` — mobile audit and PWA status
 
-### Phase 2 (planned)
-
-- Dark mode, keyboard shortcuts, bulk actions, share links, storage analytics
-
-### Phase 3 (planned)
-
-- Deploy to Raspberry Pi, Tailscale for remote access, HTTPS via Caddy, systemd service
-
-## To do
+## To do## To do
 
 - [x] Remove unused secrets (`PERSONAL_ACCESS_TOKEN`, `BASE_URL`, `EXT_URL`, `MONGO_PASSWORD`, `OGP_API_KEY`, `RENDER_DEPLOY`) — deleted 2026-11-03.
 - [ ] Log in to Vercel and record the project, domain, and deploy method here.
