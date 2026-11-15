@@ -113,11 +113,6 @@ body.sidebar-collapsed #sidebar {
 .only-mobile { display: none !important; }
 .sidebar-overlay { display: none; }
 
-/* One visible upload action. Every other toolbar action lives in the More
-   menu. The hidden buttons stay in the DOM so the menu can click their
-   tested handlers. */
-#syncBtn, #newFolderBtn, #upLevelBtn, #refreshBtn, #moveSelectedBtn, #copySelectedBtn, #zipSelectedBtn, #deleteSelectedBtn { display: none !important; }
-
 @media (max-width: 767px) {
   /* Use the visible screen height. Browser bars no longer cut off the list. */
   body.h-screen { height: 100dvh; min-height: 100dvh; }

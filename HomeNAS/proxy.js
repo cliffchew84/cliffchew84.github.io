@@ -395,10 +395,11 @@ app.get(Object.keys(PUBLIC_FILES), (req, res) => {
   res.sendFile(path.join(__dirname, PUBLIC_FILES[req.path]));
 });
 
-// File listing and download API (same NAS, different path prefix).
+// File listing and download API (same NAS, different path prefix). The NAS address
+// follows the same NAS_TARGET override as the upload pipeline above.
 const ROUTES = [
-  { path: '/life', target: 'http://192.168.68.53/life' },
-  { path: '/', target: 'http://192.168.68.53/api' }
+  { path: '/life', target: NAS_ORIGIN + '/life' },
+  { path: '/', target: NAS_ORIGIN + '/api' }
 ];
 
 for (const { path, target } of ROUTES) {

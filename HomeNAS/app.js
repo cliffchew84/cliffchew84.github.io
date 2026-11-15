@@ -18,7 +18,6 @@
     const breadcrumb = document.getElementById('breadcrumb');
     const fileList = document.getElementById('fileList');
     const selectAll = document.getElementById('selectAll');
-    const zipSelectedBtn = document.getElementById('zipSelectedBtn');
     const fileInput = document.getElementById('fileInput');
     const modal = document.getElementById('modal');
     const modalTitle = document.getElementById('modalTitle');
@@ -519,7 +518,7 @@
       currentPath = path;
       updateBreadcrumb(path);
       updateSearchAvailability();
-      document.getElementById('upLevelBtn').disabled = path === '/';
+      syncMoreMenu();
       selection.clear();
       selectAll.checked = false;
       selectAll.disabled = true;
@@ -705,7 +704,7 @@
     // Counts come from the current list, so a folder is never a surprise.
     // The select is rebuilt only when the counts or the choice change; this
     // keeps an open dropdown open during background refreshes.
-    function renderTypeChips(items) {
+    function renderTypeOptions(items) {
       const counts = typeCounts(items);
       const options = [{ key: 'all', label: 'All' }].concat(TYPE_CATEGORIES);
       const signature = options.map(o => (counts[o.key] || 0)).join(':') + '|' + activeType;
@@ -748,7 +747,7 @@
     function renderFiles(items, path) {
       updateSortHeaderUI();
       const visible = visibleItems(items);
-      renderTypeChips(visible);
+      renderTypeOptions(visible);
       const shown = filterByType(visible);
       selectAll.disabled = !shown.length;
       if (!shown.length) {
@@ -844,10 +843,6 @@
       selection.clear();
       fileList.querySelectorAll('.row-check:checked').forEach(cb => selection.add(cb.value));
       selectAll.checked = selection.size > 0 && selection.size === fileList.querySelectorAll('.row-check').length;
-      document.getElementById('deleteSelectedBtn').disabled = selection.size === 0;
-      document.getElementById('moveSelectedBtn').disabled = selection.size === 0;
-      document.getElementById('copySelectedBtn').disabled = selection.size === 0;
-      zipSelectedBtn.disabled = selection.size === 0;
       fileList.querySelectorAll('tr').forEach(row => {
         row.dataset.selected = String(selection.has(row.dataset.path));
       });
@@ -950,26 +945,6 @@
       await moveItemsViaDrag(a.dataset.path);
     });
 
-    // Drop onto the toolbar Up button to move items into the parent folder.
-    const upLevelBtn = document.getElementById('upLevelBtn');
-    upLevelBtn.addEventListener('dragover', (e) => {
-      if (!dragPaths.length) return;
-      const parent = parentOf(currentPath);
-      if (parent === currentPath || parent === '/') { e.dataTransfer.dropEffect = 'none'; return; }
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
-      clearDropHighlights();
-      upLevelBtn.classList.add('drop-target-highlight');
-    });
-    upLevelBtn.addEventListener('dragleave', () => { upLevelBtn.classList.remove('drop-target-highlight'); });
-    upLevelBtn.addEventListener('drop', async (e) => {
-      const parent = parentOf(currentPath);
-      if (!dragPaths.length || parent === currentPath || parent === '/') return;
-      e.preventDefault();
-      clearDropHighlights();
-      await moveItemsViaDrag(parent);
-    });
-
     folderTree.addEventListener('dragover', (e) => {
       if (!dragPaths.length) return;
       const btn = e.target.closest('button[data-path]');
@@ -1058,7 +1033,7 @@
 
     function renderSearchResults(matches) {
       const visible = visibleItems(matches);
-      renderTypeChips(visible);
+      renderTypeOptions(visible);
       const shown = filterByType(visible);
       selectAll.disabled = !shown.length;
       if (!shown.length) {
@@ -1431,6 +1406,7 @@
     let transferSeq = 0;
     // Set while a hidden-form ZIP download is in flight (no JS progress is possible).
     let pendingZip = 0;
+    let zipBusy = false; // a ZIP is being sized/downloaded; the More menu item stays disabled
     // True while the user has dismissed the modal but transfers still run.
     let transferModalDismissed = false;
 
@@ -2183,14 +2159,14 @@
       const onLoad = () => {
         frame.removeEventListener('load', onLoad);
         pendingZip = Math.max(0, pendingZip - 1);
-        zipSelectedBtn.disabled = selection.size === 0;
+        syncMoreMenu();
         showToast('Download started — check your Downloads folder.', 6000, 'success');
       };
       frame.addEventListener('load', onLoad);
       form.submit();
       setTimeout(() => form.remove(), 4000);
       // Safety reset if the frame never fires load (e.g. NAS unreachable).
-      setTimeout(() => { if (pendingZip > 0) { pendingZip--; zipSelectedBtn.disabled = selection.size === 0; } }, 30 * 60 * 1000);
+      setTimeout(() => { if (pendingZip > 0) { pendingZip--; syncMoreMenu(); } }, 30 * 60 * 1000);
     }
 
     async function downloadSelectedZip() {
@@ -2210,20 +2186,25 @@
         }
       }
       showToast('Checking size…', 4000);
-      zipSelectedBtn.disabled = true;
+      zipBusy = true;
+      syncMoreMenu();
       try {
         const bytes = await selectionSizeBytes(paths);
         if (bytes > ZIP_SIZE_CAP) {
           showToast('Selection is over 1 GB. Download a smaller portion.', 8000, 'error');
-          zipSelectedBtn.disabled = selection.size === 0;
+          zipBusy = false;
+          syncMoreMenu();
           return;
         }
       } catch {
         showToast('Could not check selection size. The NAS may be busy — try again.', 6000, 'error');
-        zipSelectedBtn.disabled = selection.size === 0;
+        zipBusy = false;
+        syncMoreMenu();
         return;
       }
       submitZipRequest(paths, zipNameFor(paths));
+      zipBusy = false;
+      syncMoreMenu(); // the pendingZip counter keeps the menu item disabled until the download starts
     }
 
     // ====== ACTIONS ======
@@ -2262,15 +2243,15 @@
       if (isMobile()) setSidebarCollapsed(true, false);
     }
 
-    document.getElementById('refreshBtn').addEventListener('click', () => {
+    function refreshCurrentView() {
       clearSearch();
       loadFiles(currentPath);
       loadTree().catch(() => {});
-    });
-    document.getElementById('upLevelBtn').addEventListener('click', () => {
+    }
+    function goUpOneLevel() {
       const parent = parentOf(currentPath);
       if (parent !== currentPath) { clearSearch(); selectPath(parent); }
-    });
+    }
 
     // ====== CREATE / RENAME ======
     function validName(name) {
@@ -2543,8 +2524,9 @@
         .some(row => paths.includes(row.dataset.path) && row.dataset.type === 'folder');
 
       paths.forEach(p => pendingDeletes.add(p));
-      markDeleting(paths);      selection.clear();
-      document.getElementById('deleteSelectedBtn').disabled = true;
+      markDeleting(paths);
+      selection.clear();
+      syncMoreMenu();
       const share = paths.length ? shareOf(paths[0]) : '';
       const summary = { moved: [], permanent: [], failed: [], cancelled: 0, renamed: [] };
       for (const p of paths) {
@@ -2597,7 +2579,7 @@
       }
     }
 
-    document.getElementById('deleteSelectedBtn').addEventListener('click', async () => {
+    async function deleteSelectedItems() {
       const paths = [...selection];
       if (!paths.length || !confirm(`Delete ${paths.length} item(s)?`)) return;
       try {
@@ -2631,7 +2613,7 @@
       } catch (e) {
         showToast('Delete failed: ' + e.message, 8000, 'error');
       }
-    });
+    }
 
     // ====== MOVE / COPY ======
     // Same-share only (product decision). The picker browses the current share;
@@ -2781,9 +2763,6 @@
       moveCopyState = null;
     }
 
-    document.getElementById('moveSelectedBtn').addEventListener('click', () => openMoveCopy('move'));
-    document.getElementById('copySelectedBtn').addEventListener('click', () => openMoveCopy('copy'));
-    document.getElementById('zipSelectedBtn').addEventListener('click', downloadSelectedZip);
     document.getElementById('moveCopyConfirm').addEventListener('click', executeMoveCopy);
     document.getElementById('moveCopyCloseBtn').addEventListener('click', closeMoveCopy);
     document.getElementById('moveCopyCancel').addEventListener('click', closeMoveCopy);
@@ -2926,7 +2905,6 @@
     const SYNC_DATE_TOLERANCE = 2000;
     const SYNC_MAX_WALK_PAGES = 40;
 
-    const syncBtn = document.getElementById('syncBtn');
     const syncModal = document.getElementById('syncModal');
     const syncBody = document.getElementById('syncBody');
     const syncFooter = document.getElementById('syncFooter');
@@ -2934,7 +2912,7 @@
     const syncSubtitle = document.getElementById('syncSubtitle');
     const syncCloseBtn = document.getElementById('syncCloseBtn');
     const folderInput = document.getElementById('folderInput');
-    const phoneFilesInput = document.getElementById('phoneFilesInput');
+    const pickFilesInput = document.getElementById('pickFilesInput');
     const syncResumeBanner = document.getElementById('syncResumeBanner');
     const syncResumeName = document.getElementById('syncResumeName');
     const syncResumeMeta = document.getElementById('syncResumeMeta');
@@ -4160,7 +4138,7 @@
       refreshResumeBanner();
     }
 
-    syncBtn.addEventListener('click', () => {
+    function openSyncModalOrResume() {
       // A running batch owns the modal. Reopen it instead of resetting the state.
       if (syncState && (syncState.running || (syncState.queue.length && syncState.phase !== 'done'))) {
         syncModal.classList.remove('hidden');
@@ -4168,7 +4146,7 @@
         return;
       }
       openSyncModal(null);
-    });
+    }
 
     syncCloseBtn.addEventListener('click', closeSyncModal);
     syncModal.addEventListener('click', (e) => { if (e.target === syncModal) closeSyncModal(); });
@@ -4184,7 +4162,7 @@
       if (!btn || !syncState) return;
       const action = btn.dataset.syncAction;
       if (action === 'pick-folder') { syncState.resumeMode = false; folderInput.click(); }
-      if (action === 'pick-files') { syncState.resumeMode = false; phoneFilesInput.click(); }
+      if (action === 'pick-files') { syncState.resumeMode = false; pickFilesInput.click(); }
       if (action === 'compare') beginSyncScan();
       if (action === 'start') prepareAndStartSync();
       if (action === 'pause') { syncState.paused = true; syncState.pauseReason = 'user'; syncState.phase = 'paused'; releaseSyncWakeLock(); syncState.wakeLock = false; saveSyncBatch(); renderSync(); }
@@ -4220,7 +4198,7 @@
           .then(() => { discardSavedBatch(); syncState.queue = []; syncState.phase = 'pick'; renderSync(); showToast('Staged data removed.', 4000, 'success'); });
       }
       if (action === 'resume-pick-folder') { syncState.resumeMode = true; folderInput.click(); }
-      if (action === 'resume-pick-files') { syncState.resumeMode = true; phoneFilesInput.click(); }
+      if (action === 'resume-pick-files') { syncState.resumeMode = true; pickFilesInput.click(); }
       if (action === 'resume-run') { reconcileSyncQueue().then(() => { syncState.phase = 'uploading'; runSyncQueue(); }); }
       if (action === 'resume-discard') { discardSavedBatch(); syncState.phase = 'pick'; syncState.resumeSaved = null; syncState.resumeMode = false; renderSync(); }
     });
@@ -4231,9 +4209,9 @@
       if (!list.length || !syncState) return;
       handleSyncPick(list, 'folder');
     });
-    phoneFilesInput.addEventListener('change', () => {
-      const list = Array.from(phoneFilesInput.files || []);
-      phoneFilesInput.value = '';
+    pickFilesInput.addEventListener('change', () => {
+      const list = Array.from(pickFilesInput.files || []);
+      pickFilesInput.value = '';
       if (!list.length || !syncState) return;
       handleSyncPick(list, 'files');
     });
@@ -4245,7 +4223,7 @@
     });
 
 
-    document.getElementById('newFolderBtn').addEventListener('click', () => {
+    function newFolderAction() {
       if (currentPath === '/') {
         showToast('Open a share or folder first.', 6000, 'error');
         return;
@@ -4264,32 +4242,41 @@
           showToast('Create failed: ' + e.message, 8000, 'error');
         }
       }, 'Create');
-    });
+    }
 
-    // ====== MORE (phone overflow menu) ======
-    // The hidden toolbar buttons keep all desktop behavior. Phone users reach
-    // the same buttons through one menu.
+    // ====== MORE MENU ======
+    // Secondary actions live in one menu, on phone and desktop. The handlers
+    // are called directly; there are no hidden toolbar buttons.
     const moreBtn = document.getElementById('moreBtn');
     const moreMenu = document.getElementById('moreMenu');
     const moreWrap = document.getElementById('moreMenuWrap');
-    const MORE_SOURCES = {
-      newFolder: 'newFolderBtn',
-      sync: 'syncBtn',
-      up: 'upLevelBtn',
-      refresh: 'refreshBtn',
-      move: 'moveSelectedBtn',
-      copy: 'copySelectedBtn',
-      zip: 'zipSelectedBtn',
-      delete: 'deleteSelectedBtn'
+    const MORE_ACTIONS = {
+      newFolder: newFolderAction,
+      sync: openSyncModalOrResume,
+      up: goUpOneLevel,
+      refresh: refreshCurrentView,
+      move: () => openMoveCopy('move'),
+      copy: () => openMoveCopy('copy'),
+      zip: downloadSelectedZip,
+      delete: deleteSelectedItems
     };
 
+    // up: only outside the share root. move/copy/delete: only with a
+    // selection. zip: not while one is being sized or downloaded.
+    function moreActionEnabled(action) {
+      switch (action) {
+        case 'up': return currentPath !== '/';
+        case 'move':
+        case 'copy':
+        case 'delete': return selection.size > 0;
+        case 'zip': return selection.size > 0 && !zipBusy && pendingZip === 0;
+        default: return true; // newFolder, sync, refresh guard themselves
+      }
+    }
+
     function syncMoreMenu() {
-      const menu = document.getElementById('moreMenu');
-      if (!menu) return;
-      for (const [action, id] of Object.entries(MORE_SOURCES)) {
-        const item = menu.querySelector(`[data-more-action="${action}"]`);
-        const src = document.getElementById(id);
-        if (item && src) item.disabled = src.disabled;
+      for (const item of moreMenu.querySelectorAll('[data-more-action]')) {
+        item.disabled = !moreActionEnabled(item.dataset.moreAction);
       }
       const box = document.getElementById('moreSelection');
       if (box) box.classList.toggle('hidden', selection.size === 0);
@@ -4311,9 +4298,9 @@
     moreMenu.addEventListener('click', (e) => {
       const item = e.target.closest('[data-more-action]');
       if (!item || item.disabled) return;
-      const src = document.getElementById(MORE_SOURCES[item.dataset.moreAction]);
+      const action = MORE_ACTIONS[item.dataset.moreAction];
       closeMoreMenu();
-      if (src && !src.disabled) src.click();
+      if (action) action();
     });
 
     document.addEventListener('click', (e) => {

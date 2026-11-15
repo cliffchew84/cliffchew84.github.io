@@ -1,16 +1,13 @@
 {
   "name": "homenas",
-  "version": "1.0.0",
-  "description": "",
+  "private": true,
+  "description": "Local web UI for the LatticeWork Amber NAS (home network only)",
   "main": "proxy.js",
   "scripts": {
     "start": "node proxy.js",
     "build:css": "tailwindcss -i ./input.css -o ./tailwind.css --minify",
     "test": "node --test"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "type": "commonjs",
   "dependencies": {
     "express": "^5.3.0",
