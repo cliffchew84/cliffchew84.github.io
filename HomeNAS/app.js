@@ -857,6 +857,7 @@
       fileList.querySelectorAll('tr').forEach(row => {
         row.dataset.selected = String(selection.has(row.dataset.path));
       });
+      syncMoreMenu();
     }
 
     selectAll.addEventListener('change', () => {
@@ -4389,6 +4390,72 @@
           showToast('Create failed: ' + e.message, 8000, 'error');
         }
       }, 'Create');
+    });
+
+    // ====== MORE (phone overflow menu) ======
+    // The hidden toolbar buttons keep all desktop behavior. Phone users reach
+    // the same buttons through one menu.
+    const moreBtn = document.getElementById('moreBtn');
+    const moreMenu = document.getElementById('moreMenu');
+    const moreWrap = document.getElementById('moreMenuWrap');
+    const moreSelection = document.getElementById('moreSelection');
+    const MORE_SOURCES = {
+      newFolder: 'newFolderBtn',
+      up: 'upLevelBtn',
+      refresh: 'refreshBtn',
+      move: 'moveSelectedBtn',
+      copy: 'copySelectedBtn',
+      zip: 'zipSelectedBtn',
+      delete: 'deleteSelectedBtn'
+    };
+
+    function syncMoreMenu() {
+      const menu = document.getElementById('moreMenu');
+      if (!menu) return;
+      const sources = {
+        newFolder: 'newFolderBtn',
+        up: 'upLevelBtn',
+        refresh: 'refreshBtn',
+        move: 'moveSelectedBtn',
+        copy: 'copySelectedBtn',
+        zip: 'zipSelectedBtn',
+        delete: 'deleteSelectedBtn'
+      };
+      for (const [action, id] of Object.entries(sources)) {
+        const item = menu.querySelector(`[data-more-action="${action}"]`);
+        const src = document.getElementById(id);
+        if (item && src) item.disabled = src.disabled;
+      }
+      const box = document.getElementById('moreSelection');
+      if (box) box.classList.toggle('hidden', selection.size === 0);
+    }
+
+    function closeMoreMenu() {
+      moreMenu.classList.add('hidden');
+      moreBtn.setAttribute('aria-expanded', 'false');
+    }
+
+    moreBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const willOpen = moreMenu.classList.contains('hidden');
+      if (willOpen) syncMoreMenu();
+      moreMenu.classList.toggle('hidden');
+      moreBtn.setAttribute('aria-expanded', String(willOpen));
+    });
+
+    moreMenu.addEventListener('click', (e) => {
+      const item = e.target.closest('[data-more-action]');
+      if (!item || item.disabled) return;
+      const src = document.getElementById(MORE_SOURCES[item.dataset.moreAction]);
+      closeMoreMenu();
+      if (src && !src.disabled) src.click();
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!moreWrap.contains(e.target)) closeMoreMenu();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeMoreMenu();
     });
 
     // ====== MODAL ======

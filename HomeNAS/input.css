@@ -104,6 +104,10 @@ body.sidebar-collapsed #sidebar {
 .menu-item:focus-visible { outline: 2px solid rgb(37 99 235); outline-offset: -2px; background: rgb(245 245 245); }
 .menu-item svg { color: rgb(140 140 140); flex-shrink: 0; }
 .menu-item-hint { margin-left: auto; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: rgb(163 163 163); }
+.menu-item:disabled { opacity: 0.45; cursor: not-allowed; }
+.menu-item:disabled:hover { background: transparent; color: rgb(82 82 82); }
+.menu-item-danger { color: rgb(220 38 38); }
+.menu-item-danger:hover { background: rgb(254 242 242); color: rgb(185 28 28); }
 
 /* === Type filter chips === */
 .type-chips { display: flex; gap: 0.375rem; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
@@ -152,14 +156,11 @@ body.sidebar-collapsed #sidebar {
   #uploadBtn { order: 1; }
   #syncBtn { order: 2; }
   #addPhotosBtn { order: 3; }
-  #newFolderBtn { order: 4; }
-  #upLevelBtn { order: 5; }
-  #moveSelectedBtn { order: 6; }
-  #copySelectedBtn { order: 7; }
-  #zipSelectedBtn { order: 8; }
-  #deleteSelectedBtn { order: 9; }
-  #moveSelectedBtn:disabled, #copySelectedBtn:disabled, #zipSelectedBtn:disabled, #deleteSelectedBtn:disabled { display: none; }
-  #refreshBtn { order: 10; }
+  #moreMenuWrap { order: 4; display: flex !important; }
+  #moreBtn { min-width: 44px; min-height: 44px; }
+
+  /* Rare actions live in the More menu on phones. */
+  #newFolderBtn, #upLevelBtn, #refreshBtn, #moveSelectedBtn, #copySelectedBtn, #zipSelectedBtn, #deleteSelectedBtn { display: none !important; }
   #uploadStatus { order: 11; flex: 1 1 100%; }
   #uploadStatus:empty { display: none; }
   #breadcrumb { order: 12; flex: 1 1 auto; }
