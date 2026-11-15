@@ -147,7 +147,9 @@ body.sidebar-collapsed #sidebar {
   body.sidebar-collapsed #sidebar { width: 280px !important; padding: 0.5rem !important; overflow-y: auto !important; border-right: 1px solid rgb(229 229 229) !important; transform: translateX(-105%); box-shadow: none; }
   .sidebar-overlay.open { display: block !important; position: fixed; inset: 0; z-index: 30; background: rgba(0, 0, 0, 0.45); }
 
-  /* Toolbar: upload first, More next to it, breadcrumb and search on their own rows. */
+  /* Toolbar: icons only. Text buttons keep 44 px height and lose the label. */
+  .btn-label { display: none; }
+  #uploadBtn, #searchSubmitBtn { padding-left: 0.65rem; padding-right: 0.65rem; }
   #uploadBtn { order: 1; }
   #moreMenuWrap { order: 2; margin-left: 0; }
   #moreBtn { min-width: 44px; min-height: 44px; }
