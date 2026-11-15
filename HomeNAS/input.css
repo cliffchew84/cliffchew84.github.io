@@ -124,6 +124,11 @@ body.sidebar-collapsed #sidebar {
 .only-mobile { display: none !important; }
 .sidebar-overlay { display: none; }
 
+/* One visible upload action. Every other toolbar action lives in the More
+   menu. The hidden buttons stay in the DOM so the menu can click their
+   tested handlers. */
+#syncBtn, #newFolderBtn, #upLevelBtn, #refreshBtn, #moveSelectedBtn, #copySelectedBtn, #zipSelectedBtn, #deleteSelectedBtn, #toolbarDivider { display: none !important; }
+
 @media (max-width: 767px) {
   /* Use the visible screen height. Browser bars no longer cut off the list. */
   body.h-screen { height: 100dvh; min-height: 100dvh; }
@@ -152,19 +157,12 @@ body.sidebar-collapsed #sidebar {
   body.sidebar-collapsed #sidebar { width: 280px !important; padding: 0.5rem !important; overflow-y: auto !important; border-right: 1px solid rgb(229 229 229) !important; transform: translateX(-105%); box-shadow: none; }
   .sidebar-overlay.open { display: block !important; position: fixed; inset: 0; z-index: 30; background: rgba(0, 0, 0, 0.45); }
 
-  /* Toolbar: upload actions first, search last on its own row. */
+  /* Toolbar: upload first, More next to it, breadcrumb and search on their own rows. */
   #uploadBtn { order: 1; }
-  #syncBtn { order: 2; }
-  #addPhotosBtn { order: 3; }
-  #moreMenuWrap { order: 4; display: flex !important; }
+  #moreMenuWrap { order: 2; margin-left: 0; }
   #moreBtn { min-width: 44px; min-height: 44px; }
 
-  /* Rare actions live in the More menu on phones. */
-  #newFolderBtn, #upLevelBtn, #refreshBtn, #moveSelectedBtn, #copySelectedBtn, #zipSelectedBtn, #deleteSelectedBtn { display: none !important; }
-  #uploadStatus { order: 11; flex: 1 1 100%; }
-  #uploadStatus:empty { display: none; }
   #breadcrumb { order: 12; flex: 1 1 auto; }
-  #toolbarDivider { display: none; }
   #searchForm { order: 20; width: 100%; margin-left: 0 !important; }
   #searchInput { width: 100% !important; flex: 1 1 auto; }
   #searchStatus { order: 21; width: 100%; }

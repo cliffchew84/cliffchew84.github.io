@@ -453,7 +453,7 @@ indicator.innerHTML = '🔆 Screen kept on';
 
 ### Scenarios
 - [ ] Cold start → login → file list
-- [ ] Upload from phone flow (1, 10, 100 files)
+- [ ] Upload flow (1, 10, 100 files)
 - [ ] Folder upload from Mac (drag + picker)
 - [ ] Sync pause/resume/reload
 - [ ] Long file list (500+ items) scroll performance

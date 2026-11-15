@@ -64,11 +64,13 @@ npm run build:css
 The NAS has no chunk API. The proxy stages chunks on the Mac, then sends each
 complete file to the NAS as one normal upload.
 
-- **Upload** sends single files or a multi-file selection to the open folder.
-- **Upload folder or sync** compares a folder on this device with the open
-  folder on the NAS. It compares the relative path, size and modified time.
-- **Upload from phone** sends photos, videos and files from a phone. It uses a
-  batch name such as `Phone 2026-11-15` inside the open folder.
+- **Upload** sends files or a multi-file selection to the open folder. The
+  app compares first, skips identical files, renames clashes as
+  `name (1).ext`, and never overwrites. Each file uses resumable 5 MB chunks
+  and is verified by SHA-256.
+- **Sync a folder** (in the More menu) compares a folder on this device with
+  the open folder on the NAS. It compares the relative path, size and modified
+  time, and uploads in batches into a named folder.
 - Chunks are 5 MB. A paused or closed upload resumes when the same folder is
   compared again.
 - The proxy checks the staged file with SHA-256 and compares the size in the

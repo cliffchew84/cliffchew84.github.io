@@ -1486,22 +1486,6 @@
       renderTransferModal();
     }
 
-    async function retryUpload(t) {
-      const { file, path, name } = t.payload;
-      transfers.delete(t.id); // drop the failed row; the retry registers a fresh one
-      renderTransferModal();
-      try {
-        await uploadOne(file, path, name);
-        if (currentPath === path) {
-          await loadFiles(path);
-          setTimeout(() => { if (currentPath === path) loadFiles(path); }, 1200);
-        }
-        showToast('Uploaded ' + (name || file.name), 3000, 'success');
-      } catch (e) {
-        showToast('Retry failed: ' + e.message, 8000, 'error');
-      }
-    }
-
     // Dismissing the modal must not destroy rows that are still running: the XHR
     // handlers look them up by id. Only finished rows are dropped.
     function closeTransferModal() {
@@ -1592,9 +1576,7 @@
         }
         const cancel = t.state === 'active'
           ? `<button class="shrink-0 text-xs font-semibold text-red-600 transition-colors hover:text-red-800 hover:underline" data-cancel="${t.id}" aria-label="Cancel ${escapeHtml(t.name)}">Cancel</button>`
-          : (t.state === 'error' && t.kind === 'upload' && t.payload
-            ? `<button class="shrink-0 text-xs font-semibold text-blue-600 transition-colors hover:text-blue-800 hover:underline" data-retry="${t.id}" aria-label="Retry upload of ${escapeHtml(t.name)}">Retry</button>`
-            : '');
+          : '';
         return `<li class="flex items-center gap-3 px-6 py-4">
           <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${transferTile(t)}">${transferIcon(t)}</span>
           <div class="min-w-0 flex-1">
@@ -1613,11 +1595,6 @@
         const t = transfers.get(cancelBtn.dataset.cancel);
         if (t && t.xhr) { try { t.xhr.abort(); } catch (_) {} }
         return;
-      }
-      const retryBtn = e.target.closest('[data-retry]');
-      if (retryBtn) {
-        const t = transfers.get(retryBtn.dataset.retry);
-        if (t && t.payload && t.kind === 'upload') retryUpload(t);
       }
     });
     transferCloseBtn.addEventListener('click', closeTransferModal);
@@ -2826,64 +2803,6 @@
 
     // ====== UPLOAD ======
     const uploadBtn = document.getElementById('uploadBtn');
-    const uploadStatus = document.getElementById('uploadStatus');
-
-    async function uploadOne(file, path, name) {
-      const finalName = name || file.name;
-      const form = new FormData();
-      form.append('application/json', JSON.stringify({
-        root: 'local',
-        path,
-        mtime: new Date(file.lastModified || Date.now()).toISOString(),
-        size: file.size,
-        filename: finalName
-      }));
-      // The NAS reads the file from the field named after the file itself.
-      form.append(finalName, file, finalName);
-
-      const id = startTransfer(finalName, 'upload', { file, path, name: finalName });
-      try {
-        await new Promise((resolve, reject) => {
-          const xhr = new XMLHttpRequest();
-          xhr.open('POST', `${PROXY_URL}/life/v1/file/upload`);
-          xhr.setRequestHeader('Authorization', cookie ? `Bearer ${cookie}` : '');
-          let stalled = false;
-          let lastProgress = Date.now();
-          // Stall watchdog: if the NAS stops responding, abort after 45 s without progress.
-          const stallWatch = setInterval(() => {
-            if (Date.now() - lastProgress > 45000) {
-              stalled = true;
-              try { xhr.abort(); } catch (_) {}
-              clearInterval(stallWatch);
-            }
-          }, 5000);
-          const row = transfers.get(id);
-          if (row) row.stallWatch = stallWatch;
-          xhr.upload.addEventListener('progress', (e) => {
-            lastProgress = Date.now();
-            updateTransfer(id, e.loaded, e.lengthComputable ? e.total : 0);
-          });
-          xhr.addEventListener('load', () => {
-            const status = xhr.status;
-            let data = {};
-            try { data = JSON.parse(xhr.responseText || '{}'); } catch (_) {}
-            if (status === 401) { endSession(); showLogin('Session expired. Please sign in again.'); reject(new AuthExpired('Session expired')); return; }
-            if (status < 200 || status >= 300) { reject(new Error('HTTP ' + status)); return; }
-            if (data.result === false) { reject(new Error(data.error || 'Upload failed')); return; }
-            resolve();
-          });
-          xhr.addEventListener('error', () => reject(new Error('Network error')));
-          xhr.addEventListener('abort', () => reject(stalled ? new Error('The NAS did not respond — try again') : new Error('Cancelled by user')));
-          const liveRow = transfers.get(id);
-          if (liveRow) liveRow.xhr = xhr;
-          xhr.send(form);
-        });
-        finishTransfer(id, true);
-      } catch (e) {
-        finishTransfer(id, false, e.message === 'Cancelled by user' ? 'cancelled' : e.message);
-        throw e;
-      }
-    }
 
     // Never replace an existing file: pick "name (1).ext", "name (2).ext", and so on.
     function uniqueName(name, taken) {
@@ -2898,82 +2817,12 @@
       return `${base} (${Date.now()})${ext}`;
     }
 
-    async function uploadFiles(files) {
-      if (currentPath === '/') {
-        showToast('Open a share or folder before uploading.', 6000, 'error');
-        return 0;
-      }
-      const targetPath = currentPath;
-      const failed = [];
-      const renamed = [];
-      let done = 0;
-      // Existing names in the target folder, so an upload never replaces a file.
-      // The NAS listing can lag, so names taken in this batch are added by hand.
-      const taken = new Set();
-      let namesKnown = true;
-      try {
-        const existing = await fsList(targetPath);
-        for (const item of existing) if (item.name) taken.add(item.name);
-      } catch (e) {
-        namesKnown = false;
-      }
-      if (!namesKnown) {
-        showToast('Could not read the folder. An upload may replace a file with the same name.', 8000, 'error');
-      }
-      for (let i = 0; i < files.length; i++) {
-        uploadStatus.textContent = `${i + 1} of ${files.length}…`;
-        try {
-          const finalName = uniqueName(files[i].name, taken);
-          taken.add(finalName);
-          if (finalName !== files[i].name) renamed.push(`${files[i].name} → ${finalName}`);
-          await uploadOne(files[i], targetPath, finalName);
-          done++;
-        } catch (e) {
-          if (e.message === 'Cancelled by user' || e instanceof AuthExpired) {
-            failed.push(`${files[i].name}: ${e instanceof AuthExpired ? 'session expired' : 'cancelled'}`);
-            break; // stop the queue on cancel or when the session is dead
-          }
-          failed.push(`${files[i].name}: ${e.message}`);
-        }
-      }
-      const sessionDead = failed.some(f => f.includes('session expired'));
-      if (!sessionDead) {
-        await loadFiles(targetPath);
-        if (searchState.active && searchInput.value.trim().length >= 2) await runSearch(searchInput.value);
-        // The NAS may index the new file just after the response.
-        setTimeout(() => {
-          if (currentPath === targetPath) {
-            if (searchState.active && searchInput.value.trim().length >= 2) runSearch(searchInput.value);
-            else loadFiles(targetPath);
-          }
-        }, 1200);
-      }
-
-      if (failed.length && done) {
-        showToast(`Uploaded ${done} of ${files.length} to ${targetPath}. Failed: ${failed[0]}`, 8000, 'error');
-      } else if (failed.length) {
-        showToast(`Upload failed: ${failed[0]}`, 8000, 'error');
-      } else {
-        const note = renamed.length
-          ? `. Renamed to avoid replacing: ${renamed[0]}` + (renamed.length > 1 ? ` (+${renamed.length - 1} more)` : '')
-          : '';
-        showToast(`Uploaded ${done} file(s) to ${targetPath}${note}`, renamed.length ? 8000 : 3000, 'success');
-      }
-      return done;
-    }
-
     uploadBtn.addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', async () => {
+    fileInput.addEventListener('change', () => {
       const files = Array.from(fileInput.files);
       fileInput.value = '';
       if (!files.length) return;
-      uploadBtn.disabled = true;
-      try {
-        await uploadFiles(files);
-      } finally {
-        uploadBtn.disabled = false;
-        uploadStatus.textContent = '';
-      }
+      startDirectUpload(files);
     });
 
     // ====== DRAG AND DROP UPLOAD ======
@@ -3046,11 +2895,16 @@
       const out = new Map();
       if (dirs.length === 1 && !loose.length) {
         await walkDroppedEntry(dirs[0], '', out);
-        return { out, batchName: dirs[0].name };
+        return { out, batchName: dirs[0].name, isBatch: true };
+      }
+      if (!dirs.length) {
+        // Files with no folder: they go straight into the open folder.
+        for (const entry of loose) await addDroppedFile(entry, entry.name, out);
+        return { out, batchName: '', isBatch: false };
       }
       for (const entry of loose) await addDroppedFile(entry, entry.name, out);
       for (const dir of dirs) await walkDroppedEntry(dir, dir.name, out);
-      return { out, batchName: phoneBatchName('Dropped') };
+      return { out, batchName: '', isBatch: true };
     }
 
     document.addEventListener('drop', async (e) => {
@@ -3063,20 +2917,15 @@
       if (items.length) {
         const tree = await readDroppedTree(items);
         if (tree && tree.out.size) {
-          startDroppedBatch(tree.out, tree.batchName);
+          if (tree.isBatch) startDroppedBatch(tree.out, tree.batchName);
+          else startDirectUpload(Array.from(tree.out.keys()));
           return;
         }
       }
 
       const files = Array.from(e.dataTransfer.files);
       if (!files.length) return;
-      uploadBtn.disabled = true;
-      try {
-        await uploadFiles(files);
-      } finally {
-        uploadBtn.disabled = false;
-        uploadStatus.textContent = '';
-      }
+      startDirectUpload(files);
     });
 
     // ====== BULK FOLDER / SYNC ======
@@ -3110,13 +2959,6 @@
     function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
     function syncHtml(value) { return escapeHtml(String(value ?? '')); }
-
-    // One folder per day for the phone flow. Re-use keeps the compare useful.
-    function phoneBatchName(prefix = 'Phone') {
-      const d = new Date();
-      const pad = n => String(n).padStart(2, '0');
-      return `${prefix} ${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-    }
 
     // macOS file names are often NFD. The NAS usually stores NFC. Compare on NFC.
     function syncKey(rel) {
@@ -3405,6 +3247,9 @@
     function defaultSyncState() {
       return {
         phase: 'pick',
+        // 'direct' sends files into the open folder. 'batch' syncs a folder
+        // tree into a named batch folder.
+        mode: 'batch',
         basePath: currentPath,
         source: '',
         sourceRoot: '',
@@ -3457,6 +3302,7 @@
         }
         localStorage.setItem(SYNC_STATE_KEY, JSON.stringify({
           version: 1,
+          mode: s.mode,
           createdAt: s.createdAt || Date.now(),
           updatedAt: Date.now(),
           basePath: s.basePath,
@@ -3493,7 +3339,7 @@
         return;
       }
       const left = saved.manifest.filter(m => m.status !== 'done').length;
-      syncResumeName.textContent = saved.batchName;
+      syncResumeName.textContent = saved.mode === 'direct' ? saved.targetPath : saved.batchName;
       syncResumeMeta.textContent = `${left} file${left === 1 ? '' : 's'} left`;
       syncResumeBanner.classList.remove('hidden');
     }
@@ -3557,26 +3403,28 @@
     function renderSync() {
       const s = syncState;
       if (!s) return;
-      syncTitle.textContent = s.resumeMode ? 'Resume upload' : 'Upload folder or sync';
+      syncTitle.textContent = s.resumeMode ? 'Resume upload' : (s.mode === 'direct' ? 'Upload files' : 'Sync a folder');
       let body = '';
       let footer = '';
       let subtitle = 'Compare first. Nothing is overwritten.';
 
       if (s.phase === 'pick' || s.phase === 'ready') {
+        const direct = s.mode === 'direct';
         const hasFiles = s.files.length > 0;
         const totalBytes = s.files.reduce((sum, f) => sum + f.size, 0);
-        subtitle = 'Choose a source. The NAS is compared before anything is sent.';
+        subtitle = direct ? 'Ready to upload into the open folder.' : 'Choose a source. The NAS is compared before anything is sent.';
         body = `
           <div class="space-y-4">
             <div class="rounded-lg border border-neutral-200 bg-neutral-50 p-3">
               <p class="text-[11px] font-medium uppercase tracking-wider text-neutral-400">Upload into</p>
               <p class="mt-0.5 break-all font-medium text-neutral-800">${syncHtml(s.basePath)}</p>
             </div>
+            ${direct ? '' : `
             <div>
               <label class="block text-xs font-medium text-neutral-600" for="syncBatchName">Batch folder name</label>
               <input id="syncBatchName" data-sync-field="batchName" maxlength="100" value="${syncHtml(s.batchName)}" placeholder="2026-11-14 Family Dinner" class="mt-1 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" autocomplete="off">
               <p class="mt-1 text-[11px] leading-relaxed text-neutral-500">This becomes one folder on the NAS. If it exists, the app compares and syncs inside it.</p>
-            </div>
+            </div>`}
             ${hasFiles ? `
               <div class="rounded-lg border border-blue-200 bg-blue-50 p-3 text-xs text-blue-800">
                 <p class="font-semibold">${s.files.length} file${s.files.length === 1 ? '' : 's'} · ${formatSize(totalBytes)}</p>
@@ -3588,15 +3436,15 @@
                 <button type="button" class="btn" data-sync-action="pick-folder">Choose folder…</button>
                 <button type="button" class="btn" data-sync-action="pick-files">Choose photos or files…</button>
               </div>
-              <p class="rounded-lg bg-amber-50 p-3 text-[11px] leading-relaxed text-amber-800">iPhone cannot choose a folder. Use “Upload from phone” in the toolbar for one tap, or “Choose photos or files” here.</p>
+              <p class="rounded-lg bg-amber-50 p-3 text-[11px] leading-relaxed text-amber-800">iPhone cannot choose a folder. Use “Choose photos or files” here.</p>
             `}
           </div>`;
         footer = syncFooterButtons(hasFiles
           ? [{ action: 'compare', label: 'Compare with NAS', kind: 'primary' }, { action: 'choose-again', label: 'Choose again' }]
           : [{ action: 'cancel', label: 'Cancel' }]);
       } else if (s.phase === 'scanning') {
-        subtitle = 'Reading the NAS folder…';
-        body = `<div class="py-10 text-center text-sm text-neutral-500"><span class="animate-pulse">Comparing folder and NAS…</span></div>`;
+        subtitle = s.mode === 'direct' ? 'Comparing files with the open folder…' : 'Reading the NAS folder…';
+        body = `<div class="py-10 text-center text-sm text-neutral-500"><span class="animate-pulse">${s.mode === 'direct' ? 'Comparing files with the folder…' : 'Comparing folder and NAS…'}</span></div>`;
         footer = syncFooterButtons([{ action: 'cancel', label: 'Cancel' }]);
       } else if (s.phase === 'summary') {
         const changed = s.changedFiles.length;
@@ -3657,10 +3505,10 @@
                 </ul>
               </div>
             ` : ''}
-            <p class="text-[11px] leading-relaxed text-neutral-500">Changed files upload as <span class="font-medium text-neutral-700">name (1).ext</span>. Nothing on the NAS is overwritten. Each file is verified by size after upload, and the Mac computes SHA-256. Do not delete the phone originals until you see the verified count.</p>
+            <p class="text-[11px] leading-relaxed text-neutral-500">Changed files upload as <span class="font-medium text-neutral-700">name (1).ext</span>. Nothing on the NAS is overwritten. Each file is verified by size after upload, and the Mac computes SHA-256. Do not delete the originals until you see the verified count.</p>
             <p class="text-[11px] leading-relaxed text-neutral-500">Keep this page open and the screen on during the upload. On an iPhone, set <span class="font-medium text-neutral-700">Settings → Display &amp; Brightness → Auto-Lock</span> to 5 minutes for a long batch.</p>
           </div>`;
-        footer = syncFooterButtons(nothing
+        footer = syncFooterButtons(nothing || (s.mode === 'direct' && !s.queue.length)
           ? [{ action: 'close', label: 'Close' }]
           : [
             { action: 'start', label: blocked ? 'Cannot start' : `Upload ${s.queue.length} file${s.queue.length === 1 ? '' : 's'}`, kind: 'primary', disabled: blocked },
@@ -3685,7 +3533,7 @@
             </div>
             ${active ? `<div class="rounded-lg border border-neutral-200 p-3"><p class="text-[11px] uppercase tracking-wider text-neutral-400">${s.phase === 'paused' ? 'Paused at' : 'Uploading'}</p><p class="mt-0.5 break-all text-sm font-medium text-neutral-800">${syncHtml(active.relPath)}</p><p class="mt-1 text-xs tabular-nums text-neutral-500">${formatSize(active.sentBytes || 0)} of ${formatSize(active.size)}</p><div class="mt-2">${syncProgressBar(active.size ? ((active.sentBytes || 0) / active.size) * 100 : 0, s.phase === 'paused' ? 'bg-amber-500' : 'bg-blue-600')}</div></div>` : ''}
             ${failed.length ? `<div class="rounded-lg bg-red-50 p-3 text-[11px] leading-relaxed text-red-700"><p class="font-semibold">${failed.length} file(s) need attention</p>${failed.slice(0, 4).map(f => `<p class="mt-1 break-all">${syncHtml(f.relPath)}: ${syncHtml(f.error || 'not verified')}</p>`).join('')}</div>` : ''}
-            <p class="rounded-lg bg-amber-50 p-3 text-[11px] leading-relaxed text-amber-800">${s.wakeLock ? 'The screen stays on while this page is open. Keep this page in front.' : 'Keep this page open and the screen on.'} iOS stops uploads when Safari goes to the background or the screen locks. Set <span class="font-semibold">Settings → Display &amp; Brightness → Auto-Lock</span> to 5 minutes, and use a charger for a long batch. If the connection drops, the upload continues by itself when you return to this page. Do not delete the phone originals yet.</p>
+            <p class="rounded-lg bg-amber-50 p-3 text-[11px] leading-relaxed text-amber-800">${s.wakeLock ? 'The screen stays on while this page is open. Keep this page in front.' : 'Keep this page open and the screen on.'} iOS stops uploads when Safari goes to the background or the screen locks. Set <span class="font-semibold">Settings → Display &amp; Brightness → Auto-Lock</span> to 5 minutes, and use a charger for a long batch. If the connection drops, the upload continues by itself when you return to this page. Do not delete the originals yet.</p>
             ${s.phase === 'paused' ? `<p class="text-[11px] leading-relaxed text-neutral-500">If you close this page, re-select the same folder or files to resume. The chunks stay on the Mac.</p>` : ''}
           </div>`;
         footer = syncFooterButtons(s.phase === 'paused'
@@ -3722,6 +3570,9 @@
           shownRows,
           ['Total', String(done), String(s.queue.length - done)]
         );
+        const originalNote = s.mode === 'direct'
+          ? (allGood ? 'Your source files are left as they are.' : 'The unverified or failed files still exist only on your device.')
+          : (allGood ? 'It is safe to delete the phone originals for these files.' : 'Do not delete the phone originals for the unverified or failed files.');
         subtitle = allGood ? 'All files are on the NAS and verified by size.' : 'Finished with items that need attention.';
         body = `
           <div class="space-y-4">
@@ -3729,7 +3580,7 @@
               <p class="font-semibold">${done} file${done === 1 ? '' : 's'} verified on the NAS.</p>
               ${unverified ? `<p class="mt-1">${unverified} file(s) uploaded but not verified yet.</p>` : ''}
               ${failed ? `<p class="mt-1">${failed} file(s) failed.</p>` : ''}
-              <p class="mt-2 text-xs">${allGood ? 'It is safe to delete the phone originals for these files.' : 'Do not delete the phone originals for the unverified or failed files.'}</p>
+              <p class="mt-2 text-xs">${originalNote}</p>
             </div>
             <div>
               <p class="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-neutral-400">Upload result by format</p>
@@ -3741,7 +3592,7 @@
         footer = syncFooterButtons([
           ...(allGood ? [] : [{ action: 'resume', label: 'Retry not verified', kind: 'primary' }]),
           ...(failedEntries.length ? [{ action: 'copy-failed', label: 'Copy failed list' }] : []),
-          { action: 'rescan', label: 'Re-scan and sync' },
+          ...(s.mode === 'direct' ? [] : [{ action: 'rescan', label: 'Re-scan and sync' }]),
           { action: 'close', label: 'Done' }
         ]);
       } else if (s.phase === 'resume') {
@@ -3794,12 +3645,15 @@
 
     async function beginSyncScan() {
       const s = syncState;
-      s.batchName = s.batchName.trim();
-      const nameError = syncBatchNameError(s.batchName);
-      if (nameError) { showToast(nameError, 5000, 'error'); return; }
-      if (!s.files.length) { showToast('Choose a folder or some files first.', 5000, 'error'); return; }
+      const direct = s.mode === 'direct';
+      if (!direct) {
+        s.batchName = s.batchName.trim();
+        const nameError = syncBatchNameError(s.batchName);
+        if (nameError) { showToast(nameError, 5000, 'error'); return; }
+      }
+      if (!s.files.length) { showToast(direct ? 'Choose some files first.' : 'Choose a folder or some files first.', 5000, 'error'); return; }
       if (s.files.length > SYNC_MAX_FILES) { showToast(`Choose at most ${SYNC_MAX_FILES} files in one batch.`, 6000, 'error'); return; }
-      s.targetPath = joinPath(s.basePath, s.batchName);
+      s.targetPath = direct ? s.basePath : joinPath(s.basePath, s.batchName);
       s.largest = s.files.reduce((max, f) => Math.max(max, f.size), 0);
       s.already = [];
       s.newFiles = [];
@@ -3810,17 +3664,29 @@
       renderSync();
 
       try {
-        // Confirm the batch folder exists before walking it. A failed walk of a
-        // missing folder must not be mistaken for an empty folder.
-        const parentItems = await fsList(s.basePath);
-        s.targetExists = parentItems.some(it => it.name === s.batchName && it.type === 'folder');
-        if (s.targetExists) {
-          const tree = await walkNasTree(s.targetPath);
-          s.nasFiles = tree.files;
-          s.nasFolders = tree.folders;
-        } else {
+        if (direct) {
+          // Only the open folder is compared. Files keep their names.
+          const items = await listNasAll(s.basePath);
+          s.targetExists = true;
           s.nasFiles = new Map();
           s.nasFolders = new Set(['']);
+          for (const item of items) {
+            if (item.type === 'folder') s.nasFolders.add(syncKey(item.name));
+            else s.nasFiles.set(syncKey(item.name), item);
+          }
+        } else {
+          // Confirm the batch folder exists before walking it. A failed walk of a
+          // missing folder must not be mistaken for an empty folder.
+          const parentItems = await fsList(s.basePath);
+          s.targetExists = parentItems.some(it => it.name === s.batchName && it.type === 'folder');
+          if (s.targetExists) {
+            const tree = await walkNasTree(s.targetPath);
+            s.nasFiles = tree.files;
+            s.nasFolders = tree.folders;
+          } else {
+            s.nasFiles = new Map();
+            s.nasFolders = new Set(['']);
+          }
         }
 
         s.already = [];
@@ -3862,6 +3728,17 @@
         }));
         s.uploadBytes = s.queue.reduce((sum, e) => sum + e.size, 0);
         s.phase = 'summary';
+        if (direct) {
+          if (!s.queue.length) {
+            // Everything already matches. Nothing to show.
+            closeSyncModal();
+            showToast(`Nothing to upload. All ${s.already.length} file(s) already match ${s.targetPath}.`, 7000, 'success');
+            return;
+          }
+          // One tap, no extra screens. Start the transfer right away.
+          await prepareAndStartSync();
+          return;
+        }
         renderSync();
       } catch (e) {
         s.error = e.message;
@@ -4158,15 +4035,22 @@
       if (!s.targetExists) return;
       let files = new Map();
       try {
-        const tree = await walkNasTree(s.targetPath);
-        files = tree.files;
+        if (s.mode === 'direct') {
+          // The resume target is one folder. No need to walk the tree.
+          const items = await listNasAll(s.targetPath);
+          for (const item of items) if (item.type !== 'folder') files.set(syncKey(item.name), item);
+        } else {
+          const tree = await walkNasTree(s.targetPath);
+          files = tree.files;
+        }
       } catch (e) {
         return;
       }
       for (const entry of s.queue) {
         if (entry.status === 'done') continue;
-        const dir = relDirOf(entry.relPath);
-        const key = syncKey(relJoin(dir, entry.name));
+        const key = s.mode === 'direct'
+          ? syncKey(entry.name)
+          : syncKey(relJoin(relDirOf(entry.relPath), entry.name));
         const hit = files.get(key);
         if (hit && Number(hit.size) === entry.size) {
           entry.status = 'done';
@@ -4182,6 +4066,7 @@
       s.sourceRoot = built.sourceRoot;
       s.basePath = saved.basePath;
       s.batchName = saved.batchName;
+      s.mode = saved.mode === 'direct' ? 'direct' : 'batch';
       s.targetPath = saved.targetPath;
       s.targetExists = !!saved.targetExists;
       s.phase = 'resume-ready';
@@ -4226,26 +4111,40 @@
       syncState.source = source;
       syncState.sourceRoot = built.sourceRoot;
       if (source === 'folder' && built.sourceRoot) syncState.batchName = built.sourceRoot;
-      if (!syncState.batchName.trim()) syncState.batchName = phoneBatchName();
       syncState.phase = 'ready';
       renderSync();
-      // The compare runs alone now. The user only reads the summary.
-      beginSyncScan();
+      // The compare runs right away when the batch has a name (a dropped or
+      // chosen folder). For loose files the user names the batch first.
+      if (syncState.batchName.trim()) beginSyncScan();
     }
 
-    // One tap on Upload from phone: today's folder, no typing, compare at once.
-    function startPhoneBatch(list) {
+    // The one Upload action: send the chosen files into the open folder.
+    // The same compare-and-verify engine runs behind it. No batch folder.
+    function startDirectUpload(list) {
       if (currentPath === '/') {
-        showToast('Open a share or folder first.', 6000, 'error');
+        showToast('Open a share or folder before uploading.', 6000, 'error');
+        return;
+      }
+      if (syncState && (syncState.running || (syncState.queue.length && syncState.phase !== 'done'))) {
+        showToast('An upload is already running. Wait for it to finish.', 6000, 'error');
+        return;
+      }
+      const built = syncLocalFiles(list, 'files');
+      if (!built.files.length) {
+        showToast('No usable files in that selection.', 5000, 'error');
         return;
       }
       syncState = defaultSyncState();
+      syncState.mode = 'direct';
       syncState.basePath = currentPath;
-      syncState.batchName = phoneBatchName();
+      syncState.targetPath = currentPath;
       syncState.source = 'files';
+      syncState.files = built.files;
+      syncState.skipped = built.skipped;
       syncModal.classList.remove('hidden');
       renderSync();
-      handleSyncPick(list, 'files');
+      // The compare runs right away. The user only reads the outcome.
+      beginSyncScan();
     }
 
     // A folder dropped onto the page becomes a batch, compared at once.
@@ -4274,7 +4173,6 @@
     }
 
     syncBtn.addEventListener('click', () => {
-      phoneBatchPick = false;
       // A running batch owns the modal. Reopen it instead of resetting the state.
       if (syncState && (syncState.running || (syncState.queue.length && syncState.phase !== 'done'))) {
         syncModal.classList.remove('hidden');
@@ -4284,12 +4182,6 @@
       openSyncModal(null);
     });
 
-    let phoneBatchPick = false;
-
-    document.getElementById('addPhotosBtn').addEventListener('click', () => {
-      phoneBatchPick = true;
-      phoneFilesInput.click();
-    });
     syncCloseBtn.addEventListener('click', closeSyncModal);
     syncModal.addEventListener('click', (e) => { if (e.target === syncModal) closeSyncModal(); });
 
@@ -4354,15 +4246,9 @@
     phoneFilesInput.addEventListener('change', () => {
       const list = Array.from(phoneFilesInput.files || []);
       phoneFilesInput.value = '';
-      if (phoneBatchPick) {
-        phoneBatchPick = false;
-        if (list.length) startPhoneBatch(list);
-        return;
-      }
       if (!list.length || !syncState) return;
       handleSyncPick(list, 'files');
     });
-    phoneFilesInput.addEventListener('cancel', () => { phoneBatchPick = false; });
 
     syncResumeBanner.addEventListener('click', () => {
       const saved = loadSavedBatch();
@@ -4401,6 +4287,7 @@
     const moreSelection = document.getElementById('moreSelection');
     const MORE_SOURCES = {
       newFolder: 'newFolderBtn',
+      sync: 'syncBtn',
       up: 'upLevelBtn',
       refresh: 'refreshBtn',
       move: 'moveSelectedBtn',
@@ -4414,6 +4301,7 @@
       if (!menu) return;
       const sources = {
         newFolder: 'newFolderBtn',
+        sync: 'syncBtn',
         up: 'upLevelBtn',
         refresh: 'refreshBtn',
         move: 'moveSelectedBtn',
