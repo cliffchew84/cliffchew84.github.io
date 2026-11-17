@@ -1,39 +1,89 @@
 #!/usr/bin/env python3
-"""Daily Telegram digest for PostHog analytics."""
+"""Daily Telegram digest for PostHog analytics.
+
+For each site, the digest shows:
+  1. views and visitors in the last 24 hours, with the change from the day before
+  2. the top 5 events, with the parameters those events carry
+
+No site is hardcoded. A new host gets the same detail as an old one.
+
+Run locally without sending:
+
+    python3 scripts/telegram_digest.py --dry-run
+
+Environment:
+    POSTHOG_API_KEY     Personal API key, read scope (phx_...)
+    POSTHOG_PROJECT_ID  Project id, a number
+    TELEGRAM_BOT_TOKEN  Bot token from BotFather
+    TELEGRAM_CHAT_ID    Target chat id
+"""
 import json
 import os
-import subprocess
 import sys
+import time
+import urllib.error
 import urllib.request
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from html import escape
 
-POSTHOG_API_KEY = os.environ["POSTHOG_API_KEY"]
-POSTHOG_PROJECT_ID = os.environ["POSTHOG_PROJECT_ID"]
-TELEGRAM_BOT_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
-TELEGRAM_CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
 POSTHOG_HOST = "https://us.posthog.com"
+
+# Real visits only: no local traffic, no marked internal users.
+PUBLIC_ONLY = """
+      AND coalesce(properties.internal_user, false) = false
+      AND coalesce(properties.$host, '') <> ''
+      AND coalesce(properties.$host, '') NOT LIKE '%localhost%'
+      AND coalesce(properties.$host, '') NOT LIKE '%127.0.0.1%'
+      AND coalesce(properties.$host, '') NOT LIKE '%[::]%'
+"""
+
+# Automatic events that carry no product meaning on their own.
+NOISE_EVENTS = (
+    "$pageview",
+    "$pageleave",
+    "$web_vitals",
+    "$autocapture",
+    "$identify",
+    "$rageclick",
+    "$dead_click",
+    "$copy_autocapture",
+)
+
+# A friendly name for a host. Any other host shows its own name.
+LABELS = {
+    "cliffchew84.github.io": "Portfolio",
+    "www.cliffchew84.github.io": "Portfolio",
+    "singapore-hdb-resale.vercel.app": "HDB dashboard",
+}
+
+# Parameters that identify the sender or repeat the site itself, not the action.
+NOISE_PARAMS = {"distinct_id", "app", "site", "internal_user", "token", "session_id"}
+
+# Telegram rejects a message over 4096 characters. Pack under a lower limit so
+# the split happens at a site boundary, never mid-sentence.
+MAX_MESSAGE_CHARS = 3800
+
+MAX_EVENTS = 5
+MAX_PARAMS = 3
+MAX_VALUES = 2
+MAX_VALUE_LEN = 40
 
 
 def query(sql: str) -> list:
-    """Run a HogQL query and return results as list of rows."""
-    data = json.dumps({"query": {"kind": "HogQLQuery", "query": sql}}).encode()
-    req = urllib.request.Request(
-        f"{POSTHOG_HOST}/api/projects/{POSTHOG_PROJECT_ID}/query/",
-        data=data,
-        headers={"Authorization": f"Bearer {POSTHOG_API_KEY}", "Content-Type": "application/json"},
+    """Run a HogQL query and return the rows."""
+    api_key = os.environ["POSTHOG_API_KEY"]
+    project_id = os.environ["POSTHOG_PROJECT_ID"]
+    body = json.dumps({"query": {"kind": "HogQLQuery", "query": sql}}).encode()
+    request = urllib.request.Request(
+        f"{POSTHOG_HOST}/api/projects/{project_id}/query/",
+        data=body,
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
     )
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        return json.load(resp).get("results", [])
-
-
-def site_label(site: str, host: str) -> str:
-    """Pretty label for a site."""
-    if site == "unknown":
-        if "hdb" in host:
-            return "hdb-resale"
-        return "unknown"
-    return site
+    with urllib.request.urlopen(request, timeout=30) as response:
+        return json.load(response).get("results", [])
 
 
 def esc(value) -> str:
@@ -41,173 +91,263 @@ def esc(value) -> str:
     return escape(str(value), quote=False)
 
 
-def main() -> int:
-    # 1. All sites summary (24h, public, no localhost, no internal)
-    sites = query("""
+def sq(value: str) -> str:
+    """Quote a value for a HogQL string literal."""
+    return value.replace("'", "''")
+
+
+def num(value) -> int:
+    return int(value or 0)
+
+
+def label_for(host: str) -> str:
+    if host in LABELS:
+        return LABELS[host]
+    if "hdb" in host.lower():
+        return "HDB dashboard"
+    return host
+
+
+def delta(now: int, before: int) -> str:
+    """Compact change marker: ▲12, ▼3, or · for no change."""
+    diff = now - before
+    if diff > 0:
+        return f"▲{diff}"
+    if diff < 0:
+        return f"▼{abs(diff)}"
+    return "·"
+
+
+def unit(count: int, singular: str) -> str:
+    """'1 view' or '2 views'."""
+    return f"{count} {singular}" if count == 1 else f"{count} {singular}s"
+
+
+def site_rows() -> dict:
+    """Views and visitors for the last 24 hours and the 24 hours before."""
+    rows = query(
+        f"""
         SELECT
-            coalesce(properties.site, 'unknown') AS site,
             coalesce(properties.$host, '') AS host,
-            sum(if(event = '$pageview', 1, 0)) AS pageviews,
-            uniq(if(event = '$pageview', distinct_id, NULL)) AS visitors,
-            sum(if(event = 'building_viewed', 1, 0)) AS section_clicks,
-            sum(if(event = 'link_clicked', 1, 0)) AS link_clicks
-        FROM events
-        WHERE timestamp > now() - INTERVAL 24 HOUR
-          AND coalesce(properties.internal_user, false) = false
-          AND coalesce(properties.$host, '') <> ''
-          AND coalesce(properties.$host, '') NOT LIKE '%localhost%'
-          AND coalesce(properties.$host, '') NOT LIKE '%127.0.0.1%'
-          AND coalesce(properties.$host, '') NOT LIKE '%[::]%'
-        GROUP BY site, host
-        ORDER BY pageviews DESC
-    """)
-
-    # 2. Section breakdown for portfolio
-    sections = query("""
-        SELECT
-            properties.building AS section,
-            count() AS clicks,
-            uniq(distinct_id) AS visitors
-        FROM events
-        WHERE event = 'building_viewed'
-          AND timestamp > now() - INTERVAL 24 HOUR
-          AND properties.$host = 'cliffchew84.github.io'
-          AND coalesce(properties.internal_user, false) = false
-        GROUP BY section
-        ORDER BY clicks DESC
-    """)
-
-    # 3. Link clicks for portfolio
-    links = query("""
-        SELECT
-            properties.entry_title AS entry,
-            properties.link_host AS host,
-            count() AS clicks,
-            uniq(distinct_id) AS visitors
-        FROM events
-        WHERE event = 'link_clicked'
-          AND timestamp > now() - INTERVAL 24 HOUR
-          AND properties.$host = 'cliffchew84.github.io'
-          AND coalesce(properties.internal_user, false) = false
-        GROUP BY entry, host
-        ORDER BY clicks DESC
-        LIMIT 10
-    """)
-
-    # 4. Filter totals for portfolio
-    filters = query("""
-        SELECT
-            sum(if(event = 'scroll_filter_used', 1, 0)) AS applied,
-            sum(if(event = 'scroll_filter_cleared', 1, 0)) AS cleared
-        FROM events
-        WHERE event IN ('scroll_filter_used', 'scroll_filter_cleared')
-          AND timestamp > now() - INTERVAL 24 HOUR
-          AND properties.$host = 'cliffchew84.github.io'
-          AND coalesce(properties.internal_user, false) = false
-    """)
-
-    # 5. Clear paths for portfolio
-    clears = query("""
-        SELECT
-            properties.via AS via,
+            sum(if(event = '$pageview' AND timestamp > now() - INTERVAL 24 HOUR, 1, 0)) AS views,
+            sum(if(event = '$pageview' AND timestamp <= now() - INTERVAL 24 HOUR, 1, 0)) AS views_prev,
+            uniq(if(event = '$pageview' AND timestamp > now() - INTERVAL 24 HOUR, distinct_id, NULL)) AS visitors,
+            uniq(if(event = '$pageview' AND timestamp <= now() - INTERVAL 24 HOUR, distinct_id, NULL)) AS visitors_prev,
             count() AS actions
         FROM events
-        WHERE event = 'scroll_filter_cleared'
-          AND timestamp > now() - INTERVAL 24 HOUR
-          AND properties.$host = 'cliffchew84.github.io'
-          AND coalesce(properties.internal_user, false) = false
-        GROUP BY via
-        ORDER BY actions DESC
-    """)
+        WHERE timestamp > now() - INTERVAL 48 HOUR
+{PUBLIC_ONLY}
+        GROUP BY host
+        ORDER BY views DESC
+        """
+    )
+    return {row[0]: row for row in rows}
 
-    # 6. Top topics for portfolio. A chip click sends the topic in `source`.
-    topics = query("""
-        SELECT
-            properties.source AS topic,
-            count() AS uses
+
+def as_dict(raw) -> dict:
+    """HogQL may return a JSON object or its string form."""
+    if isinstance(raw, dict):
+        return raw
+    if isinstance(raw, str) and raw.startswith("{"):
+        try:
+            return json.loads(raw)
+        except json.JSONDecodeError:
+            return {}
+    return {}
+
+
+def show_value(value) -> str:
+    """Short, readable form of one parameter value."""
+    if isinstance(value, list):
+        text = ", ".join(str(item) for item in value[:3])
+        if len(value) > 3:
+            text += f" +{len(value) - 3}"
+    elif isinstance(value, dict):
+        text = json.dumps(value, separators=(",", ":"))
+    elif isinstance(value, bool):
+        text = "true" if value else "false"
+    else:
+        text = str(value)
+    text = " ".join(text.split())
+    return text if len(text) <= MAX_VALUE_LEN else text[: MAX_VALUE_LEN - 1] + "…"
+
+
+def top_events(host: str) -> list:
+    """The 5 busiest product events for a host, each with its own parameters.
+
+    Returns [(event, count, [(param, [values...]), ...]), ...].
+    """
+    quoted = sq(host)
+    top = query(
+        f"""
+        SELECT event, count() AS n
         FROM events
-        WHERE event = 'scroll_filter_used'
-          AND timestamp > now() - INTERVAL 24 HOUR
-          AND properties.$host = 'cliffchew84.github.io'
-          AND coalesce(properties.internal_user, false) = false
-          AND properties.source NOT IN ('search', 'all')
-        GROUP BY topic
-        ORDER BY uses DESC
-        LIMIT 3
-    """)
+        WHERE timestamp > now() - INTERVAL 24 HOUR
+          AND properties.$host = '{quoted}'
+{PUBLIC_ONLY}
+          AND event NOT IN {NOISE_EVENTS}
+        GROUP BY event
+        ORDER BY n DESC
+        LIMIT {MAX_EVENTS}
+        """
+    )
+    if not top:
+        return []
 
-    applied = int(filters[0][0] or 0) if filters else 0
-    cleared = int(filters[0][1] or 0) if filters else 0
-    clear_lines = [f"{esc(row[0] or 'unknown')} {row[1]}" for row in clears if row[1] > 0]
-    topic_lines = [f"{esc(row[0] or 'unknown')} {row[1]}" for row in topics if row[1] > 0]
+    names = ", ".join(f"'{sq(name)}'" for name, _ in top)
+    samples = query(
+        f"""
+        SELECT event, properties
+        FROM events
+        WHERE timestamp > now() - INTERVAL 24 HOUR
+          AND properties.$host = '{quoted}'
+{PUBLIC_ONLY}
+          AND event IN ({names})
+        ORDER BY timestamp DESC
+        LIMIT 300
+        """
+    )
 
-    # Singapore time
+    # event -> param -> {value: count}
+    seen: dict = {}
+    for event, raw in samples:
+        props = as_dict(raw)
+        per_event = seen.setdefault(event, {})
+        for key, value in props.items():
+            if key.startswith("$") or key in NOISE_PARAMS or value in (None, "", [], {}):
+                continue
+            per_event.setdefault(key, {})
+            label = show_value(value)
+            per_event[key][label] = per_event[key].get(label, 0) + 1
+
+    result = []
+    for event, count in top:
+        params = []
+        per_event = seen.get(event, {})
+        # The busiest parameters first; at most MAX_PARAMS of them.
+        for key, values in sorted(
+            per_event.items(), key=lambda item: sum(item[1].values()), reverse=True
+        )[:MAX_PARAMS]:
+            ranked = sorted(values.items(), key=lambda item: item[1], reverse=True)[:MAX_VALUES]
+            if len(ranked) == 1:
+                # Only one value, so a count would repeat the event count. Drop it.
+                params.append((key, [esc(ranked[0][0])]))
+            else:
+                params.append((key, [f"{esc(name)} {n}" for name, n in ranked]))
+        result.append((event, num(count), params))
+    return result
+
+
+def site_block(host: str, row: list) -> str | None:
+    """One site's part of the digest. None when the site is quiet."""
+    _, views, views_prev, visitors, visitors_prev, actions = row
+    if num(views) == 0 and num(visitors) == 0 and num(actions) == 0:
+        return None
+
+    lines = [
+        f"<b>{esc(label_for(host))}</b>",
+        f"<i>{esc(host)}</i>",
+        f"{unit(num(views), 'view').capitalize()} ({delta(num(views), num(views_prev))}) · "
+        f"{unit(num(visitors), 'visitor')} ({delta(num(visitors), num(visitors_prev))})",
+    ]
+
+    for index, (event, count, params) in enumerate(top_events(host), start=1):
+        if params:
+            joined = " · ".join(f"{esc(key)}: {', '.join(values)}" for key, values in params)
+            lines.append(f"{index}. {esc(event)} ({count}) | {joined}")
+        else:
+            lines.append(f"{index}. {esc(event)} ({count})")
+
+    return "\n".join(lines)
+
+
+def build_messages(sites: dict) -> list:
+    """One message per group of sites that fits, so nothing is cut off."""
     sgt = datetime.now(timezone.utc) + timedelta(hours=8)
-    date_str = sgt.strftime("%d %b, %H:%M SGT")
+    title = f"Daily digest · {sgt.strftime('%d %b %Y')}"
+    subtitle = "Last 24 hours, Singapore time. Δ is the change from the day before."
 
-    # Build message
-    lines = []
-    lines.append(f"<b>Portfolio · {esc(date_str)}</b>")
-    lines.append("<i>Last 24 hours</i>")
-    lines.append("")
-
-    has_data = False
-    for s in sites:
-        site, host, pv, vis, sc, lc = s
-        is_portfolio = host == "cliffchew84.github.io"
-        if pv == 0 and sc == 0 and lc == 0 and not (is_portfolio and (applied or cleared)):
+    blocks = []
+    seen_labels = set()
+    for host, row in sites.items():
+        if label_for(host) in seen_labels:
             continue
-        has_data = True
-        label = site_label(site, host)
-        lines.append(f"<b>{esc(label)}</b> ({esc(host)})")
-        lines.append(f"Views: {pv} · Visitors: {vis}")
-        if is_portfolio and sc > 0:
-            sec_lines = [f"{esc(sec[0] or 'unknown')} {sec[1]}" for sec in sections if sec[1] > 0]
-            if sec_lines:
-                lines.append("Sections: " + ", ".join(sec_lines))
-        if is_portfolio and lc > 0:
-            link_lines = [f"{esc(ln[0])} → {esc(ln[1])} ({ln[2]})" for ln in links if ln[2] > 0]
-            if link_lines:
-                lines.append("Links: " + "; ".join(link_lines))
-        if is_portfolio and (applied or cleared):
-            lines.append(f"Filters: {applied} applied · {cleared} cleared")
-            if cleared and clear_lines:
-                lines.append("Clears: " + " · ".join(clear_lines))
-            if applied and topic_lines:
-                lines.append("Topics: " + " · ".join(topic_lines))
-        lines.append("")
+        block = site_block(host, row)
+        if block:
+            blocks.append(block)
+            seen_labels.add(label_for(host))
 
-    if not has_data:
-        lines.append("<i>No public activity in the last 24 hours.</i>")
+    if not blocks:
+        blocks = ["<i>No public activity in the last 24 hours.</i>"]
 
-    text = "\n".join(lines)
+    # A message may hold several sites. Split only when the next site would
+    # push the text past the limit, so a normal day stays one message.
+    budget = MAX_MESSAGE_CHARS - len(title) - len(subtitle) - 20
+    groups: list = []
+    current: list = []
+    for block in blocks:
+        if current and len("\n\n".join(current + [block])) > budget:
+            groups.append(current)
+            current = [block]
+        else:
+            current.append(block)
+    if current:
+        groups.append(current)
 
-    # Send to Telegram
-    payload = json.dumps({
-        "chat_id": TELEGRAM_CHAT_ID,
-        "text": text,
-        "parse_mode": "HTML",
-        "disable_web_page_preview": True,
-    })
-    result = subprocess.run([
-        "curl", "-s", "-X", "POST",
-        f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage",
-        "-H", "Content-Type: application/json",
-        "-d", payload
-    ], capture_output=True, text=True, timeout=15)
+    messages = []
+    for index, group in enumerate(groups, start=1):
+        suffix = f" ({index}/{len(groups)})" if len(groups) > 1 else ""
+        head = f"<b>{title}{suffix}</b>\n<i>{subtitle}</i>"
+        messages.append(head + "\n\n" + "\n\n".join(group))
+    return messages
 
+
+def send(text: str) -> int:
+    token = os.environ["TELEGRAM_BOT_TOKEN"]
+    chat_id = os.environ["TELEGRAM_CHAT_ID"]
+    body = json.dumps(
+        {
+            "chat_id": chat_id,
+            "text": text,
+            "parse_mode": "HTML",
+            "disable_web_page_preview": True,
+        }
+    ).encode()
+    request = urllib.request.Request(
+        f"https://api.telegram.org/bot{token}/sendMessage",
+        data=body,
+        headers={"Content-Type": "application/json"},
+    )
     try:
-        resp = json.loads(result.stdout)
-        if not resp.get("ok"):
-            print(f"Telegram error: {resp}", file=sys.stderr)
-            return 1
-        print(f"Sent: message_id {resp['result']['message_id']}")
-        return 0
-    except Exception as e:
-        print(f"Failed to parse response: {e}", file=sys.stderr)
-        print(f"stdout: {result.stdout}", file=sys.stderr)
-        print(f"stderr: {result.stderr}", file=sys.stderr)
+        with urllib.request.urlopen(request, timeout=20) as response:
+            payload = json.load(response)
+    except urllib.error.HTTPError as error:
+        print(f"Telegram error: {error.read().decode()}", file=sys.stderr)
         return 1
+    except Exception as error:  # noqa: BLE001 - report and fail the job
+        print(f"Telegram request failed: {error}", file=sys.stderr)
+        return 1
+
+    if not payload.get("ok"):
+        print(f"Telegram error: {payload}", file=sys.stderr)
+        return 1
+    print(f"Sent: message_id {payload['result']['message_id']}")
+    return 0
+
+
+def main() -> int:
+    messages = build_messages(site_rows())
+
+    if "--dry-run" in sys.argv:
+        print("\n\n--- next message ---\n\n".join(messages))
+        return 0
+
+    status = 0
+    for index, message in enumerate(messages):
+        if index:
+            time.sleep(1)  # Telegram allows about one message per second per chat.
+        status |= send(message)
+    return status
 
 
 if __name__ == "__main__":
