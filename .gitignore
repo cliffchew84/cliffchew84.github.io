@@ -179,6 +179,3 @@ portfolio/assets/archive/
 
 # Local backups, never deployed
 .backup/
-
-# Local HomeNAS disk-health snapshots (never committed)
-HomeNAS/.health-history.jsonl
